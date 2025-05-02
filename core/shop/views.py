@@ -70,78 +70,6 @@ class IndexView(View):
 																				   'small_banners':small_banners, 
 																				   'big_banners':big_banners,
 																				   'most_viewed_products':most_viewed_products})
-
-# class OwnerView(View):
-
-# 	form_class = OwnerForm
-# 	template_name = 'shop/owner.html'
-
-# 	def get(self, request):
-# 		form = self.form_class()
-# 		return render(request, self.template_name, {'form':form})
-
-# 	def post(self, request, *args, **kwargs):
-# 		form = self.form_class(request.POST)
-# 		store = Store.objects.get(name=store_name)
-# 		if form.is_valid():
-# 			phone_number = form.cleaned_data['phone_number']
-# 			if len(phone_number) != 11:
-# 				return render(request, self.template_name, {'message':'شماره تماس صحیح نیست'})
-
-# 			# 2. بررسی شروع با '09'
-# 			if not phone_number.startswith('09'):
-# 				return render(request, self.template_name, {'message':'شماره تماس صحیح نیست'})
-# 			full_name = form.cleaned_data['full_name']
-# 			owner = Owner.objects.filter(phone_number=phone_number).first()
-# 			if owner != None:
-# 				previous_codes = OtpCode.objects.filter(phone_number = phone_number)
-# 				previous_codes.delete()
-# 				random_code = random.randint(100000,999999)
-# 				send_otp_code(phone_number,random_code)
-# 				new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
-# 				return redirect('shop:verify-owner', phone_number)
-			
-# 			owner = Owner.objects.create(phone_number = phone_number,full_name=full_name)
-# 			user, create = User.objects.get_or_create(phone_number = phone_number)
-# 			user.full_name= full_name
-# 			user.save()
-# 			previous_codes = OtpCode.objects.filter(phone_number = phone_number)
-# 			previous_codes.delete()
-# 			random_code = random.randint(100000,999999)
-# 			send_otp_code(phone_number,random_code)
-# 			new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
-# 			return redirect('shop:verify-owner', phone_number=phone_number)
-# 		message = 'ورودی نا معتبر'
-# 		return render(request, self.template_name, {'message':message, 'form':form})
-
-class VerifyOwnerView(View):
-	form_class = VerifyOwnerForm
-	template_name = f'{current_app_name}/verify_owner.html'
-
-	def get(self, request, phone_number):
-		form = self.form_class()
-		return render(request, self.template_name, {'form':form})
-	
-	def post(self, request, phone_number, *args, **kwargs):
-		form = AuthenticationCodeForm(request.POST)
-		if form.is_valid():
-			owner_phone = phone_number
-			owner = Owner.objects.filter(phone_number = owner_phone).first()
-			user = User.objects.filter(phone_number = owner_phone).first()
-			customer = Customer.objects.get_or_create(phone_number=phone_number)
-			request.user = user
-			last_sent_otp = OtpCode.objects.filter(phone_number = owner_phone).first()
-			recieved_code = form.cleaned_data['code']
-			if last_sent_otp.code == recieved_code:
-				user.is_shopowner = True
-				owner.save()
-				user.save()
-				login(request, user)
-				if user.is_verified == True:
-					return redirect(f'{current_app_name}:owner_dashboard')
-				return redirect(f'{current_app_name}:owner_dashboard_tutorials')
-			return render(request, self.template_name, {'form':form, 'message':'کد تایید اشتباه است.'})
-		return render(request, self.template_name, {'form':form, 'message':'ورودی نامعتبر'})
 	
 class CustomerDashboardView(View):
 
@@ -203,7 +131,6 @@ class CustomerDashboardOrderDatailView(View):
 class CustomerDashboardFavoritesView(View):
 
 	def get(self, request):
-		print('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk')
 		if isinstance(request.user, AnonymousUser):
 			return redirect(f'{current_app_name}:customer_authentication')
 		store = Store.objects.all().first()
@@ -508,7 +435,6 @@ class SpecialProductsListView(View):
 					products.add(product)
 		products = list(products)
 		categories = Category.objects.all()
-		# products = products.filter(verified = True)
 		paginator = Paginator(products, 12)
 		page = request.GET.get('page', 1)
 		try:
@@ -994,6 +920,7 @@ class SearchResultsView(View):
 													'store_name':store_name, 
 													'categories':categories,
 													'price_ranges':price_ranges})
+
 class SearchView(View):
 
 	def post(self, request, *args, **kwargs):
@@ -1268,17 +1195,15 @@ class AddProductFromDigikalaView(View):
 				slug = title.replace(' ','-')
 				description = description
 				features = features
-				brand = brand
-				product_brand, create = Brand.objects.get_or_create(
-					name = brand,
-				)
+				brand,create = Brand.objects.get_or_create(name=brand) 
+				
 				price = price/10
 				tags = tags
 				new_product = Product.objects.create(
 					name = title,
 					description = description,
 					features = format_features(features),
-					brand = product_brand.name,
+					brand = brand,
 					price = price,
 				)
 				for category_id in category_list:
@@ -1809,11 +1734,4 @@ class UserLogoutView(View):
 	def get(self, request):
 		logout(request)
 		return redirect('shop:index')
-
-
-
-
-
-
-
 

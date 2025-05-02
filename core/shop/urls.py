@@ -12,7 +12,6 @@ urlpatterns = [
     
     path("api/v1/", include("shop.api.v1.urls")),
     path('', views.IndexView.as_view(), name='index'),
-    path('owner-login/verify/<str:phone_number>/', views.VerifyOwnerView.as_view(), name='verify-owner'),
     path('customer/dashboard/', views.CustomerDashboardView.as_view(), name = 'customer_dashboard'),
     path('customer/dashboard/orders/', views.CustomerDashboardOrdersView.as_view(), name = 'customer_dashboard_orders'),
     path('customer/dashboard/orders/<int:order_id>/', views.CustomerDashboardOrderDatailView.as_view(), name = 'customer_dashboard_order_detail'),

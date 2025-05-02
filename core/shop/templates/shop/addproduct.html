@@ -1,0 +1,146 @@
+{% load static %}
+<!doctype html>
+<html dir="rtl" lang="fa-IR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="پیکوسایت بهترین سایت ساز و فروشگاه ساز آنلاین رایگان در ایران. با استفاده از سایت ساز پیکو سایت شما می‌توانید در کمتر از دو دقیقه سایت فروشگاهی حرفه‌ای داشته باشید.">
+    <meta content="PicoSite" name="author">
+    <meta name="keywords" content="سایت ساز رایگان, فروشگاه ساز رایگان, سایت ساز پیکوسایت,سایت ساز پیکو سایت,فروشگاه ساز پیکو سایت,طراحی سایت فروشگاهی,طراحی سایت رایگان,فروشگاه ساز آنلاین">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://picosite.ir">
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="پیکوسایت فروشگاه ساز رایگان">
+    <meta property="og:description" content="Your Open Graph description here">
+    <meta property="og:image" content="https://marketplace-bucket.storage.iran.liara.space/%D9%81%D8%A7%D9%88%D8%A2%DB%8C%DA%A9%D9%88%D9%86%20%D9%BE%DB%8C%DA%A9%D9%88%D8%B3%D8%A7%DB%8C%D8%AA.png" rel="shortcut icon" type="image/x-icon">
+    <meta property="og:url" content="https://picosite.ir">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card tags -->
+    <meta name="twitter:card" content="Summary Card with Large Image">
+    <meta name="twitter:title" content="پیکوسایت، فروشگاه ساز رایگان">
+    <meta name="twitter:description" content="با استفاده از پیکوسایت شما می‌توانید سایت فروشگاهی خودتان را در کمتر از دو دقیقه به رایگان راه اندازی نمایید">
+    <meta name="twitter:image" content="{{store.get_logo_image}}">
+
+    <!-- FAVICON -->
+    <link href="{{store.get_logo_image}}" rel="shortcut icon" type="image/x-icon"/>
+
+    <!-- TITLE -->
+    <title>افزودن محصول</title>
+
+    <!-- BOOTSTRAP CSS -->
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/plugins.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/fonts/styles-fa-num/dana.css' %}" id="fonts" rel="stylesheet">
+    <link href="{% static 'assets/css/rtl.css' %}" rel="stylesheet"/>
+</head>
+
+<body class="app sidebar-mini rtl login-img">
+
+<!-- BACKGROUND-IMAGE -->
+<div class="">
+
+
+    <!-- /GLOABAL LOADER -->
+
+    <!-- PAGE -->
+    <div class="page">
+        <div class="">
+
+            <!-- CONTAINER OPEN -->
+            <div class="col col-login mx-auto mt-7">
+                <div class="text-center">
+                    <img alt="" class="header-brand-img m-0" src="{{store.get_logo_image}}" height="85">
+                </div>
+            </div>
+            <div class="container-login100">
+                <div class="wrap-login100 p-6">
+                    <form method="post" class="login100-form validate-form" onsubmit="return validateForm()">
+                        {% csrf_token %}
+                            <span class="login100-form-title">
+									استخراج محصول از دیجی‌کالا
+								</span>
+                                <div class="col-sm-12 col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label">کد dkp محصول یا محصولات (با خط فاصله - از هم جدا نمایید) <span class="text-red">*</span></label>
+                                        <input name="dkp_code" class="form-control" placeholder="کد محصول یا لیست کد محصولات" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label">دسته‌بندی هدف<span class="text-red">*</span></label>
+                                        <select name="category" class="form-control select2" data-placeholder="انتخاب" type="text" multiple>
+                                            <option selected="selected" value="0">دسته‌بندی نشده</option>
+                                            {% for category in categories %}
+                                            <option value="{{category.id}}">{{category.name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                        
+                        <div class="container-login100-form-btn">
+                            <button type="submit" class="login100-form-btn btn-primary" data-bs-target="#modaldemo4" data-bs-toggle="modal">آغاز دریافت محصول</button>
+                            <a href="{% url 'admin:shop_product_changelist' %}">بازگشت به صفحه محصولات</a>
+                        </div>
+                        
+                        
+                        
+                    </form>
+                    <script>
+                        function validateForm() {
+                            var checkbox = document.getElementById('myCheckbox');
+                            
+                            if (checkbox.checked) {
+                                // Checkbox is checked, allow form submission
+                                return true;
+                            } else {
+                                // Checkbox is not checked, prevent form submission
+                                alert('شما باید قوانین و مقررات استفاده از پیکوسایت را تایید نمایید.');
+                                return false;
+                            }
+                        }
+                        </script>
+                </div>
+            </div>
+            <!-- CONTAINER CLOSED -->
+        </div>
+    </div>
+    <!-- END PAGE -->
+
+</div>
+
+<div class="modal fade" id="modaldemo4">
+    <div class="modal-dialog modal-dialog-centered text-center " role="document">
+        <div class="modal-content tx-size-sm">
+            <div class="modal-body text-center p-4 pb-5">
+                <button aria-label="Close" class="btn-close position-absolute" data-bs-dismiss="modal"><span
+                        aria-hidden="true">&times;</span></button>
+                <i class="icon icon-check fs-70 text-success lh-1 my-5 d-inline-block"></i>
+                <h4 class="text-success tx-semibold">عملیات در حال انجام!</h4>
+                <p class="mg-b-20 mg-x-20">اطلاعات و تصاویر محصول شما در حال بارگیری است و این فرایند ممکن است تا یک دقیقه به طول انجامد. لطفا تا تکمیل فرایند و انتقال به صفحه بعدی از رفرش کردن یا بستن این تب خودداری نمایید. به محض تکمیل فرایند، به صورت خودکار به صفحه بعدی منتقل خواهید شد.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- BACKGROUND-IMAGE CLOSED -->
+
+<!-- JQUERY JS -->
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/plugins/multipleselect/multi-select.js' %}"></script>
+<script src="{% static 'assets/plugins/select2/select2.full.min.js' %}"></script>
+<script src="{% static 'assets/js/select2.js' %}"></script>
+
+
+
+</body>
+
+
+</html>
+
+
+
+
