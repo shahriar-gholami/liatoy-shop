@@ -325,6 +325,7 @@ class Product(models.Model):
 	name = models.CharField(max_length=200, verbose_name = 'عنوان')
 	slug = models.CharField(max_length=200, unique=True, blank=True, verbose_name = 'نامک')
 	description = RichTextField(verbose_name = 'توضیحات')
+	short_description = RichTextField(null=True, blank=True ,verbose_name = 'توضیحات کوتاه')
 	features = RichTextField(verbose_name = 'ویژگی‌ها')
 	brand = models.ForeignKey('Brand', null=True, blank=True, on_delete=models.SET_NULL, verbose_name = 'برند')
 	price = models.IntegerField(verbose_name = 'قیمت')

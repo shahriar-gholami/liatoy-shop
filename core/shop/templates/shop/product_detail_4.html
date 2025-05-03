@@ -159,13 +159,11 @@
                                         {% endfor %}
                                     </div>
                                 </div>
-                                <div class="product-meta-feature-items">
+                                <div class="product-meta-feature-items text-justify">
                                     <h5 class="title font-16 mb-2 icon-circle">ویژگی های کالا</h5>
-                                    <ul class="navbar-nav">
-                                        {% for line in product.get_brief_features|slice:":2" %}    
-                                            <li class="nav item"><strong> {{line|safe}}</strong></li>
-                                        {% endfor %}
-                                    </ul>
+                                    <p class="text-justify" style="text-align: justify;">
+                                        {{product.short_description|safe}}
+                                    </p>
                                 </div>
                             </div>
                             <div class="col-lg-6">
@@ -475,7 +473,7 @@
 
                                         <div class="tab-pane fade show active product-desc-less-contents"
                                              id="productDescLess-pane">
-                                            <div class="product-desc-content">
+                                            <div class="product-desc-content text-justify">
                                                 <h6 class="font-22 mb-2 title-font title-line-bottom">معرفی محصول</h6>
 
                                                 <p>
@@ -490,7 +488,7 @@
                                                 <h6 class="font-26 mb-2 title-font title-line-bottom">مشخصات فنی</h6>
                                                 <div class="box_list mt-2">
                                                     <p>
-                                                        {{product.get_features_table|safe}}
+                                                        {{product.features|safe}}
                                                     </p>
                                                 </div>
                                                 

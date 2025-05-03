@@ -61,8 +61,9 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-	list_display = ('parent', 'is_sub', 'name', 'slug')
+	list_display = ('name','parent', 'is_sub',  'slug')
 	search_fields = ['name', 'slug']
+	autocomplete_fields = ['parent',]
 
 class VarietyInline(admin.TabularInline):  # یا admin.StackedInline برای نمایش به صورت بلوکی
 	model = Variety

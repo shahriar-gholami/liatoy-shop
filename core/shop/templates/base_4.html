@@ -216,7 +216,8 @@
                                                  <i class="bi bi-ui-checks-grid main-color-one-color fix-icon me-2"></i>
                                              </span>    فروشگاه</a>
                                 <ul class="list-unstyled mage-list-menu shadow-lg back-menu sub-menu mega-container"
-                                    style="background: #fff">
+                                
+                                    style=" height: 450px;background-size: 300px; background: #fff">
                                     {% for t_category in top_categories.all %}
                                         {% if t_category.get_sub_categories.all.first != None %}
                                             {% if t_category.is_sub != True %}
