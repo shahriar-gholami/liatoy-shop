@@ -75,11 +75,11 @@
                                 </div>
                                 
                             </div>
-                            <div class="swiper product-gallery">
+                            <div class="swiper product-gallery p-0">
                                 <div class="swiper-wrapper" title="برای بزرگنمایی تصویر دابل کلیک کنید">
                                     {% for image in product.get_gallery %}
-                                    <div class="swiper-slide">
-                                        <div class="swiper-zoom-container">
+                                    <div class="swiper-slide p-0">
+                                        <div class="swiper-zoom-container p-0">
                                             <img  src="{{ image.image.url }}"
                                                  alt=""/>
                                         </div>

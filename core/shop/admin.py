@@ -44,7 +44,7 @@ class StoreAdmin(admin.ModelAdmin):
 			  'phone_number', 'email', 'color', 
 			  'meta_description', 'meta_keywords', 'meta_og_title', 
 			  'meta_og_description', 'meta_tc_title', 'meta_tc_description', 'has_domain', 'has_payment_gw',
-			  'template_index', 'index_title', 'enamad_code','show_brands' ,'show_advantages','show_featured_categories','show_special_offer',
+			  'template_index', 'index_title', 'enamad_code','show_brands' ,'show_advantages','show_ages','show_featured_categories','show_special_offer',
 			  'show_specials','show_blog')
 
 @admin.register(Owner)
@@ -272,6 +272,11 @@ admin.site.register(Customer, CustomerAdmin)
 class BrandAdmin(admin.ModelAdmin):
 	list_display = ('name',)
 	search_fields = ['name']
+
+@admin.register(AgeCategory)
+class AgeCategoryAdmin(admin.ModelAdmin):
+	list_display = ('group',)
+	search_fields = ['group']
 
 # class TicketReplyInline(admin.TabularInline):
 # 	model = TicketReply

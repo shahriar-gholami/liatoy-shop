@@ -157,6 +157,24 @@
                                 </div>
                                 {% endif %}
 
+                                {% if store.show_ages == True %}
+                                <h5 class="filter-item-title">گروه‌های سنی</h5>
+                                <div class="filter-item-content">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                        <select name="brand" id="floatingInputOstan" class="form-select">
+                                            {% if main_selected_age != None %}
+                                                <option value= "{{ main_selected_age.id }}" class="text-white">{{ main_selected_age.group }}</option>
+                                            {% else %}
+                                                <option value="0" class="text-white">انتخاب</option>
+                                            {% endif %}    
+                                            {% for age in ages %}
+                                                <option value="{{age.id}}">{{age}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
                                 <h5 class="filter-item-title">بازه قیمتی</h5>
                                 <div class="filter-item-content">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
@@ -272,6 +290,24 @@
                                                 {% endif %}    
                                                 {% for brand in brands %}
                                                     <option value="{{brand.id}}">{{brand}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if store.show_ages == True %}
+                                    <h5 class="filter-item-title">گروهای سنی</h5>
+                                    <div class="filter-item-content">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                            <select name="age" id="floatingInputOstan" class="form-select">
+                                                {% if main_selected_age != None %}
+                                                    <option value= "{{ main_selected_age.id }}" class="text-white">{{ main_selected_age.group }}</option>
+                                                {% else %}
+                                                    <option value="0" class="text-white">انتخاب</option>
+                                                {% endif %}    
+                                                {% for age in ages %}
+                                                    <option value="{{age.id}}">{{age}}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>

@@ -201,11 +201,13 @@ class ProductListView(View):
 		except EmptyPage:
 			products = paginator.page(paginator.num_pages)
 		brands = Brand.objects.all()
+		ages = AgeCategory.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
+				'ages':ages,
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
@@ -219,6 +221,7 @@ class ProductListView(View):
 		product_cat = None
 		price_range = None
 		selected_brand = None
+		selected_age = None
 		form = FilterProductsForm(request.POST)
 		if form.is_valid():
 			print(form.cleaned_data)
@@ -250,7 +253,8 @@ class ProductListView(View):
 			product_ids = [product.id for product in products]
 			products = Product.objects.filter(id__in=product_ids)
 
-			brands = Brand.objects.all()	
+			brands = Brand.objects.all()
+			ages = AgeCategory.objects.all()	
 			brand = form.cleaned_data['brand']
 			if brand != '':
 				selected_brand = Brand.objects.filter(id = brand).first()
@@ -262,6 +266,15 @@ class ProductListView(View):
 					products = products.all()
 					if category != '0':
 						brands = product_cat.get_category_brands()
+
+			age = form.cleaned_data['age']
+			if age != '':
+				selected_age = AgeCategory.objects.filter(id = age).first()
+				if age != '0':
+					products = products.filter(age = selected_age.id)
+					main_selected_age = Brand.objects.filter(id = age).first()
+					ages = list(AgeCategory.objects.filter(id = age))
+
 							
 			filtered_products = []
 			price_ranges = form.cleaned_data['price_range']
@@ -327,6 +340,7 @@ class ProductListView(View):
 			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				 {'products': products, 
 				'brands':brands,
+				'ages':ages,
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
@@ -341,6 +355,7 @@ class ProductListView(View):
 				'main_filters': main_filters,
 				'main_selected_category' : product_cat,
 				'main_selected_brand' : selected_brand,
+				'main_selected_age' : selected_age,
 				'main_selected_price_range' : selected_price_range})
 					
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'store_name':store_name})
@@ -1243,10 +1258,12 @@ class SpecialProductListView(View):
 		except EmptyPage:
 			products = paginator.page(paginator.num_pages)
 		brands = Brand.objects.all()
+		ages = AgeCategory.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
+	 			'ages':ages,
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
@@ -1280,6 +1297,14 @@ class SpecialProductListView(View):
 					products = products.filter(brand = selected_brand.name)
 				else:
 					products = products.all()
+
+			age = form.cleaned_data['age']
+			if age != '':
+				selected_age = AgeCategory.objects.filter(id = age).first()
+				if age != '0':
+					products = products.filter(age = selected_age.name)
+				else:
+					products = products.all()
 							
 			filtered_products = []
 			price_ranges = form.cleaned_data['price_range']
@@ -1304,6 +1329,7 @@ class SpecialProductListView(View):
 			products_urls = f'{current_app_name}:product_detail'
 			price_ranges = PriceRange.objects.all()
 			brands = Brand.objects.all()
+			ages = AgeCategory.objects.all()
 			if brand != '0':
 				selected_brand = Brand.objects.get(id=brand)
 			else:
@@ -1352,6 +1378,7 @@ class SpecialProductListView(View):
 			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				 {'products': products, 
 				'brands':brands,
+				'ages':ages,
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
@@ -1388,6 +1415,7 @@ class BrandProductListView(View):
 		except EmptyPage:
 			products = paginator.page(paginator.num_pages)
 		brands = Brand.objects.all()
+		ages = AgeCategory.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
@@ -1396,7 +1424,8 @@ class BrandProductListView(View):
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
-				'price_ranges':price_ranges})
+				'price_ranges':price_ranges,
+				'ages':ages})
 	
 	def post(self, request, brand_name, *args, **kwargs):
 		main_filters = {}
@@ -1426,6 +1455,14 @@ class BrandProductListView(View):
 					products = products.filter(brand = selected_brand.name)
 				else:
 					products = products.all()
+
+			age = form.cleaned_data['age']
+			if age != '':
+				selected_age = AgeCategory.objects.filter(id = age).first()
+				if age != '0':
+					products = products.filter(age = selected_age.name)
+				else:
+					products = products.all()
 							
 			filtered_products = []
 			price_ranges = form.cleaned_data['price_range']
@@ -1450,6 +1487,7 @@ class BrandProductListView(View):
 			products_urls = f'{current_app_name}:product_detail'
 			price_ranges = PriceRange.objects.all()
 			brands = Brand.objects.all()
+			ages = AgeCategory.objects.all()
 			if brand != '0':
 				selected_brand = Brand.objects.get(id=brand)
 			else:
@@ -1497,6 +1535,7 @@ class BrandProductListView(View):
 				products = paginator.page(paginator.num_pages)
 			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				 {'products': products, 
+	  			'ages':ages,
 				'brands':brands,
 				'to_products':products_urls, 
 				'store_name':store_name, 

@@ -57,6 +57,7 @@ class Store(models.Model):
 	has_domain = models.BooleanField(default=False, verbose_name='دامنه فعال')
 	has_payment_gw = models.BooleanField(default=False, verbose_name='درگاه پرداخت فعال')
 	show_brands = models.BooleanField(default=False, verbose_name='نمایش برندها')
+	show_ages = models.BooleanField(default=False, verbose_name='نمایش گروه‌های سنی')
 	template_index = models.IntegerField(default = 1, verbose_name='شماره قالب')
 	index_title = models.CharField(max_length=250, null=True, blank=True, default='خانه', verbose_name='عنوان صفحه نخست')
 	enamad_code = models.CharField(max_length=1000, null=True, blank=True, default='none', verbose_name='کد ای‌نماد')
@@ -328,6 +329,7 @@ class Product(models.Model):
 	short_description = RichTextField(null=True, blank=True ,verbose_name = 'توضیحات کوتاه')
 	features = RichTextField(verbose_name = 'ویژگی‌ها')
 	brand = models.ForeignKey('Brand', null=True, blank=True, on_delete=models.SET_NULL, verbose_name = 'برند')
+	age = models.ForeignKey('AgeCategory', null=True, blank=True, on_delete=models.SET_NULL, verbose_name = 'گروه سنی')
 	price = models.IntegerField(verbose_name = 'قیمت')
 	sales_price = models.IntegerField(null=True, blank=True, verbose_name = 'قیمت تخفیف‌دار')
 	off_active = models.BooleanField(default=False, verbose_name = 'فعال بودن فروش با تخفیف')
@@ -995,6 +997,16 @@ class Brand(models.Model):
 
 	def __str__(self):
 		return self.name
+	
+class AgeCategory(models.Model):
+	group = models.CharField(max_length=255, verbose_name='گروه سنی')
+
+	class Meta:
+		verbose_name = 'گروه‌های سنی'
+		verbose_name_plural = 'گروه‌های سنی'
+
+	def __str__(self):
+		return self.group
 
 class Domain(models.Model):
 	domain = models.CharField(max_length=100, verbose_name='نام دامنه')

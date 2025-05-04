@@ -54,6 +54,7 @@ class FilterProductsForm(forms.Form):
     category = forms.CharField(required=False)
     price_range = forms.CharField(required=False)
     brand = forms.CharField(required=False)
+    age = forms.CharField(required=False)
 
 class CartEditForm(forms.Form):
     count = forms.IntegerField()
