@@ -33,7 +33,7 @@ class PolicyAdmin(admin.ModelAdmin):
 @admin.register(Filter)
 class FilterAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'category')  # ستون‌هایی که در لیست نمایش داده می‌شوند
-    search_fields = ('name',)  # امکان جستجو براساس نام
+    search_fields = ('name','category__name')  # امکان جستجو براساس نام
     list_filter = ('category',)  # فیلتر بر اساس دسته‌بندی
 
 @admin.register(Store)
@@ -94,6 +94,7 @@ class FilterValueInline(admin.StackedInline):  # یا admin.TabularInline
 	model = FilterValue
 	extra = 1  # تعداد فرم‌های اضافی
 	fields = ('filter', 'value')  # ترتیب نمایش فیلدها
+	autocomplete_fields = ['filter',]
 
 # 2. Inline برای Filter
 class FilterInline(admin.StackedInline):  # یا admin.TabularInline

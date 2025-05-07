@@ -333,6 +333,7 @@ class Product(models.Model):
 	price = models.IntegerField(verbose_name = 'قیمت')
 	sales_price = models.IntegerField(null=True, blank=True, verbose_name = 'قیمت تخفیف‌دار')
 	off_active = models.BooleanField(default=False, verbose_name = 'فعال بودن فروش با تخفیف')
+	is_original = models.BooleanField(default=False, verbose_name = 'کالای اصلی')
 	tags = models.ManyToManyField(Tag, blank=True, verbose_name = 'تگ‌ها')
 	created = models.DateTimeField(auto_now_add=True, verbose_name = 'تاریخ ایجاد')
 	updated = models.DateTimeField(auto_now=True, verbose_name = 'آخرین بروزرسانی')
@@ -344,6 +345,7 @@ class Product(models.Model):
 	meta_tc_title = models.TextField(null=True, blank=True, verbose_name = 'عنوان TwitterCard')
 	meta_tc_description = models.TextField(null=True, blank=True, verbose_name = 'توضیحات TwitterCard')
 	stock_alarm_volume = models.IntegerField(default=0, null=True, blank=True, verbose_name = 'هشدار اتمام موجودی')
+
 
 	def get_normal_price(self):
 		return "{:,}".format(self.price)
@@ -1035,7 +1037,7 @@ class Filter(models.Model):
 		return FilterValue.objects.filter(filter=self)
 
 	def __str__(self):
-		return f'{self.name}'
+		return f'{self.name} در دسته {self.category.name}'
 	
 class FilterValue(models.Model):
 	value = models.CharField(max_length=250, verbose_name='مقدار')	

@@ -112,6 +112,10 @@
                                         </ul>
                                     </li>
                                     {% endif %}
+                                    <li class="nav-item bg-ul-f7"><a class="nav-link" href="{% url 'shop:filter_tag_products' 'دخترانه' %}">دخترانه</a>
+                                    </li>
+                                    <li class="nav-item bg-ul-f7"><a class="nav-link" href="{% url 'shop:filter_tag_products' 'پسرانه' %}">پسرانه</a>
+                                    </li>
                                     <li class="nav-item bg-ul-f7"><a class="nav-link" href="{% url 'shop:about'  %}">درباره ما</a>
                                     </li>
                                     <li class="nav-item bg-ul-f7"><a class="nav-link" href="{% url 'shop:contact'  %}">تماس با ما</a>
@@ -269,6 +273,10 @@
                                     <span class="badge main-color-two-bg ms-1 rounded-pill">روزانه</span>
                                 </a>
                             </li> -->
+                            <li class="nav-item"><a href="{% url 'shop:filter_tag_products' 'دخترانه' %}" class="nav-link border-animate fromCenter">دخترانه</a>
+                            </li>
+                            <li class="nav-item"><a href="{% url 'shop:filter_tag_products' 'پسرانه' %}" class="nav-link border-animate fromCenter">پسرانه</a>
+                            </li>
                             <li class="nav-item"><a href="{% url 'shop:about'  %}" class="nav-link border-animate fromCenter">درباره ما</a>
                             </li>
                             <li class="nav-item"><a href="{% url 'shop:contact'  %}" class="nav-link border-animate fromCenter">تماس با ما</a>

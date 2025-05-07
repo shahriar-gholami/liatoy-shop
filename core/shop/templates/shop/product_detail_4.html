@@ -140,10 +140,11 @@
                                 </div>
                                 <div class="col-lg-4">
                                     <div class="d-flex justify-content-end align-items-center">
-                                        {% if brand.logo %}
-                                        <a href="">
-                                            <img src="{{brand.logo.url}}" alt="" class="img-fluid">
-                                        </a>
+                                        {% if product.brand and product.brand.name != 'متفرقه' %}
+                                        <a href="{% url 'shop:special_brand_products' product.brand.name %}" class="badge success-label btn btn-lg rounded-pill font-12 py-2">{{product.brand.name}}</a>
+                                        {% endif %}
+                                        {% if product.is_original == True %}
+                                        <button class="badge danger-label btn btn-lg rounded-pill font-12 py-2">کالای اصل</button>
                                         {% endif %}
                                     </div>
                                 </div>
