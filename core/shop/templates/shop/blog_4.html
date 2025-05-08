@@ -57,7 +57,7 @@
                             <div class="row gy-3">
                                 <div class="col-md-4">
                                     <div class="blog-post-card-thumbnail">
-                                        <img src="{{post.get_thumbnail}}" class="rounded-3" alt="">
+                                        <img src="{{post.get_thumbnail}}" class="rounded-3" alt="{{ post.title }}">
                                     </div>
                                 </div>
                                 <div class="col-md-8">
@@ -133,7 +133,7 @@
                                                     <div class="mini-blog-item">
                                                         <div class="image">
                                                             <img src="{% static 'assets4/image/blog/blog-1.png' %}"
-                                                                 class="img-thumbnail" alt="">
+                                                                 class="img-thumbnail" alt="{{ post.title }}">
                                                         </div>
                                                         <div class="d-flex align-items-start desc flex-wrap flex-column justify-content-between">
                                                             <h6 class="title mct-hover">{{ post.title|truncatewords:8 }}</h6>

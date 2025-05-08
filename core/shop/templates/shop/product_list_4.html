@@ -376,19 +376,19 @@
                     <div class="row g-3">
                         {% for product in products %}
                         <div class="col-6 col-lg-3 col-md-3 col-xl-3 g-1 gy-1">
-                            <div class="product-box">
+                            <div class="product-box p-2">
                                 <a href="{% url 'shop:product_detail' product.slug %}">
-                                <div class="product-image">
-                                    <img alt="" class="img-fluid"
+                                <div class="product-image p-0">
+                                    <img alt="{{ product.name }}" class="img-fluid"
                                          src="{{product.get_main_image}}">
                                 </div>
                                 </a>
-                                <div class="product-title">
+                                <div class="product-title mt-2">
                                     <div class="title">
                                         <a href="{% url 'shop:product_detail' product.slug %}"><p class="title-font font-14">{{product.name}}</p></a>
                                     </div>
                                 </div>
-                                <div class="product-action flex-column mt-3">
+                                <div class="product-action flex-column mt-1">
                                     <div class="price d-flex justify-content-between w-100 align-items-baseline">
                                         {% if product.off_active == True %}
                                                 <div >

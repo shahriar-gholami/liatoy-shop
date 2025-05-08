@@ -63,7 +63,7 @@
                 </div>
                 <div class="col-lg-3">
                     <div class="blog-single-title-thumbnail">
-                        <img src="{{post.get_thumbnail}}" class="img-thumbnail rounded-0"  alt="">
+                        <img src="{{post.get_thumbnail}}" class="img-thumbnail rounded-0"  alt="{{ post.title }}">
                     </div>
                 </div>
             </div>
@@ -156,7 +156,7 @@
                                             <a href="{% url 'shop:post_detail' blog_post.slug %}" class="nav-link">
                                                 <div class="mini-blog-item">
                                                     <div class="image">
-                                                        <img src="{{ blog_post.get_thumbnail }}" class="img-fluid" alt="">
+                                                        <img src="{{ blog_post.get_thumbnail }}" class="img-fluid" alt="{{ blog_post.title }}">
                                                     </div>
                                                     <div class="d-flex align-items-start desc flex-wrap flex-column justify-content-between">
                                                         <a href="{% url 'shop:post_detail' blog_post.slug %}"><h6 class="title mct-hover">{{blog_post.title}}</h6></a>
