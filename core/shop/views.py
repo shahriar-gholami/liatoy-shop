@@ -58,8 +58,10 @@ class IndexView(View):
 		to_products = f'{current_app_name}:product_detail'
 		featured_categories = FeaturedCategories.objects.all().first()
 		most_viewed_products = Product.objects.order_by('-views')[:8]
+		special_products = list(store.get_special_tags_products())[:8]
 		return render(request, f'{current_app_name}/index_{store.template_index}.html', {
 																				   'store':store,
+																				   'special_products':special_products,
 																				   'posts':posts,
 																				   'featured_categories':featured_categories,
 																				   'to_products':to_products ,
@@ -204,10 +206,12 @@ class ProductListView(View):
 		ages = AgeCategory.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
+		canonical = 'shop'
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
 				'ages':ages,
+				'canonical':canonical,
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
@@ -380,8 +384,11 @@ class FilterTagProducts(View):
 		brands = Brand.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
+		tag = Tag.objects.filter(slug=tag_slug)
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
+	 			'tag':tag,
+				'canonical':'tag',
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
@@ -565,10 +572,13 @@ class CategoryProductsListView(View):
 		except EmptyPage:
 			products = paginator.page(paginator.num_pages)
 
+		canonical = 'category'
+
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
 				'store_name':store_name, 
+				'canonical':canonical,
 				'categories':categories,
 				'price_ranges':price_ranges,
 				'category':category,
@@ -1100,10 +1110,12 @@ class FeatureFilterView(View):
 			products = paginator.page(1)
 		except EmptyPage:
 			products = paginator.page(paginator.num_pages)
+		canonical = 'category'
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'store_name':store_name, 
 				'categories':categories,
+				'canonical':canonical,
 				'price_ranges':price_ranges,
 				'category':category,
 				'filters':filters,
@@ -1257,8 +1269,8 @@ class AddProductFromDigikalaView(View):
 					
 class SpecialProductListView(View):
 
-	def get(self, request, tag_name):
-		tag = Tag.objects.filter(name=tag_name).first()
+	def get(self, request, tag_slug):
+		tag = Tag.objects.filter(slug=tag_slug).first()
 		products = tag.get_products()
 		items_per_page = 12
 		store = Store.objects.all().first()
@@ -1276,9 +1288,12 @@ class SpecialProductListView(View):
 		ages = AgeCategory.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
+		canonical = 'tag'
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
+	 			'tag':tag,
 	 			'ages':ages,
+				'canonical':canonical,
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
@@ -1390,9 +1405,12 @@ class SpecialProductListView(View):
 			except EmptyPage:
 				# اگر شماره صفحه بیشتر از تعداد کل صفحات است
 				products = paginator.page(paginator.num_pages)
+			canonical = 'tag'
 			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				 {'products': products, 
 				'brands':brands,
+				'tag':tag,
+				'canonical':canonical,
 				'ages':ages,
 				'to_products':products_urls, 
 				'store_name':store_name, 
@@ -1433,13 +1451,16 @@ class BrandProductListView(View):
 		ages = AgeCategory.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
+		canonical = 'brand'
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
+	 			'brand':brand,
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
 				'price_ranges':price_ranges,
+				'canonical':canonical,
 				'ages':ages})
 	
 	def post(self, request, brand_name, *args, **kwargs):

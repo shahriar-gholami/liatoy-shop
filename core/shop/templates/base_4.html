@@ -14,6 +14,8 @@
 
     {% endblock %}
 
+    <link rel="icon" href="{% static 'assets4\image\logo.jpg' %}" sizes="32x32">
+
     <link rel="stylesheet" href="{% static 'assets4/plugin/swiper/swiper-bundle.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets4/plugin/timer/timer.css' %}">
     <link rel="stylesheet" href="{% static 'assets4/plugin/go-to-top/style.css' %}">
@@ -96,7 +98,7 @@
                                         <span class="showSubMenu"><i class="bi bi-chevron-left"></i></span>
                                         <ul class="navbar-nav h-0">
                                         {% for tag in special_tags %}
-                                            <li class="nav-item"><a class="nav-link" href="{% url 'shop:special_tag_products'  tag.name %}">{{ tag.name }}</a>
+                                            <li class="nav-item"><a class="nav-link" href="{% url 'shop:special_tag_products'  tag.slug %}">{{ tag.name }}</a>
                                             </li>
                                         {% endfor %}
                                         </ul>
@@ -258,7 +260,7 @@
                                 <ul class="list-unstyled mage-list-menu shadow-lg back-menu sub-menu mega-container"
                                     style="background: #fff">
                                     {% for tag in special_tags %}
-                                    <li><a href="{% url 'shop:special_tag_products'  tag.name %}" class="title">{{ tag.name }}</a></li>
+                                    <li><a href="{% url 'shop:special_tag_products'  tag.slug %}" class="title">{{ tag.name }}</a></li>
                                     {% endfor %}
                                 </ul>
                             </li>

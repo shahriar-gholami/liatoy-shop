@@ -86,35 +86,35 @@
                                             src="{{product.get_main_image}}">
                                     </div>
                                     </a>
-                                    <div class="product-title mt-4">
+                                    <div class="product-title mt-2">
                                         <div class="title">
                                             <a href="{% url 'shop:product_detail' product.slug %}"><p class="title-font font-14 text-center">{{ product.name }}</p></a>
                                         </div>
                                     </div>
-                                    <div class="product-action flex-column mt-3">
+                                    <div class="product-action flex-column mt-0 mb-0">
                                         {% if product.off_active == True %}
                                             <div >
                                                 <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
-                                                    <p class="mb-0 old-price font-18 text-muted-two text-danger text-decoration-line-through me-3">
+                                                    <p class="mb-0 old-price font-16 text-muted-two text-danger text-decoration-line-through me-3">
                                                         {{ product.get_normal_price }}</p>
-                                                    <h6 class="font-18 title-font new-price main-color-one-color">{{product.get_sales_price }}
+                                                    <h6 class="font-16 title-font new-price main-color-one-color">{{product.get_sales_price }}
                                                         تومان</h6>
                                                 </div>
                                             </div>
                                         {% else %}
                                             <div >
                                                 <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
-                                                    <h6 class="font-18 title-font new-price">{{product.get_normal_price }} تومان</h6>
+                                                    <h6 class="font-16 title-font new-price">{{product.get_normal_price }} تومان</h6>
                                                 </div>
                                             </div>
                                         {% endif %}
                                 <div class="link w-100 mt-4 d-flex align-items-center justify-content-between">
-                                    <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:product_detail' product.slug %}">
+                                    <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg font-12" href="{% url 'shop:product_detail' product.slug %}">
                                         مشاهده
                                         <i class="bi bi-arrow-left ms-4 text-white"></i>
                                     </a>
                                     <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}">
-                                        <i class="bi bi-heart fs-5 text-white"></i>
+                                        <i class="bi bi-heart fs-7 text-white"></i>
                                     </a>
                                 </div>
                                     </div>
@@ -216,11 +216,11 @@
             {% for f_cat in featured_categories.categories.all %}
                 
                 <div class="col-xxl-3 col-lg-4 col-sm-6">
-                    <div class="product-row-item running-top">
+                    <div class="card running-top p-2">
                         <a href="{% url 'shop:category_products' f_cat.slug %}">
                             <div class="row align-items-center">
                                 <div class="col-4">
-                                    <img src="{{f_cat.get_main_image}}" alt="{{ f_cat.name }}">
+                                    <img src="{{f_cat.get_main_image}}" alt="{{ f_cat.name }}" style="object-fit: contain;">
                                 </div>
                                 <div class="col-8">
                                     <h3 class="text-overflow-1 title-font font-14">{{f_cat.name}}</h3>
@@ -443,13 +443,13 @@
          </div>
          <div class="product-row-parent">
             <div class="row g-4">
-            {% for product in store.get_special_tags_products %}
+            {% for product in special_products %}
                 <div class="col-xxl-3 col-lg-4 col-sm-6">
                     <div class="product-row-item running-top">
                         <a href="{% url 'shop:product_detail' product.slug %}">
                             <div class="row align-items-center">
                                 <div class="col-4">
-                                    <img src="{{product.get_main_image}}" alt="{{ product.name }}">
+                                    <img src="{{product.get_main_image}}" alt="{{ product.name }}" style="object-fit: contain;">
                                 </div>
                                 <div class="col-8">
                                     <h3 class="text-overflow-1 title-font font-14">{{ product.name }}</h3>
