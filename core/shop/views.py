@@ -299,12 +299,12 @@ class ProductListView(View):
 			my_forms = []
 			if category != '0':
 				selected_category = Category.objects.filter(id = int(category)).first()
-				filters = Filter.objects.all()
+				filters = Filter.objects.filter(category=selected_category)
 				for filter in filters:
 					values = filter.get_values()
 					class FeatureFilterForm(forms.Form):
 						name = filter.name
-						choices = tuple([(value.value, value.value) for value in values])
+						choices = tuple(set([(value.value, value.value) for value in values]))
 						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
 					new_form = FeatureFilterForm
 					my_forms.append(new_form)
@@ -520,16 +520,21 @@ class CategoryProductsListView(View):
 		store = Store.objects.all().first()
 		store_name = store.name
 		filters = Filter.objects.all()
-		my_forms = []
-		for filter in filters:
-			values = filter.get_values()
-			class FeatureFilterForm(forms.Form):
-				name = filter.name
-				choices = tuple([(value.value, value.value) for value in values])
-				فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-			new_form = FeatureFilterForm
-			my_forms.append(new_form)
 		category = Category.objects.get(slug = category_slug)
+		my_forms = []
+		if category != '0':
+			selected_category = category
+			filters = Filter.objects.filter(category=selected_category)
+			for filter in filters:
+				values = filter.get_values()
+				class FeatureFilterForm(forms.Form):
+					name = filter.name
+					choices = tuple(set([(value.value, value.value) for value in values]))
+					فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+				new_form = FeatureFilterForm
+				my_forms.append(new_form)
+			category = Category.objects.get(slug = selected_category.slug)
+			filters = Filter.objects.filter(category=category)
 		categories = []
 		if category.is_sub == True:
 			categories = []
@@ -1024,20 +1029,25 @@ class FeatureFilterView(View):
 			request.session['temp_cat'] = category.name
 			request.session.modified = True
 			my_forms = []
-			for filter in filters:
-				values = filter.get_values()
-				class FeatureFilterForm(forms.Form):
-					name = filter.name
-					choices = tuple([(value.value, value.value) for value in values])
-					فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-				new_form = FeatureFilterForm
-				my_forms.append(new_form)
+			if category != '0':
+				selected_category = Category.objects.filter(id = category.id ).first()
+				filters = Filter.objects.filter(category=selected_category)
+				for filter in filters:
+					values = filter.get_values()
+					class FeatureFilterForm(forms.Form):
+						name = filter.name
+						choices = tuple(set([(value.value, value.value) for value in values]))
+						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+					new_form = FeatureFilterForm
+					my_forms.append(new_form)
+				category = Category.objects.get(slug = selected_category.slug)
+				filters = Filter.objects.filter(category=category)
 			selected_values = []
 			active_filters = []
 			for key, value in request.session.items():
 				if key.startswith('filter-'):
 					filter_name = key.replace('filter-', '')
-					selected_filter = Filter.objects.get( name = filter_name)
+					selected_filter = Filter.objects.get( name = filter_name, category=category)
 					for posi_value in selected_filter.get_values():
 						if posi_value.value in value:
 							new_active_filter = {'filter':selected_filter,'value':posi_value}
@@ -1068,14 +1078,19 @@ class FeatureFilterView(View):
 		price_ranges  = PriceRange.objects.all()
 		filters = Filter.objects.all()
 		my_forms = []
-		for filter in filters:
-			values = filter.get_values()
-			class FeatureFilterForm(forms.Form):
-				name = filter.name
-				choices = tuple([(value.value, value.value) for value in values])
-				فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-			new_form = FeatureFilterForm
-			my_forms.append(new_form)
+		if category != '0':
+			selected_category = Category.objects.filter(id = int(category)).first()
+			filters = Filter.objects.filter(category=selected_category)
+			for filter in filters:
+				values = filter.get_values()
+				class FeatureFilterForm(forms.Form):
+					name = filter.name
+					choices = tuple(set([(value.value, value.value) for value in values]))
+					فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+				new_form = FeatureFilterForm
+				my_forms.append(new_form)
+			category = Category.objects.get(slug = selected_category.slug)
+			filters = Filter.objects.filter(category=category)
 		active_filters = []
 		paginator = Paginator(products, 12)
 		page = request.GET.get('page', 1)
@@ -1338,12 +1353,12 @@ class SpecialProductListView(View):
 			my_forms = []
 			if category != '0':
 				selected_category = Category.objects.filter(id = int(category)).first()
-				filters = Filter.objects.all()
+				filters = Filter.objects.filter(category=selected_category)
 				for filter in filters:
-					values = filter.value.all()
+					values = filter.get_values()
 					class FeatureFilterForm(forms.Form):
 						name = filter.name
-						choices = tuple([(value.value, value.value) for value in values])
+						choices = tuple(set([(value.value, value.value) for value in values]))
 						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
 					new_form = FeatureFilterForm
 					my_forms.append(new_form)
@@ -1496,12 +1511,12 @@ class BrandProductListView(View):
 			my_forms = []
 			if category != '0':
 				selected_category = Category.objects.filter(id = int(category)).first()
-				filters = Filter.objects.all()
+				filters = Filter.objects.filter(category=selected_category)
 				for filter in filters:
-					values = filter.value.all()
+					values = filter.get_values()
 					class FeatureFilterForm(forms.Form):
 						name = filter.name
-						choices = tuple([(value.value, value.value) for value in values])
+						choices = tuple(set([(value.value, value.value) for value in values]))
 						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
 					new_form = FeatureFilterForm
 					my_forms.append(new_form)

@@ -936,8 +936,8 @@ class PostThumbnail(models.Model):
 
 	class Meta:
 		ordering = ('-created',)
-		verbose_name = 'لوگوی فروشگاه'
-		verbose_name_plural = 'لوگوی فروشگاه'
+		verbose_name = 'تصویر شاخص پست'
+		verbose_name_plural = 'تصویر شاخص پست'
 
 class UploadedImages(models.Model):
 	alt_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='عنوان دلخواه')

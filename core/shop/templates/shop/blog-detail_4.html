@@ -5,23 +5,23 @@
 <meta charset="UTF-8">
 <meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
 <meta content="IE=edge" http-equiv="X-UA-Compatible">
-<meta name="description" content="{% if post.meta_description == '' %}{{post.get_default_meta_description}}{% else %}{{ post.meta_description }}{% endif %}">
-<meta content="PicoSite" name="author">
-<meta name="keywords" content="{% if post.meta_keywords == '' %}{{post.get_default_meta_og_title}}{% else %}{{post.meta_keywords}}{% endif %}">
+<meta name="description" content="{{ post.meta_description }}">
+<meta content="Liatoy" name="author">
+<meta name="keywords" content="{{post.meta_keywords}}">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="{{store.get_canonical}}">
+<link rel="canonical" href="{% url 'shop:post_detail' post.slug %}">
 
 <!-- Open Graph tags -->
-<meta property="og:title" content="{% if post.meta_og_title == '' %}{{post.get_default_meta_og_title}}{% else %}{{post.meta_og_title}}{% endif %}">
-<meta property="og:description" content="{% if post.meta_og_description == '' %}{{post.get_default_meta_description}}{% else %}{{post.meta_og_description}}{% endif %}">
+<meta property="og:title" content="{{post.meta_og_title}}">
+<meta property="og:description" content="{{post.meta_og_description}}">
 <meta property="og:image" content="{{post.get_thumbnail}}" rel="shortcut icon" type="image/x-icon">
 <meta property="og:url" content="{{store.get_canonical}}">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card tags -->
 <meta name="twitter:card" content="Summary Card with Large Image">
-<meta name="twitter:title" content="{% if post.meta_tc_title == '' %}{{post.get_default_meta_tc_title}}{% else %}{{post.meta_tc_title}}{% endif %}">
-<meta name="twitter:description" content="{% if post.meta_tc_description == '' %}{{post.get_default_meta_tc_description}}{% else %}{{post.meta_tc_description}}{% endif %}">
+<meta name="twitter:title" content="{{post.meta_tc_title}}">
+<meta name="twitter:description" content="{{post.meta_tc_description}}">
 <meta name="twitter:image" content="{{post.get_thumbnail}}">
 {% endblock %}
 

@@ -229,11 +229,18 @@ class BlogCategoryAdmin(admin.ModelAdmin):
 	list_display = ('name',)
 	search_fields = ['name']
 
+class PostThumbnailInline(admin.StackedInline):  # یا TabularInline برای ظاهر ساده‌تر
+    model = PostThumbnail
+    extra = 1  # تعداد فرم‌های خالی برای افزودن عکس جدید
+    fields = ('image', 'alt_name',)
+    readonly_fields = ('created',)
+
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
 	list_display = ('title', 'category', 'shamsi_created_date')
 	search_fields = ['title', 'category__name', 'shamsi_created_date']
 	list_filter = ('category',)
+	inlines = [PostThumbnailInline]
 
 # @admin.register(UploadedImages)
 # class UploadedImagesAdmin(admin.ModelAdmin):

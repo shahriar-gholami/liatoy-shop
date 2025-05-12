@@ -9,13 +9,13 @@
 <meta content="PicoSite" name="author">
 <meta name="keywords" content="{% if product.meta_keywords == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_keywords}}{% endif %}">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="{{store.get_canonical}}">
+<link rel="canonical" href="{% url 'shop:product_detail' product.slug %}">
 
 <!-- Open Graph tags -->
 <meta property="og:title" content="{% if product.meta_og_title == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_og_title}}{% endif %}">
 <meta property="og:description" content="{% if product.meta_og_description == '' %}{{product.get_default_meta_description|safe}}{% else %}{{product.meta_og_description|safe}}{% endif %}">
 <meta property="og:image" content="{{product.get_thumbnail}}" rel="shortcut icon" type="image/x-icon">
-<meta property="og:url" content="{{store.get_canonical}}">
+<meta property="og:url" content="{% url 'shop:product_detail' product.slug %}">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card tags -->
