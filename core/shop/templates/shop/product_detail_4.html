@@ -6,7 +6,7 @@
 <meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
 <meta content="IE=edge" http-equiv="X-UA-Compatible">
 <meta name="description" content="{% if product.meta_description == '' %}{{product.get_default_meta_description|safe}}{% else %}{{ product.meta_description|safe }}{% endif %}">
-<meta content="PicoSite" name="author">
+<meta content="Liatoy" name="author">
 <meta name="keywords" content="{% if product.meta_keywords == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_keywords}}{% endif %}">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="{% url 'shop:product_detail' product.slug %}">

@@ -67,6 +67,7 @@ class Store(models.Model):
 	show_special_offer = models.BooleanField(default=True, verbose_name='نمایش پیشنهادات شگفت‌انگیز')
 	show_specials = models.BooleanField(default=True, verbose_name='نمایش محصولات ویژه')
 	show_blog = models.BooleanField(default=True, verbose_name='نمایش وبلاگ')
+	default_canonical = models.CharField(max_length=255, default='https://Liatoy.com/')
 	
 	@property
 	def shamsi_created_date(self):
@@ -244,6 +245,7 @@ class Tag(models.Model):
 	name = models.CharField(max_length=200, verbose_name = 'عنوان')
 	slug = models.CharField(max_length=200, verbose_name = 'نامک')
 	is_special = models.BooleanField(default=False, verbose_name = 'تگ ویژه')
+	created_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'تگ‌ها'
@@ -251,6 +253,9 @@ class Tag(models.Model):
 
 	def get_products(self):
 		return self.product_set.all()
+
+	def get_absolute_url(self):
+		return reverse('shop:special_tag_products', kwargs={'tag_slug':self.slug})
 
 	def __str__(self):
 		return f'{self.name} \n'

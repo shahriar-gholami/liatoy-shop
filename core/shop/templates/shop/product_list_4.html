@@ -7,7 +7,7 @@
 <meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
 <meta content="IE=edge" http-equiv="X-UA-Compatible">
 <meta name="description" content="{{ store.meta_description }}">
-<meta content="PicoSite" name="author">
+<meta content="Liatoy" name="author">
 <meta name="keywords" content="{{store.meta_keywords}}">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="{% if canonical == 'category' %}https://liatoy.com{% url 'shop:category_products' category.slug %}{% endif %}{% if canonical == 'tag' %}https://liatoy.com{% url 'shop:special_tag_products' tag.slug %}{% endif %}{% if canonical == 'brand' %}https://liatoy.com{% url 'shop:special_brand_products' brand.name %}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}https://liatoy.com{% url 'shop:product_list' %}{% endif %}">

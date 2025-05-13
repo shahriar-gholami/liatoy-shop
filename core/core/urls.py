@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from . import views
-from .sitemaps import StoreSitemap, ProductSitemap, CategorySitemap, BlogPostSitemap, ProductImageSitemap, CategoryImageSitemap
+from .sitemaps import *
 from django.views.generic import TemplateView
 
 sitemaps = {
@@ -12,6 +12,7 @@ sitemaps = {
     'products': ProductSitemap,
     'categories': CategorySitemap,
     'blog posts': BlogPostSitemap,
+    'tags' : TagSitemap,
 }
 
 from . import views

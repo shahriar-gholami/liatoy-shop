@@ -45,7 +45,7 @@ class StoreAdmin(admin.ModelAdmin):
 			  'meta_description', 'meta_keywords', 'meta_og_title', 
 			  'meta_og_description', 'meta_tc_title', 'meta_tc_description', 'has_domain', 'has_payment_gw',
 			  'template_index', 'index_title', 'enamad_code','show_brands' ,'show_advantages','show_ages','show_featured_categories','show_special_offer',
-			  'show_specials','show_blog')
+			  'show_specials','show_blog', 'default_canonical')
 
 @admin.register(Owner)
 class OwnerAdmin(admin.ModelAdmin):
