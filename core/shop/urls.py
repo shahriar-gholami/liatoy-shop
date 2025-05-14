@@ -26,6 +26,7 @@ urlpatterns = [
     path('account/orders/', views.CustomerOrdersView.as_view(), name='customer-orders'),
     path('account/favorites/', views.CustomerFavoritesView.as_view(), name='customer-favorites'),
     path('products/', views.ProductListView.as_view(), name='product_list'),
+    path('products/filter/category/<str:category_slug>/brand/<str:brand_slug>/age/<str:age_slug>/price/<str:price_slug>/', views.FilterProductsView.as_view(), name='filter_product_list'),
     path('products/tag/<str:tag_slug>/', views.FilterTagProducts.as_view(), name='filter_tag_products'),
     path('products/featured/<int:featured_products_id>/', views.FeaturedProductListView.as_view(), name='featured_products'),
     path('products/special/<int:featured_products_id>/', views.SpecialProductsListView.as_view(), name='special_products'),

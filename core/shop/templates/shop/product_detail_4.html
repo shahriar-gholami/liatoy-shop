@@ -71,7 +71,7 @@
                             <div class="icon-product-box">
                                 <div class="icon-product-box-item" data-bs-toggle="tooltip" data-bs-placement="right"
                                      data-bs-title="افزودن به علاقه مندی">
-                                    <a href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}"><i class="bi bi-heart"></i></a>
+                                    <a href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}" rel="nofollow"><i class="bi bi-heart"></i></a>
                                 </div>
                                 
                             </div>
@@ -102,7 +102,7 @@
                             <div class="icon-product-box">
                                 <div class="icon-product-box-item" data-bs-toggle="tooltip" data-bs-placement="right"
                                      data-bs-title="افزودن به علاقه مندی">
-                                    <a href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}"><i class="bi bi-heart"></i></a>
+                                    <a href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}" rel="nofollow"><i class="bi bi-heart"></i></a>
                                 </div>
                                 
                             </div>
@@ -1034,7 +1034,7 @@
                                     مشاهده
                                     <i class="bi bi-arrow-left ms-4 text-white"></i>
                                 </a>
-                                <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}">
+                                <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" rel="nofollow" href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}">
                                     <i class="bi bi-heart fs-5 text-white"></i>
                                 </a>
                             </div>

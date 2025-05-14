@@ -149,6 +149,7 @@ class DefaultCategory(models.Model):
 class PriceRange(models.Model):
 	min_value = models.IntegerField(verbose_name='کمترین مقدار')
 	max_value = models.IntegerField(verbose_name='بیشترین مقدار')
+	slug = models.CharField(max_length=255, null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'رنج‌های قیمتی'
@@ -997,6 +998,7 @@ def brand_upload_path(instance):
 
 class Brand(models.Model):
 	name = models.CharField(max_length=250, verbose_name='نام برند')
+	slug = models.CharField(max_length=255, null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'برندها'
@@ -1007,6 +1009,7 @@ class Brand(models.Model):
 	
 class AgeCategory(models.Model):
 	group = models.CharField(max_length=255, verbose_name='گروه سنی')
+	slug = models.CharField(max_length=255, null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'گروه‌های سنی'
