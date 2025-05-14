@@ -75,18 +75,18 @@
                                         <div class="timer-label">
                                             <span>ویژه تخفیف</span>
                                         </div>
-                                        <div class="timer">
+                                        <div class="timer mt-2">
                                             <div class='countdown' data-date="2027-01-01" data-time="00:00">
                                             </div>
                                         </div>
                                     </div>
                                     <a href="{% url 'shop:product_detail' product.slug %}">
-                                    <div class="product-image">
-                                        <img alt="{{ product.name }}" class="img-fluid"
+                                    <div class="product-image p-1">
+                                        <img alt="{{ product.name }}" class="img-fluid mt-4 mb-6"
                                             src="{{product.get_main_image}}">
                                     </div>
                                     </a>
-                                    <div class="product-title mt-2">
+                                    <div class="product-title mt-4">
                                         <div class="title">
                                             <a href="{% url 'shop:product_detail' product.slug %}"><p class="title-font font-14 text-center">{{ product.name }}</p></a>
                                         </div>
