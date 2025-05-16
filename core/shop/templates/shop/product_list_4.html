@@ -74,13 +74,37 @@
                                 </div>
                             </div>
                             {% for main_filter in main_filters.category %}
-                            <div class="desc collapse show" id="collapseItemBox1">
-                                <a href="#"
+                            دسته‌بندی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' 'all' brand_slug age_slug price_slug %}"
                                    class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
                                     <span>{{main_filter}}</span>
                                     <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
                                 </div>
-                                {% endfor %}
+                            {% endfor %}
+                            {% for main_filter in main_filters.brand %}
+                            برند: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug 'all' age_slug price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.age %}
+                            گروه سنی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug 'all' price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.price_range %}
+                            بازه قیمتی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug age_slug 'all' %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
                         </div>
                         {% endif %}
                         <form method="post" action="{% url 'shop:product_list'  %}">
@@ -128,8 +152,8 @@
                                 <div class="filter-item-content">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
                                         <select name="brand" id="floatingInputOstan" class="form-select">
-                                            {% if main_selected_brand != None %}
-                                                <option value= "{{ main_selected_brand.id }}" class="text-white">{{ main_selected_brand.name }}</option>
+                                            {% if selected_brand != None %}
+                                                <option value= "{{ selected_brand.id }}" class="text-white">{{ selected_brand.name }}</option>
                                             {% else %}
                                                 <option value="0" class="text-white">انتخاب</option>
                                             {% endif %}    
@@ -145,14 +169,14 @@
                                 <h5 class="filter-item-title">گروه‌های سنی</h5>
                                 <div class="filter-item-content">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
-                                        <select name="brand" id="floatingInputOstan" class="form-select">
-                                            {% if main_selected_age != None %}
-                                                <option value= "{{ main_selected_age.id }}" class="text-white">{{ main_selected_age.group }}</option>
+                                        <select name="age" id="floatingInputOstan" class="form-select">
+                                            {% if selected_age != None %}
+                                                <option value= "{{ selected_age.id }}" class="text-white">{{ selected_age.group }}</option>
                                             {% else %}
                                                 <option value="0" class="text-white">انتخاب</option>
                                             {% endif %}    
                                             {% for age in ages %}
-                                                <option value="{{age.id}}">{{age}}</option>
+                                                <option value="{{age.id}}">{{ age }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -163,8 +187,8 @@
                                 <div class="filter-item-content">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
                                         <select name="price_range" id="floatingInputOstan" class="form-select">
-                                            {% if main_selected_price_range != None %}
-                                                <option value= "{{ main_selected_price_range.id }}" class="text-white">{{ main_selected_price_range.min_value|intcomma }} تا {{ main_selected_price_range.max_value|intcomma }} تومان</option>
+                                            {% if selected_price_range != None %}
+                                                <option value= "{{ selected_price_range.id }}" class="text-white">{{ selected_price_range }}</option>
                                             {% else %}
                                                 <option value="0" class="text-white">انتخاب</option>
                                             {% endif %}
@@ -239,7 +263,7 @@
                             </div>
                             {% for main_filter in main_filters.category %}
                             دسته‌بندی: <div class="desc collapse show" id="collapseItemBox1">
-                                <a href="#"
+                                <a href="{% url 'shop:filter_product_list' 'all' brand_slug age_slug price_slug %}"
                                    class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
                                     <span>{{main_filter}}</span>
                                     <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
@@ -247,7 +271,7 @@
                             {% endfor %}
                             {% for main_filter in main_filters.brand %}
                             برند: <div class="desc collapse show" id="collapseItemBox1">
-                                <a href="#"
+                                <a href="{% url 'shop:filter_product_list' category_slug 'all' age_slug price_slug %}"
                                    class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
                                     <span>{{main_filter}}</span>
                                     <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
@@ -255,7 +279,7 @@
                             {% endfor %}
                             {% for main_filter in main_filters.age %}
                             گروه سنی: <div class="desc collapse show" id="collapseItemBox1">
-                                <a href="#"
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug 'all' price_slug %}"
                                    class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
                                     <span>{{main_filter}}</span>
                                     <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
@@ -263,7 +287,7 @@
                             {% endfor %}
                             {% for main_filter in main_filters.price_range %}
                             بازه قیمتی: <div class="desc collapse show" id="collapseItemBox1">
-                                <a href="#"
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug age_slug 'all' %}"
                                    class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
                                     <span>{{main_filter}}</span>
                                     <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
@@ -296,8 +320,8 @@
                                     <div class="filter-item-content">
                                         <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
                                             <select name="category" class="form-select width-100">
-                                                {% if main_selected_category != None %}
-                                                    <option value= "{{ main_selected_category.id }}" class="text-white">{{ main_selected_category.name }}</option>
+                                                {% if selected_category != None %}
+                                                    <option value= "{{ selected_category.id }}" class="text-white">{{ selected_category.name }}</option>
                                                 {% else %}
                                                     <option value="0" class="text-white">انتخاب</option>
                                                 {% endif %}
@@ -312,8 +336,8 @@
                                     <div class="filter-item-content">
                                         <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
                                             <select name="brand" id="floatingInputOstan" class="form-select">
-                                                {% if main_selected_brand != None %}
-                                                    <option value= "{{ main_selected_brand.id }}" class="text-white">{{ main_selected_brand.name }}</option>
+                                                {% if selected_brand != None %}
+                                                    <option value= "{{ selected_brand.id }}" class="text-white">{{ selected_brand.name }}</option>
                                                 {% else %}
                                                     <option value="0" class="text-white">انتخاب</option>
                                                 {% endif %}    
@@ -330,8 +354,8 @@
                                     <div class="filter-item-content">
                                         <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
                                             <select name="age" id="floatingInputOstan" class="form-select">
-                                                {% if main_selected_age != None %}
-                                                    <option value= "{{ main_selected_age.id }}" class="text-white">{{ main_selected_age.group }}</option>
+                                                {% if selected_age != None %}
+                                                    <option value= "{{ selected_age.id }}" class="text-white">{{ selected_age.group }}</option>
                                                 {% else %}
                                                     <option value="0" class="text-white">انتخاب</option>
                                                 {% endif %}    
@@ -347,8 +371,8 @@
                                     <div class="filter-item-content">
                                         <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
                                             <select name="price_range" id="floatingInputOstan" class="form-select">
-                                                {% if main_selected_price_range != None %}
-                                                    <option value= "{{ main_selected_price_range.id }}" class="text-white">{{ main_selected_price_range.min_value|intcomma }} تا {{ main_selected_price_range.max_value|intcomma }} تومان</option>
+                                                {% if selected_price_range != None %}
+                                                    <option value= "{{ selected_price_range.id }}" class="text-white">{{ selected_price_range.min_value|intcomma }} تا {{ main_selected_price_range.max_value|intcomma }} تومان</option>
                                                 {% else %}
                                                     <option value="0" class="text-white">انتخاب</option>
                                                 {% endif %}

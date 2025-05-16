@@ -106,6 +106,9 @@ class CheckoutForm(forms.Form):
     zip_code = forms.CharField(required = False)
     address = forms.CharField(required = False)
 
+class SelectFeaturesForm(forms.Form):
+    filters = forms.CharField(required=False)
+
 class FeatureFilterForm(forms.Form):
     def __init__(self, choices):
         self.choices = choices

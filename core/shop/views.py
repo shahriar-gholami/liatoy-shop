@@ -215,7 +215,11 @@ class ProductListView(View):
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
-				'price_ranges':price_ranges})
+				'price_ranges':price_ranges,
+				'category_slug':'all', 
+				'brand_slug':'all',
+				'age_slug':'all', 
+				'price_slug':'all',})
 	
 	def post(self, request, *args, **kwargs):
 		store = Store.objects.all().first()
@@ -245,149 +249,17 @@ class ProductListView(View):
 			if price_range != '0':
 				selected_price_range = PriceRange.objects.get(id = int(price_range)).slug
 			return redirect('shop:filter_product_list', selected_category, selected_brand, selected_age, selected_price_range)
-		
 
-		# 	print(form.cleaned_data)
-		# 	store = Store.objects.get(name=store_name)
-		# 	category = form.cleaned_data['category']
-		# 	products = set()
-		# 	if category != '':
-		# 		product_cat = Category.objects.filter(id = int(category)).first()
-		# 		if category != '0':
-		# 			cat_products = Product.objects.filter(category=product_cat)
-		# 			main_filters['category'].append(product_cat)
-		# 			for product in cat_products:
-		# 				products.add(product)
-		# 			if product_cat.get_sub_categories() != None:
-		# 				sub_categories = product_cat.get_sub_categories()
-		# 				for sub_cat in sub_categories:
-		# 					sub_products = sub_cat.product_set.all()
-		# 					for product in sub_products:
-		# 						products.add(product)
+class FilterByFeaturesView(View):
 
+	def post(self, request, category_slug, brand_slug, age_slug, price_slug):
 
-		# 		else:
-		# 			products = Product.objects.all()
-		# 		categories = []
-		# 		if product_cat:
-		# 			if product_cat.is_sub == True:
-		# 				categories = []
-		# 			else:
-		# 				categories = [cat for cat in Category.objects.all() if cat.parent == product_cat]
-		# 	product_ids = [product.id for product in products]
-		# 	products = Product.objects.filter(id__in=product_ids)
+		form = SelectFeaturesForm(request.POST)
+		filters = request.POST.getlist('filters')
+		print(filters)
 
-		# 	brands = Brand.objects.all()
-		# 	ages = AgeCategory.objects.all()	
-		# 	brand = form.cleaned_data['brand']
-		# 	if brand != '':
-		# 		selected_brand = Brand.objects.filter(id = brand).first()
-		# 		main_filters['brand'].append(selected_brand)
-		# 		if brand != '0':
-		# 			products = products.filter(brand = selected_brand.id)
-		# 			main_selected_brand = Brand.objects.filter(id = brand).first()
-		# 			brands = list(Brand.objects.filter(id = brand))
-		# 		else:
-		# 			products = products.all()
-		# 			if category != '0':
-		# 				brands = product_cat.get_category_brands()
-
-		# 	age = form.cleaned_data['age']
-		# 	if age != '':
-		# 		selected_age = AgeCategory.objects.filter(id = age).first()
-		# 		main_filters['age'].append(selected_age)
-		# 		if age != '0':
-		# 			products = products.filter(age = selected_age.id)
-		# 			main_selected_age = Brand.objects.filter(id = age).first()
-		# 			ages = list(AgeCategory.objects.filter(id = age))
-
-							
-		# 	filtered_products = []
-		# 	price_ranges = form.cleaned_data['price_range']
-		# 	if price_ranges != '0':
-		# 		for price in price_ranges:
-		# 			selected_price_range = PriceRange.objects.filter(id = int(form.cleaned_data['price_range'])).first()
-		# 		main_filters['price_range'].append(selected_price_range)
-		# 	else:
-		# 		selected_price_range = None
-		# 	if selected_price_range != None:
-		# 		for product in products:
-		# 						if product.price<selected_price_range.max_value and product.price>=selected_price_range.min_value:
-		# 							filtered_products.append(product.id)
-		# 	if filtered_products != []:
-		# 		products = products.filter(id__in=filtered_products)
-		# 	if selected_price_range != None and filtered_products == []:
-		# 		products = []			
-			
-		# 	store = Store.objects.get(name=store_name)
-		# 	products_urls = f'{current_app_name}:product_detail'
-		# 	price_ranges = PriceRange.objects.all()
-
-		# 	my_forms = []
-		# 	if category != '0':
-		# 		selected_category = Category.objects.filter(id = int(category)).first()
-		# 		filters = Filter.objects.filter(category=selected_category)
-		# 		for filter in filters:
-		# 			values = filter.get_values()
-		# 			class FeatureFilterForm(forms.Form):
-		# 				name = filter.name
-		# 				choices = tuple(set([(value.value, value.value) for value in values]))
-		# 				فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-		# 			new_form = FeatureFilterForm
-		# 			my_forms.append(new_form)
-		# 		category = Category.objects.get(slug = selected_category.slug)
-		# 		filters = Filter.objects.filter(category=category)
-		# 	else:
-		# 		selected_category = None
-
-		# 	selected_values = []
-		# 	active_filters = []
-		# 	for key, value in request.session.items():
-		# 		if key.startswith('filter-'):
-					
-		# 			filter_name = key.replace('filter-', '')
-		# 			selected_filter = Filter.objects.get( name = filter_name)
-		# 			for posi_value in selected_filter.get_values():
-		# 				if posi_value.value in value:
-		# 					new_active_filter = {'filter':selected_filter,'value':posi_value}
-		# 					active_filters.append(new_active_filter)
-		# 					selected_values.append(posi_value.id)
-
-		# 	paginator = Paginator(products, 12)
-		# 	page = request.GET.get('page', 1)
-		# 	try:
-		# 		products = paginator.page(page)
-		# 	except PageNotAnInteger:
-		# 		# اگر شماره صفحه یک عدد نیست
-		# 		products = paginator.page(1)
-		# 	except EmptyPage:
-		# 		# اگر شماره صفحه بیشتر از تعداد کل صفحات است
-		# 		products = paginator.page(paginator.num_pages)
-
-		# 	print(main_filters)
-		# 	return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-		# 		 {'products': products, 
-		# 		'brands':brands,
-		# 		'ages':ages,
-		# 		'to_products':products_urls, 
-		# 		'store_name':store_name, 
-		# 		'categories':categories,
-		# 		'price_ranges':price_ranges,
-		# 		'selected_brand':selected_brand,
-		# 		'selected_price_range':selected_price_range,
-		# 		'selected_category':selected_category,
-		# 		'filters':filters,
-		# 		'category':selected_category,
-		# 		'my_forms':my_forms,
-		# 		'active_filters':active_filters,
-		# 		'main_filters': main_filters,
-		# 		'main_selected_category' : product_cat,
-		# 		'main_selected_brand' : selected_brand,
-		# 		'main_selected_age' : selected_age,
-		# 		'main_selected_price_range' : selected_price_range})
-					
-		# return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'store_name':store_name})
 	
+
 class FilterProductsView(View):
 
 	template_name = 'product_list.html'
@@ -395,6 +267,9 @@ class FilterProductsView(View):
 	def get(self, request, category_slug, brand_slug, age_slug, price_slug):
 
 		selected_category = None
+		selected_brand = None
+		selected_age= None
+		selected_price= None
 		store = Store.objects.all().first()
 		store_name = store.name
 		items_per_page = 12
@@ -491,10 +366,18 @@ class FilterProductsView(View):
 				'brands':brands,
 				'price_ranges':price_ranges,
 				'selected_category':selected_category,
+				'selected_brand':selected_brand,
+				'selected_age':selected_age,
+				'selected_price_range':selected_price,
 				'category':selected_category,
 				'filters':filters,
 				'my_forms':my_forms,
-				'main_filters':main_filters})
+				'category_slug':category_slug, 
+				'brand_slug':brand_slug,
+				'age_slug':age_slug, 
+				'price_slug':price_slug,
+				'main_filters':main_filters,
+				})
 
 
 class FilterTagProducts(View):
@@ -1223,7 +1106,7 @@ class FeatureFilterView(View):
 		filters = Filter.objects.all()
 		my_forms = []
 		if category != '0':
-			selected_category = Category.objects.filter(id = int(category)).first()
+			selected_category = Category.objects.filter(id = int(category.id)).first()
 			filters = Filter.objects.filter(category=selected_category)
 			for filter in filters:
 				values = filter.get_values()
