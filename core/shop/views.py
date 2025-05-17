@@ -250,16 +250,6 @@ class ProductListView(View):
 				selected_price_range = PriceRange.objects.get(id = int(price_range)).slug
 			return redirect('shop:filter_product_list', selected_category, selected_brand, selected_age, selected_price_range)
 
-class FilterByFeaturesView(View):
-
-	def post(self, request, category_slug, brand_slug, age_slug, price_slug):
-
-		form = SelectFeaturesForm(request.POST)
-		filters = request.POST.getlist('filters')
-		print(filters)
-
-	
-
 class FilterProductsView(View):
 
 	template_name = 'product_list.html'
@@ -281,6 +271,8 @@ class FilterProductsView(View):
 		main_filters['brand'] = []
 		main_filters['age'] = []
 		main_filters['price_range'] = []
+
+		feature_filters = {}
 		
 		if category_slug != 'all':
 			selected_category = Category.objects.get(slug=category_slug)
@@ -320,30 +312,8 @@ class FilterProductsView(View):
 		price_ranges = PriceRange.objects.all()
 		canonical = 'shop'
 
-		my_forms = []
-		if selected_category != None:
-			for filter in filters:
-				values = filter.get_values()
-				class FeatureFilterForm(forms.Form):
-					name = filter.name
-					choices = tuple(set([(value.value, value.value) for value in values]))
-					فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-				new_form = FeatureFilterForm
-				my_forms.append(new_form)
-			
-
-		selected_values = []
-		active_filters = []
-		for key, value in request.session.items():
-			if key.startswith('filter-'):
-				
-				filter_name = key.replace('filter-', '')
-				selected_filter = Filter.objects.get( name = filter_name)
-				for posi_value in selected_filter.get_values():
-					if posi_value.value in value:
-						new_active_filter = {'filter':selected_filter,'value':posi_value}
-						active_filters.append(new_active_filter)
-						selected_values.append(posi_value.id)
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
 
 		paginator = Paginator(products, 12)
 		page = request.GET.get('page', 1)
@@ -358,6 +328,7 @@ class FilterProductsView(View):
 			
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
+				'feature_filters':feature_filters,
 				'to_products':products_urls, 
 				'ages':ages,
 				'canonical':canonical,
@@ -371,7 +342,6 @@ class FilterProductsView(View):
 				'selected_price_range':selected_price,
 				'category':selected_category,
 				'filters':filters,
-				'my_forms':my_forms,
 				'category_slug':category_slug, 
 				'brand_slug':brand_slug,
 				'age_slug':age_slug, 
@@ -379,6 +349,135 @@ class FilterProductsView(View):
 				'main_filters':main_filters,
 				})
 
+	def post(self, request, category_slug, brand_slug, age_slug, price_slug):
+
+		selected_category = None
+		selected_brand = None
+		selected_age= None
+		selected_price= None
+		store = Store.objects.all().first()
+		store_name = store.name
+		items_per_page = 12
+		products = Product.objects.all()
+		filters = []
+
+		main_filters = {}
+		main_filters['category'] = []
+		main_filters['brand'] = []
+		main_filters['age'] = []
+		main_filters['price_range'] = []
+
+		feature_filters = {}
+		
+		if category_slug != 'all':
+			selected_category = Category.objects.get(slug=category_slug)
+			products = Product.objects.filter(category=selected_category)
+			main_filters['category'].append(selected_category)
+			filters = Filter.objects.filter(category=selected_category)
+
+
+		if brand_slug != 'all':
+			selected_brand = Brand.objects.get(slug = brand_slug)
+			products = products.filter(brand=selected_brand)
+			main_filters['brand'].append(selected_brand)
+
+		if age_slug != 'all':
+			selected_age = AgeCategory.objects.get(slug=age_slug)
+			products = products.filter(age=selected_age)
+			main_filters['age'].append(selected_age)
+
+		if price_slug != 'all':
+			selected_price = PriceRange.objects.get(slug=price_slug)
+			min_price = selected_price.min_value
+			max_price = selected_price.max_value
+			products = [product for product in products if int(product.get_active_price().replace(',','')) <= max_price and int(product.get_active_price().replace(',','')) >= min_price]
+			main_filters['price_range'].append(selected_price)
+
+		categories = set()
+		brands = set()
+		ages = set()
+		price_ranges = set()
+		for product in products:
+			for cat in product.category.all():
+				categories.add(cat)
+			brands.add(product.brand)
+			ages.add(product.age)
+
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		canonical = 'shop'
+
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
+
+		form = SelectFeaturesForm(request.POST)
+		selected_filters = request.POST.getlist('filters')
+
+		values_list = []
+
+		filter_products_dict = {}
+		features_dict = {}
+		for item in selected_filters:
+			key, value = item.split(':', 1)
+			if key not in features_dict:
+				features_dict[key] = []
+			features_dict[key].append(value)
+
+		for key, value in features_dict.items():
+			filter_products_dict[key] = set()
+			used_filter = filters.get(id=int(key))
+			for val in value:
+				values_list.append(val)
+				selected_filter_value_group = FilterValue.objects.filter(value=val, filter=used_filter)
+				for selected_filter_value in selected_filter_value_group:
+					filter_products_dict[key].add(selected_filter_value.product)
+		
+		print(filter_products_dict)
+
+		sets = list(filter_products_dict.values())
+		if sets: 
+			common_items = set.intersection(*sets)
+		else:
+			common_items = set() 
+		
+		print(common_items)
+
+		products = products & Product.objects.filter(id__in=[obj.id for obj in common_items])
+			
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			# اگر شماره صفحه یک عدد نیست
+			products = paginator.page(1)
+		except EmptyPage:
+			# اگر شماره صفحه بیشتر از تعداد کل صفحات است
+			products = paginator.page(paginator.num_pages)
+
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				'feature_filters':feature_filters,
+				'values_list':values_list,
+				'to_products':products_urls, 
+				'ages':ages,
+				'canonical':canonical,
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'price_ranges':price_ranges,
+				'selected_category':selected_category,
+				'selected_brand':selected_brand,
+				'selected_age':selected_age,
+				'selected_price_range':selected_price,
+				'category':selected_category,
+				'filters':filters,
+				'category_slug':category_slug, 
+				'brand_slug':brand_slug,
+				'age_slug':age_slug, 
+				'price_slug':price_slug,
+				'main_filters':main_filters,
+				})
 
 class FilterTagProducts(View):
 
@@ -540,6 +639,10 @@ class CategoryBlogPostList(View):
 class CategoryProductsListView(View):
 
 	def get(self, request, category_slug, *args, **kwargs):
+		category_slug = category_slug
+		brand_slug = 'all'
+		age_slug = 'all'
+		price_slug = 'all'
 		store = Store.objects.all().first()
 		store_name = store.name
 		filters = Filter.objects.all()
@@ -590,6 +693,10 @@ class CategoryProductsListView(View):
 
 		canonical = 'category'
 
+		feature_filters = {}
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter)]))
+
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
@@ -600,10 +707,15 @@ class CategoryProductsListView(View):
 				'selected_category':category,
 				'category':category,
 				'filters':filters,
+				'feature_filters':feature_filters,
 				'brands': brands,
 				'my_forms':my_forms,
 				# 'active_filters':active_filters,
-				'main_selected_category': category
+				'main_selected_category': category,
+				'category_slug' : category_slug,
+				'brand_slug' : brand_slug,
+				'age_slug' : age_slug,
+				'price_slug' : price_slug,
 				})
 		
 class ProductDetailView(View):

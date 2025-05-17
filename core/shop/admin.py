@@ -309,6 +309,12 @@ class InvoiceAdmin(admin.ModelAdmin):
 admin.site.register(Invoice, InvoiceAdmin)
 
 
+@admin.register(FilterValue)
+class FilterValueAdmin(admin.ModelAdmin):
+    list_display = ['value', 'product', 'filter']
+    search_fields = ['value']
+    list_filter = ['filter', 'product']
+
 
 
 

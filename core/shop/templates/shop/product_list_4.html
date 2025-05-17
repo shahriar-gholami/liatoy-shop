@@ -208,19 +208,23 @@
                         </form>
                             <div class="container-fluid mt-4">
                                 <div class="filter-item">
-                                    {% if category %}
-                                    {% for filter in filters %}
-                                    {% for form in my_forms %}
-                                    {% if filter.category == category and form.name == filter.name %}
+                                    {% if feature_filters.items %}
                                     <div class="filter-item w-100">
                                         <div class="filter-item align-items-center">
                                             <h5 class="filter-item-title">{{filter.name}}</h5>
                                             <div class="filter-item-content  justify-content-between form-check-label">
-                                                <form method="post" action="{% url 'shop:feature_filter'  category.slug form.name %}">
+                                                <form method="post" action="{% url 'shop:filter_product_list' category_slug brand_slug age_slug price_slug %}">
                                                     {% csrf_token %}
+                                                    {% for key, value in feature_filters.items %}
+                                                    <h6 class="mt-3">{{ key }}</h6>
+                                                    {% for feature in value %}
                                                     <div class="form-check">
-                                                    {{ form.as_p }}
+                                                        <label for="colorCheck1" class="form-check-label">{{feature}}</label>
+                                                        <input type="checkbox" {% if feature in values_list %}checked{% endif %} name="filters" id="colorCheck1" value="{{key.id}}:{{feature}}"
+                                                            class="form-check-input">
                                                     </div>
+                                                    {% endfor %}
+                                                    {% endfor %}
                                                     <div class="filter-item text-center mt-4">
                                                         <button type="submit" class="btn-outline-site">فیلتر بر اساس ویژگی</button>
                                                     </div>
@@ -228,9 +232,6 @@
                                             </div>
                                         </div>     
                                     </div>
-                                    {% endif %}
-                                    {% endfor %}
-                                    {% endfor %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -395,20 +396,23 @@
                     </div>
                     <div class="container-fluid mt-4">
                         <div class="filter-item">
-                            
-                            {% if selected_category != None %}
-                            {% for filter in filters %}
-                            {% for form in my_forms %}
-                            {% if filter.category == selected_category and form.name == filter.name %}
+                            {% if feature_filters.items %}
                             <div class="filter-item w-100">
                                 <div class="filter-item align-items-center">
                                     <h5 class="filter-item-title">{{filter.name}}</h5>
                                     <div class="filter-item-content  justify-content-between form-check-label">
-                                        <form method="post" action="{% url 'shop:feature_filter'  selected_category.slug form.name %}">
+                                        <form method="post" action="{% url 'shop:filter_product_list' category_slug brand_slug age_slug price_slug %}">
                                             {% csrf_token %}
+                                            {% for key, value in feature_filters.items %}
+                                            <h6 class="mt-3">{{ key }}</h6>
+                                            {% for feature in value %}
                                             <div class="form-check">
-                                            {{ form.as_p }}
+                                                <label for="colorCheck1" class="form-check-label">{{feature}}</label>
+                                                <input type="checkbox" {% if feature in values_list %}checked{% endif %} name="filters" id="colorCheck1" value="{{key.id}}:{{feature}}"
+                                                    class="form-check-input">
                                             </div>
+                                            {% endfor %}
+                                            {% endfor %}
                                             <div class="filter-item text-center mt-4">
                                                 <button type="submit" class="btn-outline-site">فیلتر بر اساس ویژگی</button>
                                             </div>
@@ -416,10 +420,7 @@
                                     </div>
                                 </div>     
                             </div>
-                        {% endif %}
-                        {% endfor %}
-                        {% endfor %}
-                        {% endif %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>

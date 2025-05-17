@@ -1045,7 +1045,7 @@ class Filter(models.Model):
 		return FilterValue.objects.filter(filter=self)
 
 	def __str__(self):
-		return f'{self.name} در دسته {self.category.name}'
+		return self.name
 	
 class FilterValue(models.Model):
 	value = models.CharField(max_length=250, verbose_name='مقدار')	
