@@ -1055,18 +1055,6 @@ class FilterValue(models.Model):
 	class Meta:
 		verbose_name = 'مقادیر فیلترها'
 		verbose_name_plural = 'مقادیر فیلترها'
-
-class ProductFilter(models.Model):
-	product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='محصول')
-	filter = models.ForeignKey(Filter, on_delete=models.CASCADE, verbose_name='فیلتر')
-	values = models.ManyToManyField(FilterValue, blank=True, verbose_name='مقدار فیلتر')
-
-	class Meta:
-		verbose_name = 'فیلترهای محصولات'
-		verbose_name_plural = 'فیلترهای محصولات'
-
-	def __str__(self):
-		return f"{self.product.name} - {self.filter.name}"
 	
 class Announcement(models.Model):
 	subject = models.CharField(max_length=250, blank = True, null=True, verbose_name='موضوع')

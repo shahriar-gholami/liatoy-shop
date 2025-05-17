@@ -325,6 +325,11 @@ class FilterProductsView(View):
 		except EmptyPage:
 			# اگر شماره صفحه بیشتر از تعداد کل صفحات است
 			products = paginator.page(paginator.num_pages)
+
+		print(feature_filters)
+		for key in list(feature_filters.keys()):
+			if feature_filters[key] == []:
+				del feature_filters[key]
 			
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
@@ -397,6 +402,7 @@ class FilterProductsView(View):
 		brands = set()
 		ages = set()
 		price_ranges = set()
+
 		for product in products:
 			for cat in product.category.all():
 				categories.add(cat)
@@ -432,7 +438,7 @@ class FilterProductsView(View):
 				for selected_filter_value in selected_filter_value_group:
 					filter_products_dict[key].add(selected_filter_value.product)
 		
-		print(filter_products_dict)
+		print(feature_filters)
 
 		sets = list(filter_products_dict.values())
 		if sets: 
@@ -681,22 +687,29 @@ class CategoryProductsListView(View):
 		products = list(products)
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
+		
+		feature_filters = {}
+		
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
+
+		brands = category.get_category_brands()
 		paginator = Paginator(products, 12)
 		page = request.GET.get('page', 1)
-		brands = category.get_category_brands()
 		try:
 			products = paginator.page(page)
 		except PageNotAnInteger:
+			# اگر شماره صفحه یک عدد نیست
 			products = paginator.page(1)
 		except EmptyPage:
+			# اگر شماره صفحه بیشتر از تعداد کل صفحات است
 			products = paginator.page(paginator.num_pages)
 
+		print(feature_filters)
+		for key in list(feature_filters.keys()):
+			if feature_filters[key] == []:
+				del feature_filters[key]
 		canonical = 'category'
-
-		feature_filters = {}
-		for filter in filters:
-			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter)]))
-
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
