@@ -54,13 +54,15 @@ class IndexView(View):
 		small_banners = Banner.objects.filter(size='1/2')
 		big_banners = Banner.objects.filter(size='1')
 		posts = BlogPost.objects.all()
-		products = Product.objects.all()
+		sales_products = Product.objects.filter(off_active=True)[:2]
+		products = Product.objects.all()[:7]
 		to_products = f'{current_app_name}:product_detail'
 		featured_categories = FeaturedCategories.objects.all().first()
 		most_viewed_products = Product.objects.order_by('-views')[:8]
 		special_products = list(store.get_special_tags_products())[:8]
 		return render(request, f'{current_app_name}/index_{store.template_index}.html', {
 																				   'store':store,
+																				   'sales_products':sales_products,
 																				   'special_products':special_products,
 																				   'posts':posts,
 																				   'featured_categories':featured_categories,

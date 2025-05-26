@@ -67,7 +67,7 @@
              <div class="col-xl-3 col-lg-4">
                  <div class="swiper suggetMoment">
                      <div class="swiper-wrapper position-relative">
-                        {% for product in products %}
+                        {% for product in sales_products %}
                             {% if product.off_active %}
                             <div class="swiper-slide">
                                 <div class="product-box text-center">
@@ -249,7 +249,7 @@
                          <a href="{% url 'shop:product_list' %}" class="mt-2 text-white">مشاهده همه <i class="bi bi-arrow-left-short"></i></a>
                      </div>
                  </div>
-                 {% for product in products %}
+                 {% for product in sales_products %}
                  {% if product.off_active == True %}
                  <div class="swiper-slide">
                      <div class="product-box">
@@ -333,9 +333,9 @@
  
  <!--============ start product slider ==============-->
  
- <section class="product-slider  site-slider">
-     <div class="container-fluid">
-         <div class="product-slider-box-title">
+ <section class="product-slider  site-slider mb-0">
+     <div class="container-fluid mb-0">
+         <div class="product-slider-box-title mb-0">
              <div class="row align-items-center">
                  <div class="col-lg-8 col-6">
                      <h4 class="title-font product-slider-box-title-title dot">
@@ -406,27 +406,28 @@
 
  
  <!--============ start banner ==============-->
- 
- <section class="banner">
-     <div class="container-fluid">
-         <div class="row">
-            {% for banner in big_banners %}
-             <div class="col-lg-12">
-                 <div class="banner-item running-top">
-                     <a href="{% url 'shop:featured_products' banner.id %}">
-                         <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
-                     </a>
-                 </div>
-             </div>
-             {% endfor %}
-         </div>
-     </div>
- </section>
+{% if big_banners %}
+<section class="banner mt-0 mb-0">
+    <div class="container-fluid">
+        <div class="row">
+        {% for banner in big_banners %}
+            <div class="col-lg-12">
+                <div class="banner-item running-top">
+                    <a href="{% url 'shop:special_products' banner.id %}">
+                        <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
  
  {% if store.show_specials == True %}
- <section class="product-row">
-     <div class="container-fluid position-relative">
-         <div class="product-slider-box-title">
+ <section class="product-row mt-0">
+     <div class="container-fluid position-relative mt-0">
+         <div class="product-slider-box-title mt-0">
              <div class="row align-items-center">
                  <div class="col-lg-8 col-6">
                      <h4 class="title-font product-slider-box-title-title dot">
@@ -520,7 +521,7 @@
             {% for banner in small_banners %}
              <div class="col-sm-6">
                  <div class="banner-item running-top">
-                     <a href="{% url 'shop:featured_products' banner.id %}">
+                     <a href="{% url 'shop:special_products' banner.id %}">
                          <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
                      </a>
                  </div>
