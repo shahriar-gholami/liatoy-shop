@@ -488,11 +488,11 @@
             <div class="col-lg-4">
                 <div class="social mt-lg-0 mt-2">
                     <div class="social-link justify-content-lg-end justify-content-center">
-                        <a href="" class="bi bi-instagram"></a>
-                        <a href="" class="bi bi-twitter"></a>
-                        <a href="" class="bi bi-whatsapp"></a>
-                        <a href="" class="bi bi-youtube"></a>
-                        <a href="" class="bi bi-linkedin"></a>
+                        {% for social in store.get_socials %}
+                        {% if social.show == True %}
+                        <a href="{{ social.link }}"><img src="{{ social.icon.url }}" alt="{{ social.alt_name }}"></a>
+                        {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
             </div>

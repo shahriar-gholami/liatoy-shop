@@ -315,7 +315,11 @@ class FilterValueAdmin(admin.ModelAdmin):
     search_fields = ['value']
     list_filter = ['filter', 'product']
 
-
+@admin.register(SocialAccount)
+class SocialAccountAdmin(admin.ModelAdmin):
+    list_display = ('alt_name', 'link', 'icon')     # نمایش فیلدها در لیست
+    list_editable = ('link',)                       # ویرایش‌پذیر بودن فیلد link
+    list_display_links = ('alt_name',)  
 
 
 

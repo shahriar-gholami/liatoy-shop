@@ -68,6 +68,9 @@ class Store(models.Model):
 	show_specials = models.BooleanField(default=True, verbose_name='نمایش محصولات ویژه')
 	show_blog = models.BooleanField(default=True, verbose_name='نمایش وبلاگ')
 	default_canonical = models.CharField(max_length=255, default='https://Liatoy.com/')
+
+	def get_socials(self):
+		return SocialAccount.objects.all()
 	
 	@property
 	def shamsi_created_date(self):
@@ -1086,3 +1089,36 @@ class Invoice(models.Model):
 
 	def __str__(self):
 		return f"فاکتور سفارش #{self.order.id}"
+
+class SocialAccount(models.Model):
+	alt_name = models.CharField(max_length=255, verbose_name='نام شبکه')
+	link = models.CharField(max_length=255, verbose_name='لینک حساب')
+	icon = models.ImageField(upload_to=logo_upload_path, default='media/11.png', verbose_name='آیکون')
+	show = models.BooleanField(default=True)
+
+	def __str__(self) -> str:
+		return self.alt_name
+
+	class Meta:
+		verbose_name = 'شبکه‌های اجتماعی'
+		verbose_name_plural = 'شبکه‌های اجتماعی'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
