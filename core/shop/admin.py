@@ -40,7 +40,7 @@ class FilterAdmin(admin.ModelAdmin):
 class StoreAdmin(admin.ModelAdmin):
 	list_display = ('name', 'get_owner_name', 'phone_number', 'shamsi_created_date', 'has_domain', 'has_payment_gw')
 	fields = ('name', 'is_active', 'address', 'country', 'city', 
-			  'about_description', 'instagram', 'telegram', 'linkedin', 'merchant', 
+			  'about_description', 'merchant', 
 			  'phone_number', 'email', 'color', 
 			  'meta_description', 'meta_keywords', 'meta_og_title', 
 			  'meta_og_description', 'meta_tc_title', 'meta_tc_description', 'has_domain', 'has_payment_gw',

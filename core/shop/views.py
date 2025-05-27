@@ -725,7 +725,6 @@ class CategoryProductsListView(View):
 				'feature_filters':feature_filters,
 				'brands': brands,
 				'my_forms':my_forms,
-				# 'active_filters':active_filters,
 				'main_selected_category': category,
 				'category_slug' : category_slug,
 				'brand_slug' : brand_slug,
