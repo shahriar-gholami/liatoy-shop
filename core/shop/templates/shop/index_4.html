@@ -23,6 +23,52 @@
 <meta name="twitter:title" content="{{store.meta_tc_title}}">
 <meta name="twitter:description" content="{{store.meta_tc_description}}">
 <meta name="twitter:image" content="{{store.get_logo_image}}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "{{ store.name }}",
+  "url": "{{ store.default_canonical }}/",
+  "logo": "{{store.get_logo_image}}",
+  "sameAs": [
+    {% for social in store.get_socials %}
+        "{{ social.link }}",
+    {% endfor %}
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{ store.name }}",
+  "url": "{{ store.default_canonical }}/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ store.default_canonical }}/search/{search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "{{ store.default_canonical }}/"
+    }
+  ]
+}
+</script>
+
+
 {% endblock %}
 
 {% block title %}{{store.index_title}}{% endblock %}

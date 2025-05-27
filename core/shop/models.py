@@ -449,7 +449,7 @@ class Product(models.Model):
 		if main_image == None:
 			return static('assets/images/11.jpg')
 		else:
-			main_image_url = main_image.image.url
+			main_image_url = main_image.image.url.split('?')[0]
 		return main_image_url
 
 	def get_gallery(self):
@@ -886,6 +886,9 @@ class BlogPost(models.Model):
 	meta_og_description = models.TextField( default= '', verbose_name='توضیحات OpenGraph')
 	meta_tc_title = models.TextField(default= '', verbose_name='عنوان TwitterCard')
 	meta_tc_description = models.TextField(default= '', verbose_name='توضیحات TwitterCard')
+
+	def get_word_count(self):
+		return len(self.body)
 
 	class Meta:
 		ordering = ('-created_date',)

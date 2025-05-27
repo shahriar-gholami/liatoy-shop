@@ -9,13 +9,13 @@
 <meta content="Liatoy" name="author">
 <meta name="keywords" content="{{post.meta_keywords}}">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="{% url 'shop:post_detail' post.slug %}">
+<link rel="canonical" href="{{store.default_canonical}}{% url 'shop:post_detail' post.slug %}">
 
 <!-- Open Graph tags -->
 <meta property="og:title" content="{{post.meta_og_title}}">
 <meta property="og:description" content="{{post.meta_og_description}}">
 <meta property="og:image" content="{{post.get_thumbnail}}" rel="shortcut icon" type="image/x-icon">
-<meta property="og:url" content="{{store.get_canonical}}">
+<meta property="og:url" content="{{store.default_canonical}}{% url 'shop:post_detail' post.slug %}">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card tags -->
@@ -23,6 +23,68 @@
 <meta name="twitter:title" content="{{post.meta_tc_title}}">
 <meta name="twitter:description" content="{{post.meta_tc_description}}">
 <meta name="twitter:image" content="{{post.get_thumbnail}}">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ post.title }}",
+  "alternativeHeadline": "{{ post.title }}",
+  "image": "{{post.get_thumbnail}}",
+  "editor": "{{ store.name }}",
+  "genre": "{{ post.category.name }}",
+  "keywords": "{{ post.meta_keywords }}",
+  "wordcount": "{{ post.get_word_count }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ store.name }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{store.get_logo_image}}"
+    }
+  },
+  "url": "{{ store.default_canonical }}{% url 'shop:post_detail' post.slug %}",
+  "mainEntityOfPage": "{{ store.default_canonical }}{% url 'shop:post_detail' post.slug %}",
+  "datePublished": "{{ post.created_date }}",
+  "dateModified": "{{ post.created_date }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ store.name }}"
+  },
+  "description": "{{ post.meta_description }}"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "{{ store.get_canonical }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "وبلاگ",
+      "item": "{{ store.get_canonical }}{% url 'shop:post_list' %}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ post.title }}",
+      "item": "{{ store.get_canonical }}{% url 'shop:post_detail' post.slug %}"
+    }
+  ]
+}
+</script>
+
+
+
 {% endblock %}
 
 {% block title %}وبلاگ{% endblock %}

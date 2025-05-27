@@ -9,13 +9,13 @@
 <meta content="Liatoy" name="author">
 <meta name="keywords" content="{% if product.meta_keywords == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_keywords}}{% endif %}">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="{% url 'shop:product_detail' product.slug %}">
+<link rel="canonical" href="{{store.default_canonical}}{% url 'shop:product_detail' product.slug %}">
 
 <!-- Open Graph tags -->
 <meta property="og:title" content="{% if product.meta_og_title == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_og_title}}{% endif %}">
 <meta property="og:description" content="{% if product.meta_og_description == '' %}{{product.get_default_meta_description|safe}}{% else %}{{product.meta_og_description|safe}}{% endif %}">
 <meta property="og:image" content="{{product.get_thumbnail}}" rel="shortcut icon" type="image/x-icon">
-<meta property="og:url" content="{% url 'shop:product_detail' product.slug %}">
+<meta property="og:url" content="{{store.default_canonical}}{% url 'shop:product_detail' product.slug %}">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card tags -->
@@ -23,6 +23,56 @@
 <meta name="twitter:title" content="{% if product.meta_tc_title == '' %}{{product.get_default_meta_tc_title}}{% else %}{{product.meta_tc_title}}{% endif %}">
 <meta name="twitter:description" content="{% if product.meta_tc_description == '' %}{{product.get_default_meta_tc_description|safe}}{% else %}{{product.meta_tc_description|safe}}{% endif %}">
 <meta name="twitter:image" content="{{product.get_thumbnail}}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "image": [
+    "{{ product.get_main_image }}"
+  ],
+  "description": "{{ product.meta_description }}",
+  "sku": "{{ product.id }}",
+  "offers": {
+    "@type": "Offer",
+    "url": "{{store.default_canonical}}{% url 'shop:product_detail' product.slug %}",
+    "priceCurrency": "IRR",
+    "price": "{{ product.price }}",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "{{store.default_canonical}}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "محصولات",
+      "item": "{{store.default_canonical}}{% url 'shop:product_list' %}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "نام محصول",
+      "item": "{{store.default_canonical}}{% url 'shop:product_detail' product.slug %}"
+    }
+  ]
+}
+</script>
+
+
+
 {% endblock %}
 
 {% block title %}{{product.name}}{% endblock %}
