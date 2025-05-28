@@ -1,7 +1,18 @@
 from django.shortcuts import render, redirect
 from django.views import View
+from django.template.loader import render_to_string
 
 from django.http import HttpResponse
+
+
+from .sitemaps import ProductImageSitemap
+
+def custom_sitemap(request):
+    products = ProductImageSitemap().items()
+    for p in products:
+        p.images = ProductImageSitemap().get_images(p)
+    xml = render_to_string("shop/sitemap_with_images.xml", {"products": products, "request": request})
+    return HttpResponse(xml, content_type="application/xml")
 
 def robots_txt(request):
     lines = [

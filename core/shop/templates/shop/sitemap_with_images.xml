@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{% load static %}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  {% for product in products %}
+    <url>
+      <loc>{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}</loc>
+      {% for img in product.images %}
+        <image:image>
+          <image:loc>
+            {% if img.loc|slice:":4" == "http" %}
+              {{ img.loc }}
+            {% else %}
+              {{ request.scheme }}://{{ request.get_host }}{{ img.loc }}
+            {% endif %}
+          </image:loc>
+          <image:title>{{ img.title|escape }}</image:title>
+          <image:caption>{{ img.title|escape }}</image:caption>
+        </image:image>
+      {% endfor %}
+      <lastmod>{{ product.updated|date:"Y-m-d" }}</lastmod>
+    </url>
+  {% endfor %}
+</urlset>
