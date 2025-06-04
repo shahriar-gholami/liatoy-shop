@@ -247,6 +247,7 @@ class Tag(models.Model):
 	slug = models.CharField(max_length=200, verbose_name = 'نامک')
 	is_special = models.BooleanField(default=False, verbose_name = 'تگ ویژه')
 	created_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+	description = models.TextField(null=True, blank=True, verbose_name='توضیحات تگ')
 
 	class Meta:
 		verbose_name = 'تگ‌ها'
@@ -266,6 +267,7 @@ class Category(models.Model):
 	is_sub = models.BooleanField(default=False, verbose_name='معرفی به عنوان زیردسته')
 	name = models.CharField(max_length=200, verbose_name='عنوان')
 	slug = models.SlugField(max_length=200, verbose_name='نامک')
+	description = models.TextField(null=True, blank=True, verbose_name='توضیحات دسته بندی')
 
 	class Meta:
 		ordering = ('name',)
@@ -1002,6 +1004,7 @@ def brand_upload_path(instance):
 class Brand(models.Model):
 	name = models.CharField(max_length=250, verbose_name='نام برند')
 	slug = models.CharField(max_length=255, null=True, blank=True)
+	description = models.TextField(null=True, blank=True, verbose_name='توضیحات برند')
 
 	class Meta:
 		verbose_name = 'برندها'

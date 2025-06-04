@@ -6,24 +6,24 @@
 <meta charset="UTF-8">
 <meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
 <meta content="IE=edge" http-equiv="X-UA-Compatible">
-<meta name="description" content="{{ store.meta_description }}">
+<meta name="description" content="{% if canonical == 'category' %}خرید انواع {{ category.name }} از فروشگاه لیاتوی با بهترین قیمت و ارسال سریع. بررسی مشخصات، مقایسه و انتخاب بهترین اسباب‌بازی‌های {{ category.name }} برای کودکان.{% endif %}{% if canonical == 'tag' %}لیست محصولات دارای برچسب {{ tag.name }} در فروشگاه لیاتوی. مناسب برای کودکان، با تنوع بالا و قیمت مناسب.{% endif %}{% if canonical == 'brand' %}مشاهده و خرید محصولات برند {{ brand.name }} از فروشگاه اسباب بازی لیاتوی. کیفیت بالا، قیمت مناسب، ارسال سریع.{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
 <meta content="Liatoy" name="author">
-<meta name="keywords" content="{{store.meta_keywords}}">
+<meta name="keywords" content="{% if canonical == 'category' %}{{ category.name }}, خرید {{ category.name }}, قیمت {{ category.name }}, اسباب بازی {{ category_name }}{% endif %}{% if canonical == 'tag' %}{{ tag.name }}, اسباب بازی {{ tag.name }}, خرید {{ tag.name }}{% endif %}{% if canonical == 'brand' %}برند {{ brand.name }}, اسباب بازی {{ brand.name }}, خرید {{ brand.name }}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="{% if canonical == 'category' %}{{store.default_canonical}}{% url 'shop:category_products' category.slug %}{% endif %}{% if canonical == 'tag' %}{{store.default_canonical}}{% url 'shop:special_tag_products' tag.slug %}{% endif %}{% if canonical == 'brand' %}{{store.default_canonical}}{% url 'shop:special_brand_products' brand.name %}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}{{store.default_canonical}}{% url 'shop:product_list' %}{% endif %}">
                             
 
 <!-- Open Graph tags -->
-<meta property="og:title" content="{{store.meta_og_title}}">
-<meta property="og:description" content="{{meta_og_description}}">
+<meta property="og:title" content="{% if canonical == 'category' %}خرید {{ category.name }} | فروشگاه لیاتوی{% endif %}{% if canonical == 'tag' %}اسباب بازی {{ tag.name }} | لیاتوی{% endif %}{% if canonical == 'brand' %}برند {{ brand.name }} | لیاتوی{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
+<meta property="og:description" content="{% if canonical == 'category' %}خرید آنلاین {{ category.name }} با قیمت مناسب از لیاتوی. تنوع بالا، کیفیت تضمینی و ارسال سریع.{% endif %}{% if canonical == 'tag' %}بررسی و خرید انواع اسباب بازی با تگ {{ tag.name }} از فروشگاه لیاتوی.{% endif %}{% if canonical == 'brand' %}اسباب بازی‌های برند {{ brand.name }} در لیاتوی. انتخاب از بین مدل‌های متنوع با تضمین کیفیت.{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
 <meta property="og:image" content="{{store.get_logo_image}}" rel="shortcut icon" type="image/x-icon">
 <meta property="og:url" content="{% if canonical == 'category' %}{{store.default_canonical}}{% url 'shop:category_products' category.slug %}{% endif %}{% if canonical == 'tag' %}{{store.default_canonical}}{% url 'shop:special_tag_products' tag.slug %}{% endif %}{% if canonical == 'brand' %}{{store.default_canonical}}{% url 'shop:special_brand_products' brand.name %}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}{{store.default_canonical}}{% url 'shop:product_list' %}{% endif %}">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card tags -->
 <meta name="twitter:card" content="Summary Card with Large Image">
-<meta name="twitter:title" content="{{store.meta_tc_title}}">
-<meta name="twitter:description" content="{{store.meta_tc_description}}">
+<meta name="twitter:title" content="{% if canonical == 'category' %}خرید {{ category.name }} از لیاتوی{% endif %}{% if canonical == 'tag' %}اسباب بازی {{ tag.name }} در لیاتوی{% endif %}{% if canonical == 'brand' %}اسباب بازی برند {{ brand.name }}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
+<meta name="twitter:description" content="{% if canonical == 'category' %}خرید آنلاین انواع {{ category.name }} با کیفیت بالا و قیمت مناسب در فروشگاه اسباب بازی لیاتوی.{% endif %}{% if canonical == 'tag' %}تنوع بالای اسباب بازی با برچسب {{ tag.name }} در فروشگاه لیاتوی با ارسال سریع.{% endif %}{% if canonical == 'brand' %}محصولات برند {{ brand.name }} با قیمت ویژه در لیاتوی. مشاهده، بررسی و خرید آنلاین.{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
 <meta name="twitter:image" content="{{store.get_logo_image}}">
 {% endblock %}
 

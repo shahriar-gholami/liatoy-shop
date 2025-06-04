@@ -27,7 +27,6 @@ from django.apps import apps
 from datetime import datetime
 from khayyam import JalaliDatetime
 from django.db.models import Q
-from googletrans import Translator
 import re
 
 

@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.urls import path
 from . import views
 from django.contrib.auth.models import User, Group
-from admin_interface.models import Theme
 
 
 admin.site.unregister(Group)
