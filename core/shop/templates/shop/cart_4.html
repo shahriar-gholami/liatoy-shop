@@ -70,7 +70,7 @@
                                     <img src="{{ item.variety.product.get_main_image }}" alt="{{item.variety.product.name}}"></a>
                                 </div>
                                 <div class="col-md-5 col-lg-5 col-sm-12">
-                                    <h3 class="text-overflow-1 title-font font-14">{{item.variety.product.name}}</h3>
+                                    <h3 class="text-overflow-1 title-font font-14">{{item.variety.product.name}} - {% if item.variety != 'default variety' %}{{ item.variety.name }}{% endif %}</h3>
                                     <div class="cart-canvas-price my-3 d-flex align-items-center">
                                         <p>قیمت هر عدد: {{item.variety.product.get_active_price|intcomma}} تومان <br>
                                             تعداد: {{item.quantity}}<br>

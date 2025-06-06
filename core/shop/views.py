@@ -841,7 +841,7 @@ class AddToCartView(View):
 			size = form.cleaned_data['size']
 			
 			if size == '':
-				default_variety = Variety.objects.filter(product=product, name = 'default variety').first()
+				default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety', stock = 2)
 				variety_id = default_variety.id
 				variety = default_variety
 			else:
