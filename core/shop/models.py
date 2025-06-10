@@ -93,7 +93,7 @@ class Store(models.Model):
 		if logo == None:
 			logo_url = 'https://marketplace-bucket.storage.iran.liara.space/Picture1.png'
 		else:
-			logo_url = logo.image.url
+			logo_url = logo.image.url.split('?')[0]
 		return logo_url
 	
 	def get_owner_name(self):
