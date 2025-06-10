@@ -81,6 +81,7 @@
      <div class="container-fluid">
          <div class="row gy-4">
              <div class="col-xl-9 col-lg-8">
+                <h1 class="sr-only">{{store.identity}}</h1>
                  <div class="home-slider shadow-box">
                      <div class="slider__layer slider__layer--top"></div>
                      <div class="slider__layer slider__layer--bottom"></div>
@@ -194,8 +195,8 @@
                          <img src="{% static 'assets4/image/feature/history.png' %}" alt="" class="img-fluid">
                      </div>
                      <div class="feature-desc ms-lg-3 text-center">
-                         <h6>بازگشـت وجـه
-                         </h6>
+                         <h3 class="font-14">بازگشـت وجـه
+                         </h3>
                          <p class="text-muted my-2 d-none d-xl-block">در صورت عدم رضایت</p>
                      </div>
                  </div>
@@ -207,8 +208,8 @@
                          <img src="{% static 'assets4/image/feature/fast.png' %}" alt="" class="img-fluid">
                      </div>
                      <div class="feature-desc ms-lg-3 text-center">
-                         <h6>ارسـال سـریع
-                         </h6>
+                         <h3 class="font-14">ارسـال سـریع
+                         </h3>
                          <p class="text-muted my-2 d-none d-xl-block">امن و مطمئن</p>
                      </div>
                  </div>
@@ -219,9 +220,9 @@
                          <img src="{% static 'assets4/image/feature/headphone.png' %}" alt="" class="img-fluid">
                      </div>
                      <div class="feature-desc ms-lg-3 text-center">
-                         <h6>پشتیبانی عالی
-                         </h6>
-                         <p class="text-muted my-2 d-none d-xl-block">در صورت عدم رضایت</p>
+                         <h3 class="font-14">پشتیبانی عالی
+                         </h3>
+                         <p class="text-muted my-2 d-none d-xl-block">در هر ساعت از شبانه‌روز</p>
                      </div>
                  </div>
              </div>
@@ -231,8 +232,8 @@
                          <img src="{% static 'assets4/image/feature/badge.png' %}" alt="" class="img-fluid">
                      </div>
                      <div class="feature-desc ms-lg-3 text-center">
-                         <h6>اصالت کالا
-                         </h6>
+                         <h3 class="font-14">اصالت کالا
+                         </h3>
                          <p class="text-muted my-2 d-none d-xl-block">امن و مطمئن</p>
                      </div>
                  </div>
@@ -251,10 +252,9 @@
          <div class="product-slider-box-title">
              <div class="row align-items-center">
                  <div class="col-lg-8 col-6">
-                     <h4 class="title-font product-slider-box-title-title dot">
-                         <span class="main-color-one-color">دسته</span>
-                         <span>بندی</span>
-                     </h4>
+                     <h2 class="title-font product-slider-box-title-title dot font-18">
+                        دسته‌بندی‌های ویژه
+                     </h2>
                  </div>
              </div>
          </div>
@@ -269,7 +269,7 @@
                                     <img src="{{f_cat.get_main_image}}" alt="{{ f_cat.name }}" style="object-fit: contain;">
                                 </div>
                                 <div class="col-8">
-                                    <h3 class="text-overflow-1 title-font font-14">{{f_cat.name}}</h3>
+                                    <h2 class="text-overflow-1 title-font font-14">{{f_cat.name}}</h2>
                                     <span class="d-inline-block mt-2"><button class="badge success-label btn btn-lg rounded-pill font-12 py-2">مشاهده محصولات</button></span>
                                 </div>
                             </div>
@@ -308,8 +308,8 @@
                          <a href="{% url 'shop:product_detail' product.slug %}">
                             <div class="product-title">
                                 <div class="title">
-                                    <p class="title-font font-14">{{product.name}}
-                                    </p>
+                                    <h3 class="title-font font-14">{{product.name}}
+                                    </h3>
                                 </div>
                             </div>
                          </a>
@@ -362,6 +362,7 @@
     <div class="container-fluid">
         <div class="row gy-4">
            {% for banner in triple_banners %}
+           <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
             <div class="col-md-4">
                 <div class="banner-item running-top">
                     <a href="{% url 'shop:special_products' banner.id %}">
@@ -384,10 +385,9 @@
          <div class="product-slider-box-title mb-0">
              <div class="row align-items-center">
                  <div class="col-lg-8 col-6">
-                     <h4 class="title-font product-slider-box-title-title dot">
-                         <span class="main-color-one-color">جدیدترین</span>
-                         <span>محصولات</span>
-                     </h4>
+                     <h2 class="title-font product-slider-box-title-title dot font-18">
+                         جدیدترین محصولات
+                     </h2>
                  </div>
                  <div class="col-lg-4 col-6">
                      <div class="text-end">
@@ -408,7 +408,7 @@
                          </div>
                          <div class="product-title">
                              <div class="title">
-                                 <p class="title-font font-14">{{ product.name }}</p>
+                                 <h3 class="title-font font-14">{{ product.name }}</h3>
                              </div>
                          </div>
                          <div class="product-action flex-column mt-3">
@@ -458,6 +458,7 @@
         <div class="row">
         {% for banner in big_banners %}
             <div class="col-lg-12">
+                <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
                 <div class="banner-item running-top">
                     <a href="{% url 'shop:special_products' banner.id %}">
                         <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
@@ -476,10 +477,9 @@
          <div class="product-slider-box-title mt-0">
              <div class="row align-items-center">
                  <div class="col-lg-8 col-6">
-                     <h4 class="title-font product-slider-box-title-title dot">
-                         <span class="main-color-one-color">محصولات</span>
-                         <span>ویژه</span>
-                     </h4>
+                     <h2 class="title-font product-slider-box-title-title dot font-18">
+                         محصولات ویژه
+                     </h2>
                  </div>
                  <div class="col-lg-4 col-6">
                      <div class="text-end">
@@ -565,6 +565,7 @@
      <div class="container-fluid">
          <div class="row gy-4">
             {% for banner in small_banners %}
+            <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
              <div class="col-sm-6">
                  <div class="banner-item running-top">
                      <a href="{% url 'shop:special_products' banner.id %}">
@@ -587,10 +588,10 @@
          <div class="product-slider-box-title">
              <div class="row align-items-center">
                  <div class="col-lg-8 col-6">
-                     <h4 class="title-font product-slider-box-title-title dot">
+                     <h2 class="title-font product-slider-box-title-title dot font-18">
                          <span class="main-color-one-color">آخرین مطالب</span>
                          <span>وبلاگ</span>
-                     </h4>
+                     </h2>
                  </div>
                  <div class="col-lg-4 col-6">
                      <div class="text-end">

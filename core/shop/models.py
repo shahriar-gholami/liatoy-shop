@@ -65,6 +65,7 @@ class Store(models.Model):
 	show_specials = models.BooleanField(default=True, verbose_name='نمایش محصولات ویژه')
 	show_blog = models.BooleanField(default=True, verbose_name='نمایش وبلاگ')
 	default_canonical = models.CharField(max_length=255, default='https://Liatoy.com/')
+	identity = models.CharField(max_length=1000, null=True, blank=True,verbose_name='هویت سایت')
 
 	def get_socials(self):
 		return SocialAccount.objects.all()

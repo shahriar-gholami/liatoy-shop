@@ -41,6 +41,7 @@ class StoreAdmin(admin.ModelAdmin):
 	fields = ('name', 'is_active', 'address', 'country', 'city', 
 			  'about_description', 'merchant', 
 			  'phone_number', 'email', 'color', 
+			  'identity',
 			  'meta_description', 'meta_keywords', 'meta_og_title', 
 			  'meta_og_description', 'meta_tc_title', 'meta_tc_description', 'has_domain', 'has_payment_gw',
 			  'template_index', 'index_title', 'enamad_code','show_brands' ,'show_advantages','show_ages','show_featured_categories','show_special_offer',
