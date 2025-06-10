@@ -39,7 +39,7 @@ class ProductImageSitemap(Sitemap):
         image_list = []
         for image in images:
             image_list.append({
-                "loc": image.image.url,
+                "loc": image.image.url.split('?')[0],
                 "title": image.alt_name or obj.name,
                 "caption": obj.short_description or obj.description[:100]
             })
