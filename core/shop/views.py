@@ -53,7 +53,7 @@ class IndexView(View):
 		small_banners = Banner.objects.filter(size='1/2')
 		big_banners = Banner.objects.filter(size='1')
 		posts = BlogPost.objects.all()
-		sales_products = Product.objects.filter(off_active=True)[:2]
+		sales_products = Product.objects.filter(off_active=True)[:6]
 		products = Product.objects.all()[:7]
 		to_products = f'{current_app_name}:product_detail'
 		featured_categories = FeaturedCategories.objects.all().first()
