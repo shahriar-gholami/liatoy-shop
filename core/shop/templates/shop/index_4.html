@@ -362,8 +362,8 @@
     <div class="container-fluid">
         <div class="row gy-4">
            {% for banner in triple_banners %}
-           <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
-            <div class="col-md-4">
+           <div class="col-md-4">
+                <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
                 <div class="banner-item running-top">
                     <a href="{% url 'shop:special_products' banner.id %}">
                         <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
@@ -565,8 +565,8 @@
      <div class="container-fluid">
          <div class="row gy-4">
             {% for banner in small_banners %}
-            <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
-             <div class="col-sm-6">
+            <div class="col-sm-6">
+                 <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
                  <div class="banner-item running-top">
                      <a href="{% url 'shop:special_products' banner.id %}">
                          <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
