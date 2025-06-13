@@ -315,7 +315,7 @@ class Category(models.Model):
 		if main_image == None:
 			return static('assets/images/11.jpg')
 		else:
-			main_image_url = main_image.image.url
+			main_image_url = main_image.image.url.split('?')[0]
 		return main_image_url
 
 	def __str__(self):
@@ -456,7 +456,7 @@ class Product(models.Model):
 		return main_image_url
 
 	def get_gallery(self):
-		images = ProductImage.objects.filter(product=self)
+		images = [img.image.url.split('?')[0] for img in ProductImage.objects.filter(product=self)]
 		return images
 	
 	def get_selected_category_list(self):
@@ -803,6 +803,9 @@ class Slide(models.Model):
 	tag = models.ManyToManyField(Tag, verbose_name='تگ محصولات هدف')
 	category = models.ManyToManyField(Category, verbose_name='دسته‌بندی محصولات هدف')
 
+	def get_image_url(self):
+		return self.image.url.split('?')[0]
+
 	class Meta:
 		ordering = ('created',)
 		verbose_name = 'اسلایدها'
@@ -833,7 +836,7 @@ class Banner(models.Model):
 		if main_image == None:
 			return static('assets/images/default_banner.jpg')
 		else:
-			main_image_url = main_image.url
+			main_image_url = main_image.url.split('?')[0]
 		return main_image_url
 	
 class Faq(models.Model):
@@ -923,7 +926,7 @@ class BlogPost(models.Model):
 		if thumb == None:
 			thumbnail_url = 'https://marketplace-bucket.storage.iran.liara.space/shop/default-product-image.png'
 		else:
-			thumbnail_url = thumb.image.url
+			thumbnail_url = thumb.image.url.split('?')[0]
 		return thumbnail_url
 
 	def get_absolute_url(self):
@@ -950,6 +953,9 @@ class PostThumbnail(models.Model):
 		ordering = ('-created',)
 		verbose_name = 'تصویر شاخص پست'
 		verbose_name_plural = 'تصویر شاخص پست'
+
+	def get_image_url(self):
+		return self.image.url.split('?')[0]
 
 class UploadedImages(models.Model):
 	alt_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='عنوان دلخواه')

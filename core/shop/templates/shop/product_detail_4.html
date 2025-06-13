@@ -130,7 +130,7 @@
                                     {% for image in product.get_gallery %}
                                     <div class="swiper-slide p-0">
                                         <div class="swiper-zoom-container p-0">
-                                            <img  src="{{ image.image.url }}"
+                                            <img  src="{{ image }}"
                                                  alt="{{ product.name }}"/>
                                         </div>
                                     </div>
@@ -142,7 +142,7 @@
                                 <div class="swiper-wrapper">
                                     {% for image in product.get_gallery %}
                                     <div class="swiper-slide">
-                                        <img src="{{ image.image.url }}" alt="{{ product.name }}"/>
+                                        <img src="{{ image }}" alt="{{ product.name }}"/>
                                     </div>
                                     {% endfor %}
                                 </div>

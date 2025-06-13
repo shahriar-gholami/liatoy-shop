@@ -90,7 +90,7 @@
                             {% for slide in slides %}
                             <div class="swiper-slide" style="object-fit: fill;">
                                 <a href="{% url 'shop:featured_products' slide.id %}">
-                                    <img src="{{slide.image.url}}" class="img-fluid" alt="{{ slide.alt_name }}" style="object-fit: inherit;">
+                                    <img src="{{slide.get_image_url}}" class="img-fluid" alt="{{ slide.alt_name }}" style="object-fit: inherit;">
                                 </a>
                             </div>
                             {% endfor %}
