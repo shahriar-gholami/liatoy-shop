@@ -184,9 +184,9 @@
                         <div class="product-meta-title">
                             <div class="row align-items-center gy-3">
                                 <div class="col-lg-8">
-                                    <h5 class="font-16">
+                                    <h1 class="font-16">
                                         {{ product.name }}
-                                    </h5>
+                                    </h1>
                                 </div>
                                 <div class="col-lg-4">
                                     <div class="d-flex justify-content-end align-items-center">
@@ -211,7 +211,7 @@
                                     </div>
                                 </div>
                                 <div class="product-meta-feature-items text-justify">
-                                    <h5 class="title font-16 mb-2 icon-circle">ویژگی های کالا</h5>
+                                    <h2 class="title font-16 mb-2 icon-circle">ویژگی های کالا</h2>
                                     <p class="text-justify" style="text-align: justify;">
                                         {{product.short_description|safe}}
                                     </p>
@@ -525,7 +525,7 @@
                                         <div class="tab-pane fade show active product-desc-less-contents"
                                              id="productDescLess-pane">
                                             <div class="product-desc-content text-justify">
-                                                <h6 class="font-22 mb-2 title-font title-line-bottom">معرفی محصول</h6>
+                                                <h2 class="font-22 mb-2 title-font title-line-bottom">معرفی محصول</h2>
 
                                                 <p>
                                                     {{ product.description|safe }}
@@ -536,11 +536,9 @@
                                         <div class="tab-pane fade" id="productTable-pane">
                                             <div aria-labelledby="#productTable"
                                                  class="tab-pane fade active show" role="tabpanel">
-                                                <h6 class="font-26 mb-2 title-font title-line-bottom">مشخصات فنی</h6>
-                                                <div class="box_list mt-2">
-                                                    <p>
-                                                        {{product.features|safe}}
-                                                    </p>
+                                                <h2 class="font-26 mb-2 title-font title-line-bottom">مشخصات فنی</h2>
+                                                <div class="content">
+                                                    {{product.features|safe}}
                                                 </div>
                                                 
                                             </div>
@@ -549,8 +547,8 @@
                                         <div class="tab-pane fade product-comment-content" id="productComment-pane">
 
                                             <div class="comment-form">
-                                                <h6 class="font-26 mb-2 title-font title-line-bottom">نظرت در مورد این محصول
-                                                    چیه؟</h6>
+                                                <h2 class="font-26 mb-2 title-font title-line-bottom">نظرت در مورد این محصول
+                                                    چیه؟</h2>
                                                 <p class="font-14 text-muted mt-2">برای ثبت نظر، از طریق دکمه افزودن
                                                     دیدگاه جدید
                                                     نمایید. اگر این محصول را قبلا خریده باشید، نظر شما به عنوان خریدار
@@ -736,7 +734,7 @@
                                             <div class="box_filter mt-5 pb-3">
                                                 <div class="row align-items-end">
                                                     <div class="col-md-4 bf1">
-                                                        <h4 class="title-font title-line-bottom">نظرات کاربران</h4>
+                                                        <h2 class="title-font title-line-bottom">نظرات کاربران</h2>
                                                     </div>
                                                     <!-- <div class="col-md-8 bf2">
                                                         <ul class="list-inline text-end mb-0">
@@ -831,189 +829,6 @@
                                             </div>
                                             
                                         </div>
-
-                                        <div aria-labelledby="#productAnswer" class="tab-pane fade"
-                                             id="productAnswer-pane"
-                                             role="tabpanel">
-                                            <h4 class="title-font title-line-bottom">پرسش و پاسخ</h4>
-                                            <span class="fw-bold d-block mt-2 text-muted font-12">پرسش خود را در مورد محصول مطرح
-                                نمایید</span>
-
-                                            <div class="box_questions mt-4">
-                                                <form>
-                                                    <div class="form-group">
-                                                        <label class="d-block">
-                                                            <textarea class="form-control"
-                                                                      placeholder="هر سوالی در مورد این محصول به ذهنتان میرسید بپرسید!"
-                                                                      rows="7"></textarea>
-                                                        </label>
-                                                        <button class="btn main-color-three-bg mt-3 btn-lg"
-                                                                type="submit">ثبت پرسش
-                                                        </button>
-                                                    </div>
-                                                </form>
-
-                                                <div class="box_filter mt-5 pb-3">
-                                                    <div class="row align-items-end">
-                                                        <div class="col-md-4 bf1">
-                                                            <h4 class="title-font title-line-bottom">پرسش های
-                                                                کاربران</h4>
-                                                        </div>
-                                                        <div class="col-md-8 bf2">
-                                                            <ul class="list-inline text-end mb-0">
-                                                                <li class="list-inline-item title-font">مرتب سازی بر
-                                                                    اساس :
-                                                                </li>
-                                                                <li class="list-inline-item"><a href="#">نظر
-                                                                    خریداران</a></li>
-                                                                <li class="list-inline-item"><a class="active_custom"
-                                                                                                href="#">مفیدترین
-                                                                    نظرات</a>
-                                                                </li>
-                                                                <li class="list-inline-item"><a href="#">جدیدترین
-                                                                    نظرات</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="box_questions mt-4">
-                                                    <div class="row bs-qu">
-                                                        <div class="col-lg-2 bq1 text-center">
-                                                            <i class="bi bi-question-circle-fill"></i>
-                                                            <br>
-                                                            <span class="span1">پرسش</span>
-                                                            <br>
-                                                            <span class="span2">فرزاد عباسقلی زاده</span>
-                                                        </div>
-                                                        <div class="col-lg-10 bq2">
-                                                            <p>سلام چطوری دو گوشی همزمان پخش میکنه ؟ </p>
-
-                                                            <div class="row bq-footer">
-                                                                <div class="col-md-5 col-6 my-flex-align-end">
-                                                    <span class="date"> ۱۶ مهر ۱۳۹۷
-                                                    </span>
-                                                                </div>
-                                                                <div class="col-md-7 col-6 text-end pe-0">
-                                                                    <a class="d-none d-sm-block" href="#">
-                                                                        <span class="main-color-one-color">به این پرسش پاسخ دهید (۱ پاسخ)</span>
-                                                                    </a><a class="d-sm-none d-block" href="#">پاسخ</a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row bs-qu">
-                                                        <div class="col-lg-2 bq1 text-center">
-                                                            <i class="bi bi-chat-dots-fill"></i>
-                                                            <br>
-                                                            <span class="span1">پاسخ</span>
-                                                            <br>
-                                                            <span class="span2">حسین زارع</span>
-                                                        </div>
-                                                        <div class="col-lg-10 bq2 bg-transparent">
-                                                            <p>درباره راه اندازی: (خیلی دربارش پرسیده بودند): اول:
-                                                                بلوتوث گوشی خود
-                                                                را
-                                                                خاموش کنید.
-                                                                دوم: لطفا
-                                                                کلید های چند منظوره در هر دو هدفون را همزمان فشار دهید
-                                                            </p>
-                                                            <div class="row align-items-center bq-footer">
-                                                                <div class="col-lg-5 col-12 my-flex-align-end">
-                                                    <span class="date">۲۲ مهر ۱۳۹۷
-                                                    </span>
-                                                                </div>
-                                                                <div class="col-lg-7 col-12 text-start p-0 ">
-                                                                    <div class="comments_likes">
-                                                                            <span class="mr-4 mt-1">
-                                                                                ایا این نظر برایتان مفید بود ؟
-                                                                            </span>
-                                                                        <a class="btn btn-like btn-like-like mt-1 mt-md-0 ms-2"
-                                                                           href="#"><i
-                                                                                class="bi bi-hand-thumbs-up"></i> 70</a>
-                                                                        <a class="btn btn-like btn-like-dislike mt-1 mt-md-0"
-                                                                           href="#">
-                                                                            <i class="bi bi-hand-thumbs-down"></i> 7</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="box_questions mt-4">
-                                                    <div class="row bs-qu">
-                                                        <div class="col-lg-2 bq1 text-center">
-                                                            <i class="bi bi-question-circle-fill"></i>
-                                                            <br>
-                                                            <span class="span1">پرسش</span>
-                                                            <br>
-                                                            <span class="span2">فرزاد عباسقلی زاده</span>
-                                                        </div>
-                                                        <div class="col-lg-10 bq2">
-                                                            <p>سلام چطوری دو گوشی همزمان پخش میکنه ؟ </p>
-
-                                                            <div class="row bq-footer">
-                                                                <div class="col-md-5 col-6 my-flex-align-end">
-                                                    <span class="date"> ۱۶ مهر ۱۳۹۷
-                                                    </span>
-                                                                </div>
-                                                                <div class="col-md-7 col-6 text-end pe-0">
-                                                                    <a class="d-none d-sm-block" href="#">
-                                                                        <span class="main-color-one-color">به این پرسش پاسخ دهید (۱ پاسخ)</span>
-                                                                    </a><a class="d-sm-none d-block" href="#">پاسخ</a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row bs-qu">
-                                                        <div class="col-lg-2 bq1 text-center">
-                                                            <i class="bi bi-chat-dots-fill"></i>
-                                                            <br>
-                                                            <span class="span1">پاسخ</span>
-                                                            <br>
-                                                            <span class="span2">حسین زارع</span>
-                                                        </div>
-                                                        <div class="col-lg-10 bq2 bg-transparent">
-                                                            <p>درباره راه اندازی: (خیلی دربارش پرسیده بودند): اول:
-                                                                بلوتوث گوشی خود
-                                                                را
-                                                                خاموش کنید.
-                                                                دوم: لطفا
-                                                                کلید های چند منظوره در هر دو هدفون را همزمان فشار دهید
-                                                            </p>
-                                                            <div class="row align-items-center bq-footer">
-                                                                <div class="col-lg-5 col-12 my-flex-align-end">
-                                                    <span class="date">۲۲ مهر ۱۳۹۷
-                                                    </span>
-                                                                </div>
-                                                                <div class="col-lg-7 col-12 text-start p-0 ">
-                                                                    <div class="comments_likes">
-                                                                            <span class="mr-4 mt-1">
-                                                                                ایا این نظر برایتان مفید بود ؟
-                                                                            </span>
-                                                                        <a class="btn btn-like btn-like-like mt-1 mt-md-0 ms-2"
-                                                                           href="#"><i
-                                                                                class="bi bi-hand-thumbs-up"></i> 70</a>
-                                                                        <a class="btn btn-like btn-like-dislike mt-1 mt-md-0"
-                                                                           href="#">
-                                                                            <i class="bi bi-hand-thumbs-down"></i> 7</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="container mt-4">
-                                                    <div class="text-center">
-                                                        <a class="btn main-color-one-bg border-0" href="">بارگذاری کامنت
-                                                            ها</a>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1035,14 +850,13 @@
         <div class="product-slider-box-title">
             <div class="row align-items-center">
                 <div class="col-lg-8 col-6">
-                    <h4 class="title-font product-slider-box-title-title dot">
-                        <span class="main-color-one-color">محصولات</span>
-                        <span>مرتبط</span>
-                    </h4>
+                    <h2 class="title-font product-slider-box-title-title dot">
+                        <span class="main-color-one-color">محصولات مرتبط</span>
+                    </h2>
                 </div>
                 <div class="col-lg-4 col-6">
                     <div class="text-end">
-                        <a href="" class="btn main-color-one-bg rounded-3">مشاهده همه</a>
+                        <a href="{% url 'shop:product_list' %}" class="btn main-color-one-bg rounded-3">مشاهده همه</a>
                     </div>
                 </div>
             </div>
@@ -1059,7 +873,7 @@
                         </div>
                         <div class="product-title">
                             <div class="title">
-                                <p class="title-font font-14">{{ product.name }}</p>
+                                <h3 class="title-font font-14">{{ product.name }}</h3>
                             </div>
                         </div>
                         <div class="product-action flex-column mt-3">

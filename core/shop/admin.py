@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django import forms
 from django.contrib import admin
 from .models import Product, Category
-from utils import erase_stock_volume, update_slugs
+from utils import erase_stock_volume, update_slugs, send_order_verification_sms, send_delivery_inform_sms
 import django_jalali.admin as jadmin
 from django_jalali.admin.filters import JDateFieldListFilter
 from django.utils.text import slugify
@@ -149,7 +149,7 @@ class OrderAdmin(admin.ModelAdmin):
 	search_fields = ['customer__full_name', 'status__latest_status']
 	readonly_fields = ['items',]
 	exclude = ('delivery_description',)
-	
+	actions = [send_delivery_inform_sms, send_order_verification_sms]
 
 # @admin.register(Size)
 # class SizeAdmin(admin.ModelAdmin):
@@ -161,7 +161,7 @@ class PriceRangeAdmin(admin.ModelAdmin):
 
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
-	list_display = ('code', 'start_date', 'end_date', 'discount', 'min_cart_volume')
+	list_display = ('title', 'code', 'start_date', 'end_date', 'discount', 'min_cart_volume')
 	list_filter = (
 		('start_date', JDateFieldListFilter),
 		('end_date', JDateFieldListFilter),

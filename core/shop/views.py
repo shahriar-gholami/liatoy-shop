@@ -19,7 +19,7 @@ from django.views import View
 from shop.models import *
 import random
 from accounts.models import User
-from utils import send_otp_code
+from utils import send_otp_code, send_order_verification_sms
 from django.contrib.auth import login, logout
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -1933,6 +1933,7 @@ class OrderVerifyView(LoginRequiredMixin, View):
 					customer.save()
 					
 					order.save()
+					send_order_verification_sms(order.customer.phone_number, order.id)
 					
 					return render(request, self.template_name, {'message':'پرداخت شما موفقیت آمیز بود. سفارش شما ثبت گردید و در حال پردازش است ', 'ref_id':req.json()['data']['ref_id'], 'store_name':store_name})
 				elif t_status == 101:

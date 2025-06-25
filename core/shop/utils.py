@@ -2,10 +2,6 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from urllib.parse import urlparse
 from .models import Store, Owner, Customer
 
-
-
-
-
 class IsOwnerUserMixin(UserPassesTestMixin):
 	# store_name = Store.objects.all().first().name
 	# store = Store.objects.all().first()

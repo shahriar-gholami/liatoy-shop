@@ -426,7 +426,6 @@
                 </div>
             </div>
             <div class="col-lg-9">
-                
                 <div class="category-items">
                     <div class="row g-3">
                         {% for product in products %}
@@ -499,6 +498,28 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div>
+                    
+                        {% if canonical == 'category' and category.description != None %}
+                        <h2 class="font-24">دسته‌بندی  {{ category.name }}</h2>
+                        <p>
+                            {{category.description}}
+                        </p>
+                        {% endif %}
+                        {% if canonical == 'tag' and tag.description != None  %}
+                        <h2 class="font-24">برچسب محصولات  {{ tag.name }}</h2>
+                        <p>
+                            {{tag.description}}
+                        </p>
+                        {% endif %}
+                        {% if canonical == 'brand' and brand.description != None  %}
+                        <h2 class="font-24">محصولات برند {{ brand.name }}</h2>
+                        <p>
+                            {{brand.description}}
+                        </p>
+                        {% endif %}
+
                 </div>
             </div>
         </div>

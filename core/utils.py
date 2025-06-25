@@ -1,56 +1,18 @@
 import requests
 import json
-from shop.models import Product
+from shop.models import Store
 
-
-def send_domain_warn_msg(phone_number, owner_name):
-    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
-
-    payload = json.dumps({
-    "code": "lyp3pvrmj2sw81l",
-    "sender": "+983000505",
-    "recipient": phone_number,
-    "variable": {
-        "name": owner_name
-    }
-    })
-    headers = {
-    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
-    'Content-Type': 'application/json'
-    }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text)
-
-
-
-def send_gw_warn_msg(phone_number, owner_name):
-    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
-
-    payload = json.dumps({
-    "code": "fsjb9kghsqoilaf",
-    "sender": "+983000505",
-    "recipient": phone_number,
-    "variable": {
-        "name": owner_name
-    }
-    })
-    headers = {
-    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
-    'Content-Type': 'application/json'
-    }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text)
+store = Store.objects.first()
 
 def send_otp_code(phone_number, code):
     url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
     payload = json.dumps({
-    "code": "6zxou8xsmhi8fot",
+    "code": "2frcg7j9tgi8mdb",
     "sender": "+983000505",
     "recipient": phone_number,
     "variable": {
-        "verification-code": code
-
+        "verification-code": code,
     }
     })
     headers = {
@@ -62,38 +24,44 @@ def send_otp_code(phone_number, code):
 
     print(response.text)
 
-def site_req_inform(phone_number, name):
+def order_verification(phone_number, order_id):
     url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
     payload = json.dumps({
-    "code": "asvyx199bprr92n",
+    "code": "ehuynsayt2ku2mh",
     "sender": "+983000505",
     "recipient": phone_number,
     "variable": {
-        "name": name
+        "order-id": order_id
     }
     })
     headers = {
     'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
     'Content-Type': 'application/json'
     }
+
     response = requests.request("POST", url, headers=headers, data=payload)
     print(response.text)
 
 
+def delivery_inform(phone_number, order_id):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
     payload = json.dumps({
-    "code": "jsnfbvmt5lmn7pz",
+    "code": "7ga4cq43fxkpk3w",
     "sender": "+983000505",
-    "recipient": '09910412672',
+    "recipient": phone_number,
     "variable": {
-        "name": name
+        "order-id": order_id
     }
     })
     headers = {
     'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
     'Content-Type': 'application/json'
     }
+
     response = requests.request("POST", url, headers=headers, data=payload)
+
     print(response.text)
 
 def erase_stock_volume(product):
@@ -108,6 +76,23 @@ def update_slugs(modeladmin, request, queryset):
         product.save()
     # نمایش پیام تایید برای کاربر
     modeladmin.message_user(request, "Slugs updated successfully!")
+
+def send_order_verification_sms(modeladmin, request, queryset):
+    for order in queryset:
+        phone_number = order.customer.phone_number
+        order_id = order.id
+        order_verification(phone_number, order_id)
+    modeladmin.message_user(request, "پیامک تایید سفارش برای سفارشات انتخابی ارسال شد.")
+send_order_verification_sms.short_description = "ارسال پیامک تأیید سفارش"
+
+def send_delivery_inform_sms(modeladmin, request, queryset):
+    for order in queryset:
+        phone_number = order.customer.phone_number
+        order_id = order.id
+        delivery_inform(phone_number, order_id)
+    modeladmin.message_user(request, "پیامک ارسال سفارش برای سفارشات انتخابی ارسال شد.")
+send_delivery_inform_sms.short_description = "ارسال پیامک اطلاع‌رسانی ارسال"
+
 
 
 

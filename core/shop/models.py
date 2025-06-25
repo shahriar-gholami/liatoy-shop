@@ -625,6 +625,7 @@ class Cart(models.Model):
 		return f'{self.customer.phone_number}'
 
 class Coupon(models.Model):
+	title = models.CharField(max_length=255, default='جشنواره فروش', verbose_name="عنوان کد تخفیف")
 	code = models.CharField(max_length=50, unique=True, verbose_name="کد کوپن")
 	start_date = jmodels.jDateField(verbose_name="تاریخ شروع", null=True, blank=True)
 	end_date = jmodels.jDateField(verbose_name="تاریخ پایان", null=True, blank=True)

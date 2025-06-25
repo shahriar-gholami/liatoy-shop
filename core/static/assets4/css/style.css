@@ -72,6 +72,34 @@
 
 /*========================== start main-slider ==========================*/
 
+.content table {
+    border-collapse: collapse;
+    width: 200px;
+}
+
+.content table,
+.content th,
+.content td {
+    border: 0px;
+    padding: 3px;
+    padding-right: 10px;
+    padding-inline-start: 10px;
+    line-height: 0.4;
+    padding-right: 10%;
+    vertical-align: top;
+    font-size: small;
+}
+
+.content tr {
+    margin: 0px;
+    padding: 0px;
+    padding-right: 10px;
+}
+
+.content table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
 .home-slider {
     position: relative;
 }
