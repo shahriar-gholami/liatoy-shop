@@ -164,6 +164,7 @@ class Customer(models.Model):
 	email = models.EmailField(null=True, blank=True, verbose_name = 'ایمیل')
 	full_name = models.CharField(max_length = 250, default = 'کاربر میهمان', verbose_name = 'نام و نام خانوادگی')
 	otp_token = models.IntegerField(null=True, blank= True, verbose_name = 'کد OTP')
+	orders_num = models.IntegerField(default=0, verbose_name='تعداد سفارشات تا کنون')
 	is_active = models.BooleanField(default=True, verbose_name = 'فعال')
 	is_verified = models.BooleanField(default=False, verbose_name = 'تایید')
 	city = models.CharField(max_length = 250, default = 'Tehran', verbose_name = 'شهر')
@@ -631,6 +632,8 @@ class Coupon(models.Model):
 	end_date = jmodels.jDateField(verbose_name="تاریخ پایان", null=True, blank=True)
 	discount = models.IntegerField(verbose_name="میزان تخفیف (تومان)", default=0)
 	min_cart_volume = models.IntegerField(verbose_name="حداقل مبلغ سبد خرید (تومان)", default=0)
+	used_times = models.IntegerField(default=0, verbose_name='تعداد مصرف')
+	is_cashback = models.BooleanField(default=False, verbose_name='کش‌بک')
 
 	class Meta:
 		verbose_name = 'کدهای تخفیف'
@@ -660,14 +663,14 @@ class OrderStatus(models.Model):
 	def __str__(self):
 		return self.latest_status
 
-class Cashback(models.Model):
-	repetation = models.IntegerField(default=0, verbose_name='تکرار')
-	percent = models.IntegerField(default=0, verbose_name='درصد')
-	const = models.IntegerField(default=0, verbose_name='مقدار ثابت')
+# class Cashback(models.Model):
+# 	repetation = models.IntegerField(default=0, verbose_name='تکرار')
+# 	percent = models.IntegerField(default=0, verbose_name='درصد')
+# 	const = models.IntegerField(default=0, verbose_name='مقدار ثابت')
 
-	class Meta:
-		verbose_name = 'کش‌بک'
-		verbose_name_plural = 'کش‌بک'
+# 	class Meta:
+# 		verbose_name = 'کش‌بک'
+# 		verbose_name_plural = 'کش‌بک'
 
 class Order(models.Model):
 	customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, verbose_name='مشتری')
@@ -676,6 +679,7 @@ class Order(models.Model):
 	status = models.ForeignKey(OrderStatus, on_delete = models.SET_NULL, null=True, verbose_name='وضعیت سفارش')
 	created_date = models.DateTimeField(auto_now_add = True, verbose_name='تاریخ ایجاد')
 	used_coupon = models.BooleanField(default=False, verbose_name='استفاده از کوپن تخفیف')
+	coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
 	delivery_method = models.ForeignKey(Delivery, on_delete = models.SET_NULL, null=True, blank=True, verbose_name='شیوه ارسال')
 	status_updated_date = models.DateTimeField(auto_now_add = True, verbose_name='تاریخ بروزرسانی')
 	reciever_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='نام تحویل گیرنده')
@@ -766,6 +770,15 @@ class Order(models.Model):
 	def shamsi_updated_date(self):
 		return JalaliDatetime(self.status_updated_date).strftime('%Y/%m/%d')
 	shamsi_updated_date.fget.short_description = "آخرین بروزرسانی"
+
+class CashBack(models.Model):
+	order_level = models.IntegerField(default=0, verbose_name='مرتبه سفارش')
+	percent = models.IntegerField(default=0, verbose_name='درصد تخفیف')
+	is_active = models.BooleanField(default=False, verbose_name='فعال')
+
+	class Meta:
+		verbose_name = 'پاداش‌ها'
+		verbose_name_plural = 'پاداش‌ها'
 
 class ContactMessage(models.Model):
 	name = models.CharField(max_length=250, verbose_name='نام')

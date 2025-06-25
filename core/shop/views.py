@@ -1025,6 +1025,7 @@ class CouponApplyView(IsCustomerUserMixin, View):
 				order.total_price -= coupon.discount
 				order.used_coupon = True
 				order.delivery_description = order.delivery_description + f'<p class="text-success">مبلغ نهایی پس از اعمال کد تخفیف: {order.total_price+order.delivery_cost:,} تومان</p>' 
+				order.coupon = coupon
 				order.save()
 				return redirect(f'{current_app_name}:order_final_check', order_id)
 		order.delivery_description = order.delivery_description + f'<p class="text-danger">کد وارد شده نامعتبر بوده و یا قبلا وارد شده است</p><br>' 
@@ -1934,7 +1935,9 @@ class OrderVerifyView(LoginRequiredMixin, View):
 					
 					order.save()
 					send_order_verification_sms(order.customer.phone_number, order.id)
-					
+					coupon = order.coupon
+					if coupon.is_cashback == True:
+						coupon.delete()					
 					return render(request, self.template_name, {'message':'پرداخت شما موفقیت آمیز بود. سفارش شما ثبت گردید و در حال پردازش است ', 'ref_id':req.json()['data']['ref_id'], 'store_name':store_name})
 				elif t_status == 101:
 					return render(request, self.template_name, {'message':str(req.json()['data']['message']), 'store_name':store_name})

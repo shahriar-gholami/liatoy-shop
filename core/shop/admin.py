@@ -155,13 +155,21 @@ class OrderAdmin(admin.ModelAdmin):
 # class SizeAdmin(admin.ModelAdmin):
 # 	list_display = ['name']
 
+@admin.register(CashBack)
+class CashBackAdmin(admin.ModelAdmin):
+    list_display = ('order_level', 'percent', 'is_active')  # نمایش در لیست
+    list_editable = ('order_level', 'percent', 'is_active')  # قابل ویرایش در لیست
+    list_display_links = None  # هیچکدام از فیلدها لینک نباشند تا بتونن ویرایش‌پذیر باشند
+    list_filter = ('is_active',)  # فیلتر برای راحتی جستجو
+    search_fields = ('order_level', 'percent')  # امکان جستجو
+
 @admin.register(PriceRange)
 class PriceRangeAdmin(admin.ModelAdmin):
 	list_display = ['min_value', 'max_value']
 
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
-	list_display = ('title', 'code', 'start_date', 'end_date', 'discount', 'min_cart_volume')
+	list_display = ('title', 'code', 'start_date', 'end_date', 'discount', 'min_cart_volume', 'used_times','is_cashback')
 	list_filter = (
 		('start_date', JDateFieldListFilter),
 		('end_date', JDateFieldListFilter),
