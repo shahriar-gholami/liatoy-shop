@@ -72,6 +72,7 @@ class Store(models.Model):
 	default_canonical = models.CharField(max_length=255, default='https://Liatoy.com/')
 	identity = models.CharField(max_length=1000, null=True, blank=True,verbose_name='هویت سایت')
 	favicon = models.ImageField(upload_to=upload_path, default='media/11.png',verbose_name='فاویکن', null=True)
+	slogan = models.CharField(max_length=1000, null=True, blank=True,verbose_name='شعار فروشگاه' )
 
 	def get_socials(self):
 		return SocialAccount.objects.all()

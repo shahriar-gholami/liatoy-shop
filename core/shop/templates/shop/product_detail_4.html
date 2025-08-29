@@ -119,9 +119,18 @@
                     <div class="col-xl-4 col-lg-3">
                         <div class="pro_gallery">
                             <div class="icon-product-box">
-                                <div class="icon-product-box-item" data-bs-toggle="tooltip" data-bs-placement="right"
+                                <div class="icon-product text-center" data-bs-toggle="tooltip" data-bs-placement="center"
                                      data-bs-title="افزودن به علاقه مندی">
-                                    <a href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}" rel="nofollow"><i class="bi bi-heart"></i></a>
+                                     {% if user.is_authenticated %}
+                                        <a class="btn border-0 d-flex align-items-center rounded-3" href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}" rel="nofollow">
+                                            <i class="bi {% if product.id in favorite_products %}bi-heart-fill{% else %}bi-heart{% endif %} fs-7 text-danger"></i>
+                                        </a>
+                                    {% else %}
+                                        <a class="btn border-0 d-flex align-items-center rounded-3" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
+                                            <i class="bi bi-heart fs-7 text-danger"></i>
+                                        </a>
+                                    {% endif %}
+                                    <!-- <a href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}" rel="nofollow"><i class="bi bi-heart"></i></a> -->
                                 </div>
                                 
                             </div>
@@ -865,7 +874,6 @@
             <div class="swiper-wrapper align-items-center">
                 {% for product in product.get_related_products %}
                 <div class="swiper-slide">
-                    <a href="{% url 'shop:product_detail'  product.slug %}">
                     <div class="product-box">
                         <div class="product-image">
                             <img alt="{{ product.name }}" class="img-fluid"
@@ -898,13 +906,19 @@
                                     مشاهده
                                     <i class="bi bi-arrow-left ms-4 text-white"></i>
                                 </a>
-                                <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" rel="nofollow" href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}">
-                                    <i class="bi bi-heart fs-5 text-white"></i>
-                                </a>
+                                {% if user.is_authenticated %}
+                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='product_detail' %}" rel="nofollow">
+                                            <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
+                                            </a>
+                                        {% else %}
+                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
+                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
+                                            </a>
+                                        {% endif %}
                             </div>
                         </div>
                     </div>
-                    </a>
+                    
                 </div>
                 {% endfor %}
             </div>

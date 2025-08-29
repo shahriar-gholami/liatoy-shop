@@ -155,14 +155,22 @@
                                                 </div>
                                             </div>
                                         {% endif %}
+
+                               
                                 <div class="link w-100 mt-4 d-flex align-items-center justify-content-between">
                                     <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg font-12" href="{% url 'shop:product_detail' product.slug %}">
                                         مشاهده
                                         <i class="bi bi-arrow-left ms-4 text-white"></i>
                                     </a>
-                                    <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
-                                        <i class="bi bi-heart fs-7 text-white"></i>
-                                    </a>
+                                    {% if user.is_authenticated %}
+                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
+                                            <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
+                                            </a>
+                                        {% else %}
+                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
+                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
+                                            </a>
+                                        {% endif %}
                                 </div>
                                     </div>
                                 </div>
@@ -306,7 +314,7 @@
                             </div>
                         </a>
                          <a href="{% url 'shop:product_detail' product.slug %}">
-                            <div class="product-title">
+                            <div class="product-title mt-2">
                                 <div class="title">
                                     <h3 class="title-font font-14">{{product.name}}
                                     </h3>
@@ -335,9 +343,15 @@
                                      مشاهده
                                      <i class="bi bi-arrow-left ms-4 text-white"></i>
                                  </a>
-                                 <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
-                                     <i class="bi bi-heart fs-5 text-white"></i>
-                                 </a>
+                                 {% if user.is_authenticated %}
+                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
+                                            <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
+                                            </a>
+                                        {% else %}
+                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
+                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
+                                            </a>
+                                        {% endif %}
                              </div>
                          </div>
                      </div>
@@ -406,7 +420,7 @@
                              <img alt="{{ product.name }}" class="img-fluid"
                                   src="{{product.get_main_image}}">
                          </div>
-                         <div class="product-title">
+                         <div class="product-title mt-4">
                              <div class="title">
                                  <h3 class="title-font font-14">{{ product.name }}</h3>
                              </div>
@@ -433,9 +447,15 @@
                                      مشاهده
                                      <i class="bi bi-arrow-left ms-4 text-white"></i>
                                  </a>
-                                 <a class="btn border-0 d-flex align-items-center rounded-3 main-color-two-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
-                                     <i class="bi bi-heart fs-5 text-white"></i>
-                                 </a>
+                                 {% if user.is_authenticated %}
+                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
+                                            <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
+                                            </a>
+                                        {% else %}
+                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
+                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
+                                            </a>
+                                        {% endif %}
                              </div>
                          </div>
                      </div>

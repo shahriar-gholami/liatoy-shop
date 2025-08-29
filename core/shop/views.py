@@ -61,6 +61,13 @@ class IndexView(View):
 		most_viewed_products = Product.objects.order_by('-views')[:8]
 		special_products = list(store.get_special_tags_products())[:8]
 		tomorrow = timezone.now().date() + timedelta(days=1)
+		favorite_products = []
+		if request.user.is_authenticated:
+			try:
+				customer = Customer.objects.get(phone_number=request.user.phone_number)
+				favorite_products = customer.favorites.values_list('id', flat=True)
+			except Customer.DoesNotExist:
+				pass
 		print('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 		print(tomorrow)
 		return render(request, f'{current_app_name}/index_{store.template_index}.html', {
@@ -73,6 +80,7 @@ class IndexView(View):
 																				   'products':products ,
 																				   'store_name':store_name, 
 																				   'slides':slides, 
+																				   'favorite_products':favorite_products,
 																				   'triple_banners':triple_banners,
 																				   'small_banners':small_banners, 
 																				   'big_banners':big_banners,
@@ -213,6 +221,13 @@ class ProductListView(View):
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
 		canonical = 'shop'
+		favorite_products = []
+		if request.user.is_authenticated:
+			try:
+				customer = Customer.objects.get(phone_number=request.user.phone_number)
+				favorite_products = customer.favorites.values_list('id', flat=True)
+			except Customer.DoesNotExist:
+				pass
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
@@ -221,6 +236,7 @@ class ProductListView(View):
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
+				'favorite_products':favorite_products,
 				'price_ranges':price_ranges,
 				'category_slug':'all', 
 				'brand_slug':'all',
@@ -765,8 +781,15 @@ class ProductDetailView(View):
 		add_to_cart_url = f'{current_app_name}:add-to-cart'
 		products = product.get_related_products()
 		brand = product.brand
+		favorite_products = []
+		if request.user.is_authenticated:
+			try:
+				customer = Customer.objects.get(phone_number=request.user.phone_number)
+				favorite_products = customer.favorites.values_list('id', flat=True)
+			except Customer.DoesNotExist:
+				pass
 		return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', 
-				{'brand':brand,'products':products,'product': product,'comments':comments ,'varieties':varieties,'form':form, 'message':message, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
+				{'brand':brand,'products':products,'product': product,'comments':comments , 'favorite_products':favorite_products ,'varieties':varieties,'form':form, 'message':message, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
 
 class CommentCreateView(IsCustomerUserMixin, View):
 
