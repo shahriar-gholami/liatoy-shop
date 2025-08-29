@@ -337,7 +337,6 @@ class Feature(models.Model):
 		verbose_name = 'ویژگی‌ها'
 		verbose_name_plural = 'ویژگی‌ها'
 
-
 class Product(models.Model):
 	category = models.ManyToManyField(Category, verbose_name= 'دسته‌بندی')
 	name = models.CharField(max_length=200, verbose_name = 'عنوان')
@@ -599,7 +598,6 @@ class Comment(models.Model):
 		verbose_name = 'دیدگاه‌ها'
 		verbose_name_plural = 'دیدگاه‌ها'
 
-
 class CartItem(models.Model):
 	variety = models.ForeignKey(Variety, on_delete = models.CASCADE, null=True, blank=True, verbose_name='تنوع کالا')
 	quantity = models.PositiveIntegerField(default = 1, verbose_name='تعداد')
@@ -669,15 +667,6 @@ class OrderStatus(models.Model):
 
 	def __str__(self):
 		return self.latest_status
-
-# class Cashback(models.Model):
-# 	repetation = models.IntegerField(default=0, verbose_name='تکرار')
-# 	percent = models.IntegerField(default=0, verbose_name='درصد')
-# 	const = models.IntegerField(default=0, verbose_name='مقدار ثابت')
-
-# 	class Meta:
-# 		verbose_name = 'کش‌بک'
-# 		verbose_name_plural = 'کش‌بک'
 
 class Order(models.Model):
 	customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, verbose_name='مشتری')
@@ -990,7 +979,6 @@ def category_upload_path(instance, filename):
 	category_name = instance.alt_name.replace(" ", "_")
 	filename = f"{category_name}_{filename}"
 	return f"{filename}"
-
 
 class CategoryImage(models.Model):
 	alt_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='عنوان جایگزین')

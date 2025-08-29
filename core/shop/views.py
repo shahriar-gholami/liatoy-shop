@@ -232,6 +232,7 @@ class ProductListView(View):
 				{'products': products, 
 				'to_products':products_urls, 
 				'ages':ages,
+				'store':store,
 				'canonical':canonical,
 				'store_name':store_name, 
 				'categories':categories,
@@ -264,7 +265,7 @@ class ProductListView(View):
 			price_range = form.cleaned_data['price_range']
 			if category != '0':
 				selected_category = Category.objects.get(id = int(category)).slug
-			if brand != '0':
+			if brand and brand != '0':
 				selected_brand = Brand.objects.get(id = int(brand)).slug
 			if age != '0':
 				selected_age = AgeCategory.objects.get(id = int(age)).slug
@@ -277,7 +278,7 @@ class FilterProductsView(View):
 	template_name = 'product_list.html'
 
 	def get(self, request, category_slug, brand_slug, age_slug, price_slug):
-
+		store = Store.objects.all().first()
 		selected_category = None
 		selected_brand = None
 		selected_age= None
@@ -359,6 +360,7 @@ class FilterProductsView(View):
 				'to_products':products_urls, 
 				'ages':ages,
 				'canonical':canonical,
+				'store':store,
 				'store_name':store_name, 
 				'categories':categories,
 				'brands':brands,
