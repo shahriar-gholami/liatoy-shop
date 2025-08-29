@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="{{store.get_logo_image}}">
 {% endblock %}
 
-{% block title %}{% if canonical == 'category' %}خرید انواع  {{ category.name }}{% endif %}{% if canonical == 'tag' %}خرید انواع اسباب بازی های  {{ tag.name }}{% endif %}{% if canonical == 'brand' %}خرید انواع محصولات {{ brand.name }}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}{% endblock %}
+{% block title %}{% if canonical == 'category' %}خرید انواع  {{ category.name }}{% endif %}{% if canonical == 'tag' %}خرید انواع محصولات  {{ tag.name }}{% endif %}{% if canonical == 'brand' %}خرید انواع محصولات {{ brand.name }}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات  {{store.name}}{% endif %}{% endblock %}
 
 {% block content %}
 
@@ -486,7 +486,7 @@
                                 <nav aria-label="Page navigation example">
                                     <ul class="pagination flex-wrap justify-content-center">
                                         {% if products.has_previous %}
-                                        <li class="page-item disabled">
+                                        <li class="page-item">
                                             <a class="page-link rounded-3" href="?page={{ products.previous_page_number }}">قبلی</a>
                                         </li>
                                         <li class="page-item"><a class="page-link rounded-3" href="?page=1">1</a></li>

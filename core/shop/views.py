@@ -758,6 +758,7 @@ class ProductDetailView(View):
 		store = Store.objects.all().first()
 		store_name = store.name
 		product = Product.objects.get(slug = product_slug)
+		purchased = 1
 		if product.views:
 			product.views = product.views + 1
 		else:
@@ -771,12 +772,16 @@ class ProductDetailView(View):
 			for key, value in request.session.items():
 					if str(product.id)==key:
 						message = f'شما در حال حاضر {value} عدد از این کالا را در سبد خرید خود دارید.'
+						purchased = value
 		else:
 			customer = Customer.objects.get(phone_number = request.user.phone_number)
 			cart , create= Cart.objects.get_or_create(customer = customer)
 			cart_item = cart.items.filter(variety__in = varieties).first()
 			if cart_item != None:
 				message = f'شما در حال حاضر {cart_item.quantity} عدد از این کالا را در سبد خرید خود دارید.'
+				purchased = cart_item.quantity
+
+		
 		
 		add_to_cart_url = f'{current_app_name}:add-to-cart'
 		products = product.get_related_products()
@@ -789,7 +794,17 @@ class ProductDetailView(View):
 			except Customer.DoesNotExist:
 				pass
 		return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', 
-				{'brand':brand,'products':products,'product': product,'comments':comments , 'favorite_products':favorite_products ,'varieties':varieties,'form':form, 'message':message, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
+				{'brand':brand,
+	 			'products':products,
+				'product': product,
+				'comments':comments , 
+				'favorite_products':favorite_products ,
+				'varieties':varieties,
+				'form':form, 
+				'purchased':purchased,
+				'message':message, 
+				'add_to_cart':add_to_cart_url, 
+				'store_name':store_name})
 
 class CommentCreateView(IsCustomerUserMixin, View):
 
@@ -846,7 +861,11 @@ class CartView(IsCustomerUserMixin, View):
 		cart = Cart.objects.filter(id=cart_id).first()
 		cart_item = cart.items.filter(id=item_id).first()
 		if form.is_valid():
-			cart_item.quantity = form.cleaned_data['count']
+			count = form.cleaned_data['count']
+			if count>cart_item.variety.stock:
+				messages.success(request, f'از این کالا تنها {cart_item.variety.stock} عدد موجود است')
+				return redirect(request.META.get("HTTP_REFERER", "/"))
+			cart_item.quantity = count
 			cart_item.save()
 			cart.save
 			return redirect(f'{current_app_name}:cart_view', cart_id)
@@ -869,7 +888,7 @@ class AddToCartView(View):
 			size = form.cleaned_data['size']
 			
 			if size == '':
-				default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety', stock = 2)
+				default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety')
 				variety_id = default_variety.id
 				variety = default_variety
 			else:
@@ -1434,7 +1453,7 @@ class AddProductFromDigikalaView(View):
 				default_variety = Variety.objects.create(
 					name = 'default variety',
 					product = new_product, 
-					stock = 2,
+					stock = 1000,
 				)
 		return redirect('shop:product_list')				
 					

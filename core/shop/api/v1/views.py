@@ -84,7 +84,7 @@ class ProductListCreate(APIView):
 				store = store,
 				name = 'default variety',
 				product = new_product, 
-				stock = 2,
+				stock = 1000,
 			)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)

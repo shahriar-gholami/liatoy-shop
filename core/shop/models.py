@@ -250,7 +250,6 @@ class Delivery(models.Model):
 	def __str__(self):
 		return f'{self.name} + {self.price} تومان '
 
-
 class Tag(models.Model):
 	name = models.CharField(max_length=200, verbose_name = 'عنوان')
 	slug = models.CharField(max_length=200, verbose_name = 'نامک')
@@ -277,9 +276,10 @@ class Category(models.Model):
 	name = models.CharField(max_length=200, verbose_name='عنوان')
 	slug = models.SlugField(max_length=200, verbose_name='نامک')
 	description = models.TextField(null=True, blank=True, verbose_name='توضیحات دسته بندی')
+	priority = models.IntegerField(default=1)
 
 	class Meta:
-		ordering = ('name',)
+		ordering = ('priority','name')
 		verbose_name = 'دسته‌بندی‌های محصولات'
 		verbose_name_plural = 'دسته‌بندی‌های محصولات'	
 
