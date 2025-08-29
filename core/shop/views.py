@@ -27,6 +27,7 @@ from django.apps import apps
 from datetime import datetime
 from khayyam import JalaliDatetime
 from django.db.models import Q
+from datetime import timedelta
 import re
 
 
@@ -59,6 +60,9 @@ class IndexView(View):
 		featured_categories = FeaturedCategories.objects.all().first()
 		most_viewed_products = Product.objects.order_by('-views')[:8]
 		special_products = list(store.get_special_tags_products())[:8]
+		tomorrow = timezone.now().date() + timedelta(days=1)
+		print('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+		print(tomorrow)
 		return render(request, f'{current_app_name}/index_{store.template_index}.html', {
 																				   'store':store,
 																				   'sales_products':sales_products,
@@ -72,6 +76,7 @@ class IndexView(View):
 																				   'triple_banners':triple_banners,
 																				   'small_banners':small_banners, 
 																				   'big_banners':big_banners,
+																				   'tomorrow':str(tomorrow),
 																				   'most_viewed_products':most_viewed_products})
 	
 class CustomerDashboardView(View):
