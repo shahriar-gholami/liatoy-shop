@@ -30,6 +30,11 @@ class Policy(models.Model):
 		verbose_name = "قوانین و سیاست‌ها"
 		verbose_name_plural = "قوانین و سیاست‌ها"
 
+def upload_path(instance, filename):
+	timestamp = timezone.now().strftime("%Y%m%d")
+	filename = f"{timestamp}_{filename}"
+	return f"{filename}"
+
 class Store(models.Model):
 	name = models.CharField(max_length=250, unique=True, verbose_name='عنوان')
 	is_active = models.BooleanField(default = False, verbose_name='فعال')
@@ -66,6 +71,7 @@ class Store(models.Model):
 	show_blog = models.BooleanField(default=True, verbose_name='نمایش وبلاگ')
 	default_canonical = models.CharField(max_length=255, default='https://Liatoy.com/')
 	identity = models.CharField(max_length=1000, null=True, blank=True,verbose_name='هویت سایت')
+	favicon = models.ImageField(upload_to=upload_path, default='media/11.png',verbose_name='فاویکن', null=True)
 
 	def get_socials(self):
 		return SocialAccount.objects.all()

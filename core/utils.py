@@ -5,8 +5,6 @@ import random
 import jdatetime
 
 
-store = Store.objects.first()
-
 def send_otp_code(phone_number, code):
     url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
