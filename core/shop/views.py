@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from random import randint
 from django.core.files.base import ContentFile
+from django.utils.safestring import mark_safe
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.models import AnonymousUser
@@ -926,10 +927,20 @@ class AddToCartView(View):
 					cart_item = cart.items.get(variety=variety)
 					cart_item.quantity = quantity
 					cart_item.save()
+					cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
+					messages.success(
+						request,
+						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success" href="{cart_url}">مشاهده سبد خرید</a>')
+					)
 				else:
 					cart_item = CartItem.objects.create(variety=variety, quantity=quantity)
-				
+					cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
+					messages.success(
+						request,
+						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success" href="{cart_url}">مشاهده سبد خرید</a>')
+					)
 				cart.items.add(cart_item)
+				
 
 			return redirect(f'{current_app_name}:product_detail' ,product.slug)
 
@@ -1840,7 +1851,7 @@ class OrderDetailView(IsCustomerUserMixin ,View):
 			delivery_description = ''
 			delivery_description = delivery_description+'اقلام سفارش: <br>'
 			for item in order.items.all():
-				delivery_description = delivery_description+f"{item.variety.product.name} - تنوع: {item.variety.name.replace('default variety','ندارد')} - قیمت: {item.get_item_price()} تومان - تعداد: {item.quantity} عدد - مجموع هزینه: {int(item.get_item_price().replace(',',''))*item.quantity:,} تومان<br>"
+				delivery_description = delivery_description+f"{item.variety.product.name} - تنوع: {item.variety.name.replace('default variety','ندارد')} - قیمت: {item.get_single_item_price()} تومان - تعداد: {item.quantity} عدد - مجموع هزینه: {int(item.get_single_item_price().replace(',',''))*item.quantity:,} تومان<br>"
 			delivery_description = delivery_description+'شیوه ارسال: <br>'
 			if order.total_price <= delivery_method.min_cart_free:
 				delivery_description = delivery_description+f'{delivery_method.name} + {delivery_method.price:,} تومان  <br>'

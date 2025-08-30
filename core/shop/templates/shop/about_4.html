@@ -60,15 +60,14 @@
         <div class="row gy-3 align-items-center">
             <div class="col-lg-6">
                 <div class="about-us-title">
-                    <h2 class="title-font"><span class="main-color-one-color">فروشگاه</span> آنلاین </h2>
-                    <h3 class="fw-normal">{{ store.name }}</h3>
+                    <h1 class="title-font main-color-one-color">{{ store.name }}</h1>
                 </div>
                 <p class="text-muted text-justify font-16">
                     {{store.about_description|safe}}
                 </p>
             </div>
-            <div class="col-lg-6">
-                <img src="{% static 'assets3/img/about.png' %}" alt="">
+            <div class="col-lg-6 text-center">
+                <img class="text-center" src="{{ store.get_logo_image }}" alt="">
             </div>
         </div>
     </div>

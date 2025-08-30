@@ -612,6 +612,10 @@ class CartItem(models.Model):
 	def get_item_price(self):
 		item_price = self.quantity*int(self.variety.product.get_active_price().replace(',',''))
 		return f'{item_price:,}'
+	
+	def get_single_item_price(self):
+		item_price = int(self.variety.product.get_active_price().replace(',',''))
+		return f'{item_price:,}'
 
 class Cart(models.Model):
 	customer = models.ForeignKey(Customer, on_delete = models.CASCADE, verbose_name='مشتری')
