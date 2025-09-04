@@ -4,13 +4,12 @@ django-decouple==2.1
 djangorestframework==3.14.0
 filelock==3.13.1
 markdown==3.5.1
-pillow==10.1.0
+pillow
 django-storages
 boto3
 python-dotenv
 django-filter
 django-ckeditor
-celery
 django-multiupload
 django-jsonfield  
 drf-yasg
@@ -19,7 +18,6 @@ markdown
 django-filter  
 django-cors-headers
 django-debug-toolbar
-psycopg2-binary
 bs4
 pytz
 django_jalali
