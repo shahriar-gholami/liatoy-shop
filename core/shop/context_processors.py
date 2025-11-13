@@ -6,6 +6,7 @@ from shop.models import Cart, Tag, Customer
 
 store = Store.objects.all().first()
 store_name = store.name
+site_name = store_name
 
 
 
@@ -93,7 +94,8 @@ def base_template_context(request):
 				'account_url':account_url,
 				'store':store,
 				'store_name':store_name,
-				'special_tags':special_tags
+				'special_tags':special_tags,
+				'site_name':site_name
 			}
 	else:
 		top_categories = Category.objects.all()
@@ -118,5 +120,6 @@ def base_template_context(request):
 				'account_url':account_url,
 				'store':store,
 				'store_name':store_name,
-				'special_tags':special_tags
+				'special_tags':special_tags,
+				'site_name':site_name
 			}        

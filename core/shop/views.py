@@ -518,7 +518,8 @@ class FilterTagProducts(View):
 		items_per_page = 12
 		store = Store.objects.get(name=store_name)
 		categories = Category.objects.all()
-		products = Product.objects.filter( tags__slug=tag_slug)
+		tag = get_object_or_404(Tag, slug=tag_slug)
+		products = Product.objects.filter( tags=tag)
 		paginator = Paginator(products, items_per_page)
 		page = request.GET.get('page', 1)
 		try:
@@ -530,7 +531,6 @@ class FilterTagProducts(View):
 		brands = Brand.objects.all()
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
-		tag = Tag.objects.filter(slug=tag_slug)
 		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
 				{'products': products, 
 	 			'tag':tag,
@@ -677,7 +677,7 @@ class CategoryProductsListView(View):
 		store = Store.objects.all().first()
 		store_name = store.name
 		filters = Filter.objects.all()
-		category = Category.objects.get(slug = category_slug)
+		category = get_object_or_404(Category, slug=category_slug)
 		my_forms = []
 		if category != '0':
 			selected_category = category
@@ -760,7 +760,7 @@ class ProductDetailView(View):
 	def get(self, request, product_slug ):
 		store = Store.objects.all().first()
 		store_name = store.name
-		product = Product.objects.get(slug = product_slug)
+		product = get_object_or_404(Product, slug=product_slug)
 		purchased = 1
 		if product.views:
 			product.views = product.views + 1
@@ -1473,7 +1473,7 @@ class AddProductFromDigikalaView(View):
 class SpecialProductListView(View):
 
 	def get(self, request, tag_slug):
-		tag = Tag.objects.filter(slug=tag_slug).first()
+		tag = get_object_or_404(Tag, slug=tag_slug)
 		products = tag.get_products()
 		items_per_page = 12
 		store = Store.objects.all().first()
@@ -1636,7 +1636,7 @@ class SpecialProductListView(View):
 class BrandProductListView(View):
 
 	def get(self, request, brand_name):
-		brand = Brand.objects.filter(name=brand_name).first()
+		brand = get_object_or_404(Brand, name=brand_name)
 		products = Product.objects.filter(brand=brand.id)
 		items_per_page = 12
 		store = Store.objects.all().first()
@@ -1672,7 +1672,7 @@ class BrandProductListView(View):
 		product_cat = None
 		price_range = None
 		
-		brand = Brand.objects.filter(name=brand).first()
+		brand = get_object_or_404(Brand, name=brand_name)
 		products = Product.objects.filter(brand=brand.name)
 		selected_brand = brand
 		form = FilterProductsForm(request.POST)

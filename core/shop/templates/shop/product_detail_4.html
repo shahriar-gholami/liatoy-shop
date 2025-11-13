@@ -5,14 +5,14 @@
 <meta charset="UTF-8">
 <meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
 <meta content="IE=edge" http-equiv="X-UA-Compatible">
-<meta name="description" content="{% if product.meta_description == '' %}{{product.get_default_meta_description|safe}}{% else %}{{ product.meta_description|safe }}{% endif %}">
+<meta name="description" content="خرید و قیمت {{product.name}} از فروشگاه اسباب بازی لیاتوی با بهترین قیمت و ارسال فوری و بالاترین کیفیت">
 <meta content="Liatoy" name="author">
-<meta name="keywords" content="{% if product.meta_keywords == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_keywords}}{% endif %}">
+<meta name="keywords" content="خرید {{product.name}}, قیمت {{product.name}}, {% if product.brand %}{{product.brand.name}}{% endif %}, {{product.name}}">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="{{store.default_canonical}}{% url 'shop:product_detail' product.slug %}">
 
 <!-- Open Graph tags -->
-<meta property="og:title" content="{% if product.meta_og_title == '' %}{{product.get_default_meta_og_title}}{% else %}{{product.meta_og_title}}{% endif %}">
+<meta property="og:title" content="فروشگاه اسباب بازی لیاتوی | قیمت و خرید {{product.name}}">
 <meta property="og:description" content="{% if product.meta_og_description == '' %}{{product.get_default_meta_description|safe}}{% else %}{{product.meta_og_description|safe}}{% endif %}">
 <meta property="og:image" content="{{product.get_thumbnail}}" rel="shortcut icon" type="image/x-icon">
 <meta property="og:url" content="{{store.default_canonical}}{% url 'shop:product_detail' product.slug %}">
@@ -20,8 +20,8 @@
 
 <!-- Twitter Card tags -->
 <meta name="twitter:card" content="Summary Card with Large Image">
-<meta name="twitter:title" content="{% if product.meta_tc_title == '' %}{{product.get_default_meta_tc_title}}{% else %}{{product.meta_tc_title}}{% endif %}">
-<meta name="twitter:description" content="{% if product.meta_tc_description == '' %}{{product.get_default_meta_tc_description|safe}}{% else %}{{product.meta_tc_description|safe}}{% endif %}">
+<meta name="twitter:title" content="فروشگاه اسباب بازی لیاتوی | قیمت و خرید {{product.name}}">
+<meta name="twitter:description" content="خرید و قیمت {{product.name}} از فروشگاه اسباب بازی لیاتوی با بهترین قیمت و ارسال فوری و بالاترین کیفیت">
 <meta name="twitter:image" content="{{product.get_thumbnail}}">
 
 <script type="application/ld+json">
@@ -32,7 +32,7 @@
   "image": [
     "{{ product.get_main_image }}"
   ],
-  "description": "{{ product.meta_description }}",
+  "description": "خرید و قیمت {{product.name}} از فروشگاه اسباب بازی لیاتوی با بهترین قیمت و ارسال فوری و بالاترین کیفیت",
   "sku": "{{ product.id }}",
   "offers": {
     "@type": "Offer",
@@ -79,17 +79,6 @@
 
 {% block content %}
 
-<!-- product_detail.html -->
-
-
-{% if store.has_domain == True %}
-<script>
-    // Replace the common part of the URL with an empty string
-    var currentUrl = window.location.href;
-    var newUrl = currentUrl.replace('/shop/{{store.name}}/', '/');
-    history.replaceState(null, null, newUrl);
-</script>
-{% endif %}
 
 
 <!--============ end mega menu ==============-->
@@ -545,7 +534,15 @@
                                              id="productDescLess-pane">
                                             <div class="product-desc-content">
                                                 <h2 class="font-22 mb-2 title-font title-line-bottom">معرفی محصول</h2>
-
+                                                {% if product.video_code %}
+                                                <div class="row my-4">
+                                                    <div class="col-12 col-lg-3 col-xl-3 col-md-3 align-items-center justify-content-center"></div>
+                                                    <div class="col-12 col-lg-6 col-xl-6 col-md-6 align-items-center justify-content-center">
+                                                        {{product.video_code|safe}}
+                                                    </div>
+                                                    <div class="col-12 col-lg-3 col-xl-3 col-md-3 align-items-center justify-content-center"></div>
+                                                </div>
+                                                {% endif %}
                                                 <p>
                                                     {{ product.description|safe }}
                                                 </p>

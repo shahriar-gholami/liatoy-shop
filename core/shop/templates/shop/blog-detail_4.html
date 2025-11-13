@@ -120,13 +120,11 @@
 <div class="container-fluid mb-3">
     <div class="blog-single-title content-box p-3 py-5">
             <div class="row align-items-center">
-                <div class="col-lg-9">
+                <div class="col-lg-8">
                     <h1 class="h3 title-font text-white">{{post.title}}</h1>
                 </div>
-                <div class="col-lg-3">
-                    <div class="blog-single-title-thumbnail">
-                        <img src="{{post.get_thumbnail}}" class="img-thumbnail rounded-0"  alt="{{ post.title }}">
-                    </div>
+                <div class="col-lg-4">
+                    <img src="{{post.get_thumbnail}}" class="img-thumbnail rounded-0"  alt="{{ post.title }}" style="object-fit: contain;">
                 </div>
             </div>
         </div>

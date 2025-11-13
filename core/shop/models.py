@@ -361,6 +361,7 @@ class Product(models.Model):
 	meta_tc_title = models.TextField(null=True, blank=True, verbose_name = 'عنوان TwitterCard')
 	meta_tc_description = models.TextField(null=True, blank=True, verbose_name = 'توضیحات TwitterCard')
 	stock_alarm_volume = models.IntegerField(default=0, null=True, blank=True, verbose_name = 'هشدار اتمام موجودی')
+	video_code = models.TextField(null=True, blank=True)
 
 
 	def get_normal_price(self):
@@ -449,7 +450,7 @@ class Product(models.Model):
 		return feature_table		
 
 	class Meta:
-		ordering = ('name',)
+		ordering = ('-created',)
 		verbose_name = 'محصولات'
 		verbose_name_plural = 'محصولات'
 		

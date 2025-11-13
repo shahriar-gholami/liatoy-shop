@@ -1,42 +1,50 @@
 {% extends "base_4.html" %}
 {% load static %}
-
+{% load custom_filters %}
 {% block meta %}
-<meta charset="UTF-8">
-<meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
-<meta content="IE=edge" http-equiv="X-UA-Compatible">
-<meta name="description" content="{{ store.meta_description }}">
-<meta content="Liatoy" name="author">
-<meta name="keywords" content="{{store.meta_keywords}}">
+<title>{{ site_name }} | مقالات و آموزش‌ها</title>
+<meta name="description" content="جدیدترین مقالات، آموزش‌ها و نکات تخصصی در {{ site_name }} را در این بخش مطالعه کنید.">
+<meta name="keywords" content="مقالات, آموزش, بلاگ, {{ site_name }}">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="{{store.default_canonical}}{% url 'shop:post_list' %}">
 
-<!-- Open Graph tags -->
-<meta property="og:title" content="{{store.meta_og_title}}">
-<meta property="og:description" content="{{meta_og_description}}">
-<meta property="og:image" content="{{store.get_logo_image}}" rel="shortcut icon" type="image/x-icon">
-<meta property="og:url" content="{{store.default_canonical}}{% url 'shop:post_list' %}">
+<!-- OpenGraph -->
 <meta property="og:type" content="website">
+<meta property="og:title" content="مقالات و آموزش‌های {{ site_name }}">
+<meta property="og:description" content="دسترسی به جدیدترین مقالات تخصصی در {{ site_name }}">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:image" content="{{store.get_logo_image}}">
 
-<!-- Twitter Card tags -->
-<meta name="twitter:card" content="Summary Card with Large Image">
-<meta name="twitter:title" content="{{store.meta_tc_title}}">
-<meta name="twitter:description" content="{{store.meta_tc_description}}">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="مقالات و آموزش‌های {{ site_name }}">
+<meta name="twitter:description" content="جدیدترین مقالات و آموزش‌ها در {{ site_name }}">
 <meta name="twitter:image" content="{{store.get_logo_image}}">
+
+<!-- Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "headline": "بلاگ {{ site_name }}",
+  "description": "جدیدترین مقالات آموزشی و تخصصی در {{ site_name }}",
+  "url": "{{ request.build_absolute_uri }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ site_name }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{store.get_logo_image}}"
+    }
+  }
+}
+</script>
 {% endblock %}
 
 
-{% block title %}وبلاگ{% endblock %}
 {% block content %}
 
-{% if store.has_domain == True %}
-<script>
-    // Replace the common part of the URL with an empty string
-    var currentUrl = window.location.href;
-    var newUrl = currentUrl.replace('/shop/{{store.name}}/', '/');
-    history.replaceState(null, null, newUrl);
-</script>
-{% endif %}
+
 
 <section class="content my-25">
     <div class="container-fluid">
@@ -68,8 +76,8 @@
                                             </h6>
                                         </div>
                                         <div class="blog-post-card-description my-2">
-                                            <p class="text-muted text-overflow-2">
-                                                {{post.body|truncatewords:40|safe}}
+                                            <p class="text-muted text-overflow-2 font-14">
+                                                {{ post.body|striptags|html_unescape|truncatewords:40 }}
                                             </p>
                                         </div>
                                     </a>
