@@ -546,6 +546,12 @@
                                                 <p>
                                                     {{ product.description|safe }}
                                                 </p>
+                                                <hr>
+                                                <h3 class="font-16"><strong>برچسب‌های محصول: </strong></h3>
+                                                {% for tag in product.tags.all %}
+                                                <a class="btn btn-sm btn-success m-1" href="{% url 'shop:filter_tag_products' tag.slug %}">{{tag.name}}</a>
+                                                
+                                                {% endfor %}
                                             </div>
                                         </div>
                                         
