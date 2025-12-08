@@ -275,8 +275,11 @@ class Category(models.Model):
 	is_sub = models.BooleanField(default=False, verbose_name='معرفی به عنوان زیردسته')
 	name = models.CharField(max_length=200, verbose_name='عنوان')
 	slug = models.SlugField(max_length=200, verbose_name='نامک')
+	short_description = RichTextField(verbose_name = 'توضیحات کوتاه دسته‌بندی', null=True)
 	description = RichTextField(verbose_name = 'توضیحات دسته‌بندی', null=True)
 	priority = models.IntegerField(default=1)
+	image = models.ImageField(upload_to='category/', default='media/11.png', null=True, blank=True)
+
 
 	class Meta:
 		ordering = ('priority','name')
@@ -329,6 +332,25 @@ class Category(models.Model):
 	def __str__(self):
 		return f'{self.name}'
 	
+
+class CategoryFAQ(models.Model):
+    category = models.ForeignKey(
+        Category,
+        related_name='faqs',
+        on_delete=models.CASCADE,
+        verbose_name='دسته‌بندی'
+    )
+    question = models.TextField(verbose_name='سوال')
+    answer = models.TextField(verbose_name='پاسخ')
+    is_active = models.BooleanField(default=True, verbose_name='فعال؟')
+    order = models.PositiveIntegerField(default=0, verbose_name='ترتیب نمایش')
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.question
+	
 class Feature(models.Model):
 	name = models.CharField(max_length = 250, verbose_name='عنوان')
 	value = models.CharField(max_length = 250, verbose_name='مقدار')
@@ -362,6 +384,18 @@ class Product(models.Model):
 	meta_tc_description = models.TextField(null=True, blank=True, verbose_name = 'توضیحات TwitterCard')
 	stock_alarm_volume = models.IntegerField(default=0, null=True, blank=True, verbose_name = 'هشدار اتمام موجودی')
 	video_code = models.TextField(null=True, blank=True)
+
+	def get_absolute_url(self):
+		return reverse('shop:product_detail', kwargs={'product_slug':self.slug})
+		
+	def get_main_image(self):
+		images = ProductImage.objects.filter(product=self)
+		main_image = images.first()
+		if main_image == None:
+			return static('assets/images/11.jpg')
+		else:
+			main_image_url = main_image.image.url.split('?')[0]
+		return main_image_url
 
 
 	def get_normal_price(self):
@@ -453,15 +487,8 @@ class Product(models.Model):
 		ordering = ('-created',)
 		verbose_name = 'محصولات'
 		verbose_name_plural = 'محصولات'
-		
-	def get_main_image(self):
-		images = ProductImage.objects.filter(product=self)
-		main_image = images.first()
-		if main_image == None:
-			return static('assets/images/11.jpg')
-		else:
-			main_image_url = main_image.image.url.split('?')[0]
-		return main_image_url
+
+	
 
 	def get_gallery(self):
 		images = [img.image.url.split('?')[0] for img in ProductImage.objects.filter(product=self)]
@@ -492,8 +519,7 @@ class Product(models.Model):
 			stock_info[f'{variety.name}'] = variety.stock
 		return stock_info
 	
-	def get_absolute_url(self):
-		return reverse('shop:product_detail', kwargs={'product_slug':self.slug})
+	
 
 	def get_sell_stats(self):
 		selled = 0

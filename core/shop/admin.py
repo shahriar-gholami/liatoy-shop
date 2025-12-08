@@ -59,11 +59,16 @@ class DeliveryAdmin(admin.ModelAdmin):
 # class AnnouncementAdmin(admin.ModelAdmin):
 # 	list_display = ('subject','is_active', 'shamsi_created_date')
 
+class CategoryFAQInline(admin.TabularInline):
+    model = CategoryFAQ
+    extra = 1
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
 	list_display = ('name','parent', 'is_sub',  'slug')
 	search_fields = ['name', 'slug']
 	autocomplete_fields = ['parent',]
+	inlines = [CategoryFAQInline]
 
 class VarietyInline(admin.TabularInline):  # یا admin.StackedInline برای نمایش به صورت بلوکی
 	model = Variety

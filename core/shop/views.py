@@ -735,7 +735,8 @@ class CategoryProductsListView(View):
 			if feature_filters[key] == []:
 				del feature_filters[key]
 		canonical = 'category'
-		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+		faqs = CategoryFAQ.objects.filter(category=category)
+		return render(request, f'{current_app_name}/category_product_list_{store.template_index}.html', 
 				{'products': products, 
 				'to_products':products_urls, 
 				'store_name':store_name, 
@@ -744,6 +745,7 @@ class CategoryProductsListView(View):
 				'price_ranges':price_ranges,
 				'selected_category':category,
 				'category':category,
+				'faqs':faqs,
 				'filters':filters,
 				'feature_filters':feature_filters,
 				'brands': brands,
