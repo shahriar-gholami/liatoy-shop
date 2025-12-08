@@ -1,0 +1,622 @@
+{% extends "base_4.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block meta %}
+<title>
+    خرید اسباب بازی {{ brand.name }} | قیمت و مدل‌های جدید | {{ site_name }}
+</title>
+
+<meta name="description" content="
+    خرید انواع اسباب بازی اصل برند {{ brand.name }} با بهترین قیمت، ارسال سریع و ضمانت اصالت کالا از {{ site_name }}.
+">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="خرید اسباب بازی {{ brand.name }} | قیمت روز">
+<meta property="og:description" content="مشاهده و خرید جدیدترین اسباب بازی‌های برند {{ brand.name }} با ضمانت اصالت کالا.">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:site_name" content="{{ site_name }}">
+
+{% if brand.image %}
+<meta property="og:image" content="{{ brand.image.url }}">
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="خرید اسباب بازی {{ brand.name }}">
+<meta name="twitter:description" content="لیست کامل اسباب بازی‌های برند {{ brand.name }} با قیمت ویژه.">
+
+{% if brand.image %}
+<meta name="twitter:image" content="{{ brand.image.url }}">
+{% endif %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Brand",
+  "name": "{{ brand.name }}",
+  "url": "{{ request.build_absolute_uri }}",
+  "description": "{{ brand.description|striptags|truncatechars:300 }}"
+  {% if brand.image %}
+  ,"logo": "{{ brand.image.url }}"
+  {% endif %}
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for product in products %}
+    {
+      "@type": "Product",
+      "name": "{{ product.title }}",
+      "url": "{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faqs %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.question }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.answer }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="content my-25">
+    <div class="container-fluid">
+        <div class="ui-boxs">
+            <div class="ui-box" >
+                <div class="ui-box-item slider-parent ui-box-white py-4 px-2 text-center">
+                    <h1 >خرید اسباب بازی {{ brand.name }}</h1>
+                    <p>
+                        {{ brand.short_description|safe }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- start filter in mobile -->
+        <div class="custom-filter d-lg-none d-block">
+            <button class="btn btn-filter-float border-0 main-color-two-bg shadow-box px-3 rounded-3 position-fixed"
+                    style="z-index: 999;bottom:80px;" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+                <i class="bi bi-funnel font-20 fw-bold text-white"></i>
+                <span class="d-block font-14 text-white">فیلتر</span>
+            </button>
+
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasRight"
+                 aria-labelledby="offcanvasRightLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">فیلتر ها</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="filter-items position-sticky shadow-none top-0">
+                        <div class="container-fluid">
+                        {% if main_filters.category or main_filters.category or main_filters.brand or main_filters.age or main_filters.price_range %}
+                        <div class="item-box">
+                            <div class="title">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h6 class="font-14">فیلتر های اعمال شده</h6>
+                                    <a class="btn border-0" data-bs-toggle="collapse" href="#collapseItemBox1"
+                                       role="button" aria-expanded="false">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% for main_filter in main_filters.category %}
+                            دسته‌بندی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' 'all' brand_slug age_slug price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.brand %}
+                            برند: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug 'all' age_slug price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.age %}
+                            گروه سنی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug 'all' price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.price_range %}
+                            بازه قیمتی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug age_slug 'all' %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'shop:product_list'  %}">
+                            {% csrf_token %}
+                            
+                            <div class="filter-item">
+                                {% if active_filters %}
+                                <div class="item-box shadow-box">
+                                    <div class="title">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <h6 class="font-14">فیلتر های اعمال شده</h6>
+                                            <a class="btn border-0" data-bs-toggle="collapse" href="#collapseItemBox1"
+                                               role="button" aria-expanded="false">
+                                                <i class="bi bi-chevron-down"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% for active_filter in active_filters %}
+                                    <div class="desc collapse show" id="collapseItemBox1">
+                                        <a href="{% url 'shop:clear_active_filter'  active_filter.filter.id active_filter.value.id %}"
+                                           class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                            <span>{{active_filter.filter.name}} : {{active_filter.value.value}}</span>
+                                            <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                        </div>
+                                        {% endfor %}
+                                </div>
+                                {% endif %}
+                                <h5 class="filter-item-title">دسته بندی ها</h5>
+                                <div class="filter-item-content">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                        <select name="category" class="form-select width-100">
+                                            {% if main_selected_category != None %}
+                                                <option value= "{{ main_selected_category.id }}" class="text-white">{{ main_selected_category.name }}</option>
+                                            {% else %}
+                                                <option value="0" class="text-white">انتخاب</option>
+                                            {% endif %}
+                                            {% for category in categories %}
+                                                <li><option value="{{ category.id }}">{{ category.name }}</option></li>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% if store.show_brands == True %}
+                                <h5 class="filter-item-title">برندها</h5>
+                                <div class="filter-item-content">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                        <select name="brand" id="floatingInputOstan" class="form-select">
+                                            {% if selected_brand != None %}
+                                                <option value= "{{ selected_brand.id }}" class="text-white">{{ selected_brand.name }}</option>
+                                            {% else %}
+                                                <option value="0" class="text-white">انتخاب</option>
+                                            {% endif %}    
+                                            {% for brand in brands %}
+                                                <option value="{{brand.id}}">{{brand}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if store.show_ages == True %}
+                                <h5 class="filter-item-title">گروه‌های سنی</h5>
+                                <div class="filter-item-content">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                        <select name="age" id="floatingInputOstan" class="form-select">
+                                            {% if selected_age != None %}
+                                                <option value= "{{ selected_age.id }}" class="text-white">{{ selected_age.group }}</option>
+                                            {% else %}
+                                                <option value="0" class="text-white">انتخاب</option>
+                                            {% endif %}    
+                                            {% for age in ages %}
+                                                <option value="{{age.id}}">{{ age }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <h5 class="filter-item-title">بازه قیمتی</h5>
+                                <div class="filter-item-content">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                        <select name="price_range" id="floatingInputOstan" class="form-select">
+                                            {% if selected_price_range != None %}
+                                                <option value= "{{ selected_price_range.id }}" class="text-white">{{ selected_price_range }}</option>
+                                            {% else %}
+                                                <option value="0" class="text-white">انتخاب</option>
+                                            {% endif %}
+                                            {% for price_range in price_ranges %}
+                                                <li>
+                                                    <option value="{{ price_range.id }}">{{ price_range }}</option>                                       
+                                                </li>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="filter-item text-center">
+                                    <button type="submit" class="btn-outline-site">اعمال فیلتر</button>
+                                </div>
+                            
+                            </div>
+                        </form>
+                            <div class="container-fluid mt-4">
+                                <div class="filter-item">
+                                    {% if feature_filters.items %}
+                                    <div class="filter-item w-100">
+                                        <div class="filter-item align-items-center">
+                                            <h5 class="filter-item-title">{{filter.name}}</h5>
+                                            <div class="filter-item-content  justify-content-between form-check-label">
+                                                <form method="post" action="{% url 'shop:filter_product_list' category_slug brand_slug age_slug price_slug %}">
+                                                    {% csrf_token %}
+                                                    {% for key, value in feature_filters.items %}
+                                                    <h6 class="mt-3">{{ key }}</h6>
+                                                    {% for feature in value %}
+                                                    <div class="form-check">
+                                                        <label for="colorCheck1" class="form-check-label">{{feature}}</label>
+                                                        <input type="checkbox" {% if feature in values_list %}checked{% endif %} name="filters" id="colorCheck1" value="{{key.id}}:{{feature}}"
+                                                            class="form-check-input">
+                                                    </div>
+                                                    {% endfor %}
+                                                    {% endfor %}
+                                                    <div class="filter-item text-center mt-4">
+                                                        <button type="submit" class="btn-outline-site">فیلتر بر اساس ویژگی</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>     
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            
+                        </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end filter mobile -->
+
+        <div class="row gy-3">
+            <div class="col-lg-3 d-lg-block d-none">
+                <div class="filter-items position-sticky top-0">
+                    <div class="container-fluid">
+                        
+                        <div class="filter-item">
+                            {% if main_filters.category or main_filters.category or main_filters.brand or main_filters.age or main_filters.price_range %}
+                        <div class="item-box">
+                            <div class="title">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h6 class="font-14">فیلتر های اعمال شده</h6>
+                                    <a class="btn border-0" data-bs-toggle="collapse" href="#collapseItemBox1"
+                                       role="button" aria-expanded="false">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% for main_filter in main_filters.category %}
+                            دسته‌بندی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' 'all' brand_slug age_slug price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.brand %}
+                            برند: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug 'all' age_slug price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.age %}
+                            گروه سنی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug 'all' price_slug %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                            {% for main_filter in main_filters.price_range %}
+                            بازه قیمتی: <div class="desc collapse show" id="collapseItemBox1">
+                                <a href="{% url 'shop:filter_product_list' category_slug brand_slug age_slug 'all' %}"
+                                   class="btn btn-sm rounded-pill border-1 border-muted me-1 font-14 mb-2">
+                                    <span>{{main_filter}}</span>
+                                    <span class="ms-3"><i class="bi bi-x text-danger"></i></span></a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                            <form method="post" action="{% url 'shop:product_list'  %}">
+                                {% csrf_token %}
+                                <!-- <div class="filter-item">
+                                    <h5 class="filter-item-title">جستجو</h5>
+                                    <div class="filter-item-content">
+                                        <div class="search-form">
+                                            <form action="">
+                                                <div class="search-filed">
+                                                    <label>
+                                                        <input type="text" placeholder="جستجوی محصولات ..."
+                                                               class="form-control search-input">
+                                                    </label>
+                                                    <button type="submit"
+                                                            class="btn search-btn main-color-one-bg rounded-pill"><i
+                                                            class="bi bi-search"></i></button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div> -->
+                                <div class="filter-item">
+                                    <h5 class="filter-item-title">دسته‌بندی‌ها</h5>
+                                    <div class="filter-item-content">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                            <select name="category" class="form-select width-100">
+                                                {% if selected_category != None %}
+                                                    <option value= "{{ selected_category.id }}" class="text-white">{{ selected_category.name }}</option>
+                                                {% else %}
+                                                    <option value="0" class="text-white">انتخاب</option>
+                                                {% endif %}
+                                                {% for category in categories %}
+                                                    <li><option value="{{ category.id }}">{{ category.name }}</option></li>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {% if store.show_brands == True %}
+                                    <h5 class="filter-item-title">برندها</h5>
+                                    <div class="filter-item-content">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                            <select name="brand" id="floatingInputOstan" class="form-select">
+                                                {% if selected_brand != None %}
+                                                    <option value= "{{ selected_brand.id }}" class="text-white">{{ selected_brand.name }}</option>
+                                                {% else %}
+                                                    <option value="0" class="text-white">انتخاب</option>
+                                                {% endif %}    
+                                                {% for brand in brands %}
+                                                    <option value="{{brand.id}}">{{brand}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if store.show_ages == True %}
+                                    <h5 class="filter-item-title">گروهای سنی</h5>
+                                    <div class="filter-item-content">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                            <select name="age" id="floatingInputOstan" class="form-select">
+                                                {% if selected_age != None %}
+                                                    <option value= "{{ selected_age.id }}" class="text-white">{{ selected_age.group }}</option>
+                                                {% else %}
+                                                    <option value="0" class="text-white">انتخاب</option>
+                                                {% endif %}    
+                                                {% for age in ages %}
+                                                    <option value="{{age.id}}">{{age}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+    
+                                    <h5 class="filter-item-title">بازه قیمتی</h5>
+                                    <div class="filter-item-content">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                            <select name="price_range" id="floatingInputOstan" class="form-select">
+                                                {% if selected_price_range != None %}
+                                                    <option value= "{{ selected_price_range.id }}" class="text-white">{{ selected_price_range.min_value|intcomma }} تا {{ main_selected_price_range.max_value|intcomma }} تومان</option>
+                                                {% else %}
+                                                    <option value="0" class="text-white">انتخاب</option>
+                                                {% endif %}
+                                                {% for price_range in price_ranges %}
+                                                    <li>
+                                                        <option value="{{ price_range.id }}">{{ price_range }}</option>                                       
+                                                    </li>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-item text-center">
+                                    <button type="submit" class="btn-outline-site">اعمال فیلتر</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                    </div>
+                    <div class="container-fluid mt-4">
+                        <div class="filter-item">
+                            {% if feature_filters.items %}
+                            <div class="filter-item w-100">
+                                <div class="filter-item align-items-center">
+                                    <h5 class="filter-item-title">{{filter.name}}</h5>
+                                    <div class="filter-item-content  justify-content-between form-check-label">
+                                        <form method="post" action="{% url 'shop:filter_product_list' category_slug brand_slug age_slug price_slug %}">
+                                            {% csrf_token %}
+                                            {% for key, value in feature_filters.items %}
+                                            <h6 class="mt-3">{{ key }}</h6>
+                                            {% for feature in value %}
+                                            <div class="form-check">
+                                                <label for="colorCheck1" class="form-check-label">{{feature}}</label>
+                                                <input type="checkbox" {% if feature in values_list %}checked{% endif %} name="filters" id="colorCheck1" value="{{key.id}}:{{feature}}"
+                                                    class="form-check-input">
+                                            </div>
+                                            {% endfor %}
+                                            {% endfor %}
+                                            <div class="filter-item text-center mt-4">
+                                                <button type="submit" class="btn-outline-site">فیلتر بر اساس ویژگی</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>     
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="category-items">
+                    <div class="row g-3">
+                        {% for product in products %}
+                        <div class="col-6 col-lg-3 col-md-3 col-xl-3 g-1 gy-1">
+                            <div class="product-box p-2">
+                                <a href="{% url 'shop:product_detail' product.slug %}">
+                                <div class="product-image p-0">
+                                    <img alt="{{ product.name }}" class="img-fluid"
+                                         src="{{product.get_main_image}}">
+                                </div>
+                                </a>
+                                <div class="product-title mt-2">
+                                    <div class="title">
+                                        <a href="{% url 'shop:product_detail' product.slug %}"><p class="title-font font-14">{{product.name}}</p></a>
+                                    </div>
+                                </div>
+                                <div class="product-action flex-column mt-1">
+                                    <div class="price d-flex justify-content-between w-100 align-items-baseline">
+                                        {% if product.off_active == True %}
+                                                <div >
+                                                    <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
+                                                        <p class="mb-0 old-price font-14 text-muted-two text-danger text-decoration-line-through me-3">
+                                                            {{ product.get_normal_price }}</p>
+                                                        <h6 class="font-14 title-font new-price">{{product.get_sales_price}}
+                                                            تومان</h6>
+                                                    </div>
+                                                </div>
+                                        {% else %}
+                                            <div >
+                                                <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
+                                                    
+                                                    <h6 class="font-14 title-font new-price">{{ product.get_normal_price }} تومان</h6>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="link w-100 mt-4 d-flex align-items-center justify-content-between">
+                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg fs-12"
+                                           href="{% url 'shop:product_detail'  product.slug %}">
+                                            مشاهده
+                                        </a>
+                                        {% if user.is_authenticated %}
+                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='products' %}" rel="nofollow">
+                                                <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
+                                            </a>
+                                        {% else %}
+                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-three-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
+                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="col-12">
+                            <div class="my-paginate my-4">
+                                <nav aria-label="Page navigation example">
+                                    <ul class="pagination flex-wrap justify-content-center">
+                                        {% if products.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded-3" href="?page={{ products.previous_page_number }}">قبلی</a>
+                                        </li>
+                                        <li class="page-item"><a class="page-link rounded-3" href="?page=1">1</a></li>
+                                        {% endif %}
+                                        <li class="page-item active"><a class="page-link rounded-3" href="#">{{ products.number }}</a>
+                                        </li>
+                                        {% if products.has_next %}
+                                        <li class="page-item"><a class="page-link rounded-3" href="?page={{ products.next_page_number }}">بعدی</a></li>
+                                        <li class="page-item"><a class="page-link rounded-3" href="?page={{ products.paginator.num_pages }}">آخرین</a></li>
+                                        {% endif %}
+                                        
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    
+                        {% if canonical == 'category' and category.description != None %}
+                        <h2 class="font-24">دسته‌بندی  {{ category.name }}</h2>
+                        <p>
+                            {{category.description|safe}}
+                        </p>
+                        {% endif %}
+                        {% if canonical == 'tag' and tag.description != None  %}
+                        <h2 class="font-24">برچسب محصولات  {{ tag.name }}</h2>
+                        <p>
+                            {{tag.description|safe}}
+                        </p>
+                        {% endif %}
+                        {% if canonical == 'brand' and brand.description != None  %}
+                        {% if brand.image %}
+                        <div class="row align-items-center mb-4">
+                            
+                            <div class="col-lg-2 col xl-2 col-12 justify-content-center align-items-center">
+                                <img src="{{brand.image.url}}" alt="{{ brand.name }}" style="width: 150px;">
+                            </div>
+                            <div class="col-lg-10 col xl-10 col-12 justify-content-center align-items-center">
+                                <h2 class="font-24">محصولات برند {{ brand.name }}</h2>
+                            </div>
+                            
+                        </div>
+                        {% endif %}
+
+
+                        <p>
+                            {{brand.description|safe}}
+                        </p>
+                        <hr>
+                        {% if faqs %}
+                        <section class="brand-faq">
+                            <h2>سوالات متداول درباره برند {{ brand.name }}</h2>
+
+                            {% for faq in faqs %}
+                                <div class="faq-item">
+                                    <strong class="faq-question">
+                                        {{ faq.question }}
+                                    </strong>
+                                    <div class="faq-answer">
+                                        <p class="font-14">{{ faq.answer }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </section>
+                        {% endif %}
+
+                        {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block js %}
+
+{% endblock %}

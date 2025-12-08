@@ -284,10 +284,15 @@ class CustomerAdmin(admin.ModelAdmin):
 
 admin.site.register(Customer, CustomerAdmin)
 
+class BrandFAQInline(admin.TabularInline):
+    model = BrandFAQ
+    extra = 1
+
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
 	list_display = ('name',)
 	search_fields = ['name']
+	inlines = [BrandFAQInline]
 
 @admin.register(AgeCategory)
 class AgeCategoryAdmin(admin.ModelAdmin):

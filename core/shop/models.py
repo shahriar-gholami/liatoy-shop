@@ -255,7 +255,7 @@ class Tag(models.Model):
 	slug = models.CharField(max_length=200, verbose_name = 'نامک')
 	is_special = models.BooleanField(default=False, verbose_name = 'تگ ویژه')
 	created_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-	description = models.TextField(null=True, blank=True, verbose_name='توضیحات تگ')
+	description = RichTextField(verbose_name = 'توضیحات برچسب', null=True)
 
 	class Meta:
 		verbose_name = 'تگ‌ها'
@@ -275,7 +275,7 @@ class Category(models.Model):
 	is_sub = models.BooleanField(default=False, verbose_name='معرفی به عنوان زیردسته')
 	name = models.CharField(max_length=200, verbose_name='عنوان')
 	slug = models.SlugField(max_length=200, verbose_name='نامک')
-	description = models.TextField(null=True, blank=True, verbose_name='توضیحات دسته بندی')
+	description = RichTextField(verbose_name = 'توضیحات دسته‌بندی', null=True)
 	priority = models.IntegerField(default=1)
 
 	class Meta:
@@ -1025,7 +1025,9 @@ def brand_upload_path(instance):
 class Brand(models.Model):
 	name = models.CharField(max_length=250, verbose_name='نام برند')
 	slug = models.CharField(max_length=255, null=True, blank=True)
-	description = models.TextField(null=True, blank=True, verbose_name='توضیحات برند')
+	short_description = RichTextField(verbose_name = 'توضیحات مختصر برند', null=True)
+	description = RichTextField(verbose_name = 'توضیحات برند', null=True)
+	image = models.ImageField(upload_to='brands/', default='media/11.png', null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'برندها'
@@ -1033,6 +1035,25 @@ class Brand(models.Model):
 
 	def __str__(self):
 		return self.name
+	
+class BrandFAQ(models.Model):
+    brand = models.ForeignKey(
+        Brand,
+        related_name='faqs',
+        on_delete=models.CASCADE,
+        verbose_name='برند'
+    )
+    question = models.TextField(verbose_name='سوال')
+    answer = models.TextField(verbose_name='پاسخ')
+    is_active = models.BooleanField(default=True, verbose_name='فعال؟')
+    order = models.PositiveIntegerField(default=0, verbose_name='ترتیب نمایش')
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.question
+
 	
 class AgeCategory(models.Model):
 	group = models.CharField(max_length=255, verbose_name='گروه سنی')

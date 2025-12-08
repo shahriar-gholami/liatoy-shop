@@ -1655,9 +1655,11 @@ class BrandProductListView(View):
 		products_urls = f'{current_app_name}:product_detail'
 		price_ranges = PriceRange.objects.all()
 		canonical = 'brand'
-		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+		faqs = BrandFAQ.objects.filter(brand=brand)
+		return render(request, f'{current_app_name}/brand_product_list_{store.template_index}.html', 
 				{'products': products, 
 	 			'brand':brand,
+				'faqs':faqs,
 				'to_products':products_urls, 
 				'store_name':store_name, 
 				'categories':categories,
