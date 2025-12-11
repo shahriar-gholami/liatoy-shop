@@ -26,53 +26,106 @@
 <meta name="twitter:image" content="{{ brand.image.url }}">
 {% endif %}
 
+
+<!-- BRAND SCHEMA -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Brand",
   "name": "{{ brand.name }}",
-  "url": "{{ request.build_absolute_uri }}",
-  "description": "{{ brand.description|striptags|truncatechars:300 }}"
-  {% if brand.image %}
-  ,"logo": "{{ brand.image.url }}"
-  {% endif %}
+  "image": "{{ brand.image.url }}",
+  "description": "{{ brand.short_description|striptags }}"
 }
 </script>
 
+<!-- PRODUCT LIST SCHEMA -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
+  "name": "محصولات برند {{ brand.name }}",
+  "itemListOrder": "https://schema.org/Ascending",
+  "numberOfItems": {{ products.paginator.count }},
+  {% if products.has_next %}
+    "nextPage": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}?page={{ products.next_page_number }}",
+  {% endif %}
+  {% if products.has_previous %}
+    "previousPage": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}?page={{ products.previous_page_number }}",
+  {% endif %}
   "itemListElement": [
     {% for product in products %}
     {
       "@type": "Product",
-      "name": "{{ product.title }}",
-      "url": "{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}"
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ]
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {% for faq in faqs %}
-    {
-      "@type": "Question",
-      "name": "{{ faq.question }}",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "{{ faq.answer }}"
+      "name": "{{ product.name|escapejs }}",
+      "image": "{{ product.get_main_image }}",
+      "url": "{{ request.scheme }}://{{ request.get_host }}{% url to_products product.slug %}",
+      "brand": {
+        "@type": "Brand",
+        "name": "{{ brand.name|escapejs }}"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "{{ product.price }}",
+        "priceCurrency": "IRR",
+        "availability": "https://schema.org/InStock",
+        "url": "{{ request.scheme }}://{{ request.get_host }}{% url to_products product.slug %}"
       }
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
   ]
 }
 </script>
+
+
+<!-- FAQ SCHEMA -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in faqs %}
+    {
+      "@type": "Question",
+      "name": "{{ item.question }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ item.answer|striptags }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+
+<!-- BREADCRUMB SCHEMA -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'shop:index' %}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "فروشگاه",
+      "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'shop:product_list' %}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "محصولات {{ brand.name }}",
+      "item": "{{ request.build_absolute_uri }}"
+    }
+  ]
+}
+</script>
+
+
 
 {% endblock %}
 
@@ -83,6 +136,21 @@
 {% block content %}
 
 <section class="content">
+    <section class="bread-crumb py-0 my-4">
+        <div class="container-fluid">
+            <div class="content-box">
+                <div class="container-fluid">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{% url 'shop:index' %}" class="font-14 text-muted">خانه</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'shop:product_list' %}" class="font-14 text-muted">فروشگاه</a></li>
+                            <li class="breadcrumb-item active main-color-one-color font-14" aria-current="page">محصولات {{brand.name}}</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
     <div class="container-fluid">
         <div class="ui-boxs">
             <div class="ui-box" >
@@ -570,7 +638,7 @@
                         </p>
                         {% endif %}
                         {% if canonical == 'brand' and brand.description != None  %}
-                        {% if brand.image %}
+                        {% if brand.image.file %}
                         <div class="row align-items-center mb-4">
                             
                             <div class="col-lg-2 col xl-2 col-12 justify-content-center align-items-center">

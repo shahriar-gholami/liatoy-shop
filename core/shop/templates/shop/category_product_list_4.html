@@ -139,9 +139,14 @@
   "@context": "https://schema.org",
   "@type": "ItemList",
   "name": "محصولات دسته {{ category.name }} - صفحه {{ products.number }}",
-  "url": "{{ request.build_absolute_uri }}",
-  "numberOfItems": {{ products|length }},
   "itemListOrder": "https://schema.org/ItemListOrderAscending",
+  "numberOfItems": {{ products.paginator.count }},
+  {% if products.has_next %}
+  "nextPage": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}?page={{ products.next_page_number }}",
+  {% endif %}
+  {% if products.has_previous %}
+  "previousPage": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}?page={{ products.previous_page_number }}",
+  {% endif %}
   "itemListElement": [
     {% for product in products %}
     {
@@ -150,13 +155,12 @@
       "url": "{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}",
       "item": {
         "@type": "Product",
-        "name": "{{ product.name }}",
+        "name": "{{ product.name|escapejs }}",
         "image": "{{ product.get_main_image }}",
-        "description": "{% if product.short_description %}{{ product.short_description|striptags }}{% else %}{{ product.description|striptags|truncatechars:160 }}{% endif %}",
-        "sku": "{{ product.id }}",
+        "description": "{{ product.short_description|default:product.description|striptags|truncatechars:160|escapejs }}",
         "brand": {
           "@type": "Brand",
-          "name": "{% if product.brand %}{{ product.brand.name }}{% else %}متفرقه{% endif %}"
+          "name": "{% if product.brand %}{{ product.brand.name|escapejs }}{% else %}متفرقه{% endif %}"
         },
         "offers": {
           "@type": "Offer",
@@ -171,6 +175,7 @@
   ]
 }
 </script>
+
 
 
 <script type="application/ld+json">
@@ -233,6 +238,46 @@
 {% block content %}
 
 <section class="content">
+
+<section class="bread-crumb py-0 my-4">
+    <div class="container-fluid">
+        <div class="content-box">
+            <div class="container-fluid">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+
+                        <!-- خانه -->
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'shop:index' %}" class="font-14 text-muted">خانه</a>
+                        </li>
+
+                        <!-- فروشگاه -->
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'shop:product_list' %}" class="font-14 text-muted">فروشگاه</a>
+                        </li>
+
+                        <!-- اگر دسته‌بندی زیر دسته است -->
+                        {% if category.is_sub and category.parent %}
+                            <li class="breadcrumb-item">
+                                <a href="{{ category.parent.get_absolute_url }}" class="font-14 text-muted">
+                                    {{ category.parent.name }}
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <!-- دسته فعلی -->
+                        <li class="breadcrumb-item active main-color-one-color font-14" aria-current="page">
+                            {{ category.name }}
+                        </li>
+
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+
     <div class="container-fluid">
         <div class="ui-boxs">
             <div class="ui-box" >

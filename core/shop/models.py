@@ -255,7 +255,7 @@ class Tag(models.Model):
 	slug = models.CharField(max_length=200, verbose_name = 'نامک')
 	is_special = models.BooleanField(default=False, verbose_name = 'تگ ویژه')
 	created_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-	description = RichTextField(verbose_name = 'توضیحات برچسب', null=True)
+	description = RichTextField(verbose_name = 'توضیحات برچسب', null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'تگ‌ها'
@@ -275,8 +275,8 @@ class Category(models.Model):
 	is_sub = models.BooleanField(default=False, verbose_name='معرفی به عنوان زیردسته')
 	name = models.CharField(max_length=200, verbose_name='عنوان')
 	slug = models.SlugField(max_length=200, verbose_name='نامک')
-	short_description = RichTextField(verbose_name = 'توضیحات کوتاه دسته‌بندی', null=True)
-	description = RichTextField(verbose_name = 'توضیحات دسته‌بندی', null=True)
+	short_description = RichTextField(verbose_name = 'توضیحات کوتاه دسته‌بندی', null=True, blank=True)
+	description = RichTextField(verbose_name = 'توضیحات دسته‌بندی', null=True, blank=True)
 	priority = models.IntegerField(default=1)
 	image = models.ImageField(upload_to='category/', default='media/11.png', null=True, blank=True)
 
@@ -314,11 +314,6 @@ class Category(models.Model):
 						brand = product.brand
 						brands.add(brand)
 		return brands		
-
-	def get_image_url(self):
-		image = CategoryImage.objects.get(category=self)
-		image_url = image.image.url
-		return image_url
 	
 	def get_main_image(self):
 		images = CategoryImage.objects.filter(category=self)
@@ -1051,9 +1046,9 @@ def brand_upload_path(instance):
 class Brand(models.Model):
 	name = models.CharField(max_length=250, verbose_name='نام برند')
 	slug = models.CharField(max_length=255, null=True, blank=True)
-	short_description = RichTextField(verbose_name = 'توضیحات مختصر برند', null=True)
-	description = RichTextField(verbose_name = 'توضیحات برند', null=True)
-	image = models.ImageField(upload_to='brands/', default='media/11.png', null=True, blank=True)
+	short_description = RichTextField(verbose_name = 'توضیحات مختصر برند', null=True, blank=True)
+	description = RichTextField(verbose_name = 'توضیحات برند', null=True, blank=True)
+	image = models.ImageField(upload_to='brands/', default='media/11.png', blank=True)
 
 	class Meta:
 		verbose_name = 'برندها'

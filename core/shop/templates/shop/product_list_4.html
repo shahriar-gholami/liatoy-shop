@@ -25,21 +25,96 @@
 <meta name="twitter:title" content="{% if canonical == 'category' %}خرید {{ category.name }} از لیاتوی{% endif %}{% if canonical == 'tag' %}اسباب بازی {{ tag.name }} در لیاتوی{% endif %}{% if canonical == 'brand' %}اسباب بازی برند {{ brand.name }}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
 <meta name="twitter:description" content="{% if canonical == 'category' %}خرید آنلاین انواع {{ category.name }} با کیفیت بالا و قیمت مناسب در فروشگاه اسباب بازی لیاتوی.{% endif %}{% if canonical == 'tag' %}تنوع بالای اسباب بازی با برچسب {{ tag.name }} در فروشگاه لیاتوی با ارسال سریع.{% endif %}{% if canonical == 'brand' %}محصولات برند {{ brand.name }} با قیمت ویژه در لیاتوی. مشاهده، بررسی و خرید آنلاین.{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات فروشگاه اسباب بازی لیاتوی{% endif %}">
 <meta name="twitter:image" content="{{store.get_logo_image}}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'shop:index' %}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "فروشگاه",
+      "item": "{{ request.build_absolute_uri }}"
+    }
+  ]
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+
+  "name": "لیست محصولات - صفحه {{ products.number }}",
+  "itemListOrder": "https://schema.org/ItemListOrderAscending",
+  "numberOfItems": {{ products.paginator.count }},
+
+  "itemListElement": [
+    {% for product in products %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "url": "{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+
+  "url": "{{ request.build_absolute_uri }}",
+  {% if products.has_previous %}
+  "previousItem": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}?page={{ products.previous_page_number }}",
+  {% endif %}
+  {% if products.has_next %}
+  "nextItem": "{{ request.scheme }}://{{ request.get_host }}{{ request.path }}?page={{ products.next_page_number }}"
+  {% endif %}
+}
+</script>
+
+
+
+{% if page_obj.has_previous %}
+<link rel="prev" href="?page={{ page_obj.previous_page_number }}" />
+{% endif %}
+
+{% if page_obj.has_next %}
+<link rel="next" href="?page={{ page_obj.next_page_number }}" />
+{% endif %}
+
+
 {% endblock %}
 
 {% block title %}{% if canonical == 'category' %}خرید انواع  {{ category.name }}{% endif %}{% if canonical == 'tag' %}خرید انواع محصولات  {{ tag.name }}{% endif %}{% if canonical == 'brand' %}خرید انواع محصولات {{ brand.name }}{% endif %}{% if canonical != 'tag' and canonical != 'category' and canonical != 'brand' %}همه محصولات  {{store.name}}{% endif %}{% endblock %}
 
 {% block content %}
 
-{% if store.has_domain == True %}
-<script>
-    // Replace the common part of the URL with an empty string
-    var currentUrl = window.location.href;
-    var newUrl = currentUrl.replace('/shop/{{store.name}}/', '/');
-    history.replaceState(null, null, newUrl);
-</script>
-{% endif %}
+<section class="bread-crumb py-0 my-4">
+    <div class="container-fluid">
+        <div class="content-box">
+            <div class="container-fluid">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
 
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'shop:index' %}" class="font-14 text-muted">خانه</a>
+                        </li>
+
+                        <li class="breadcrumb-item active main-color-one-color font-14" aria-current="page">
+                            فروشگاه
+                        </li>
+
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
 
 <section class="content my-25">
     <div class="container-fluid">
