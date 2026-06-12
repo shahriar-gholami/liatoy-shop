@@ -192,7 +192,6 @@ input[type=checkbox] {
 a {
     text-decoration: none;
     color: var(--color-site);
-    font-size: var(--font-size);
 }
 
 .text-overflow {

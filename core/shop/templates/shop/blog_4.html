@@ -65,7 +65,7 @@
                             <div class="row gy-3">
                                 <div class="col-md-4">
                                     <div class="blog-post-card-thumbnail">
-                                        <img src="{{post.get_thumbnail}}" class="rounded-3" alt="{{ post.title }}">
+                                        <a href="{% url 'shop:post_detail' post.slug %}"><img src="{{post.featured_image.url}}" class="rounded-3" alt="{{ post.title }}"></a>
                                     </div>
                                 </div>
                                 <div class="col-md-8">
@@ -142,7 +142,7 @@
                                                     <div class="row" >
                                                         <div class="col-4">
                                                         <div class="image">
-                                                            <img src="{{ post.get_thumbnail }}"
+                                                            <img src="{{ post.featured_image.url }}"
                                                                  class="img-thumbnail" alt="{{ post.title }}">
                                                         </div>
                                                         </div>

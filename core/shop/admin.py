@@ -38,14 +38,6 @@ class FilterAdmin(admin.ModelAdmin):
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
 	list_display = ('name', 'get_owner_name', 'phone_number', 'shamsi_created_date', 'has_domain', 'has_payment_gw')
-	fields = ('name', 'is_active', 'address', 'country', 'city', 
-			  'about_description', 'merchant', 
-			  'phone_number', 'email', 'color', 
-			  'identity', 'favicon', 'slogan',
-			  'meta_description', 'meta_keywords', 'meta_og_title', 
-			  'meta_og_description', 'meta_tc_title', 'meta_tc_description', 'has_domain', 'has_payment_gw',
-			  'template_index', 'index_title', 'enamad_code','show_brands' ,'show_advantages','show_ages','show_featured_categories','show_special_offer',
-			  'show_specials','show_blog', 'default_canonical')
 
 @admin.register(Owner)
 class OwnerAdmin(admin.ModelAdmin):
@@ -116,8 +108,8 @@ class ProductAdmin(admin.ModelAdmin):
 	@admin.display(description='Active Price')
 	def active_price(self, obj):
 		return obj.get_active_price()
-	list_display = ('name' ,'id','price','sales_price','off_active', 'active_price','brand' ,'stock_alarm')
-	list_editable = ('price','off_active','sales_price')
+	list_display = ('name' ,'id','cost','price','sales_price','off_active', 'active_price','brand' ,'stock_alarm')
+	list_editable = ('cost','price','off_active','sales_price')
 	search_fields = ['name', 'slug']
 	autocomplete_fields = ['category', 'tags']
 	prepopulated_fields = {'slug': ('name',)}  
@@ -242,23 +234,51 @@ class BlogCategoryAdmin(admin.ModelAdmin):
 	list_display = ('name',)
 	search_fields = ['name']
 
-class PostThumbnailInline(admin.StackedInline):  # یا TabularInline برای ظاهر ساده‌تر
-    model = PostThumbnail
-    extra = 1  # تعداد فرم‌های خالی برای افزودن عکس جدید
-    fields = ('image', 'alt_name',)
-    readonly_fields = ('created',)
+# تعریف اینلاین برای سوالات متداول
+class BlogPostFAQInline(admin.TabularInline): # می‌توانید از StackedInline هم استفاده کنید
+    model = BlogPostFAQ
+    extra = 1  # تعداد ردیف‌های خالی که به صورت پیش‌فرض نمایش داده می‌شود
+
+@admin.register(BlogTag)
+class BlogTagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'created_date')
+    prepopulated_fields = {'slug': ('name',)} # پر شدن خودکار اسلاگ بر اساس نام
+    search_fields = ('name',)
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
-	list_display = ('title', 'category', 'shamsi_created_date')
-	search_fields = ['title', 'category__name', 'shamsi_created_date']
-	list_filter = ('category',)
-	inlines = [PostThumbnailInline]
+    # ستون‌هایی که در لیست مقالات نمایش داده می‌شود
+    list_display = ('title', 'author', 'category', 'shamsi_created_date', 'published')
+    
+    # فیلترهای سمت راست
+    list_filter = ('published', 'category', 'created_date')
+    
+    # فیلد جستجو
+    search_fields = ('title', 'body')
+    
+    # پر شدن خودکار اسلاگ بر اساس عنوان در هنگام تایپ
+    prepopulated_fields = {'slug': ('title',)}
+    
+    # اضافه کردن بخش سوالات متداول به صفحه ویرایش پست
+    inlines = [BlogPostFAQInline]
 
-# @admin.register(UploadedImages)
-# class UploadedImagesAdmin(admin.ModelAdmin):
-# 	list_display = ('alt_name', 'image')
-# 	search_fields = ['alt_name',]
+    # اگر می‌خواهید استایل فیلدها در ادمین بهتر شود
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('title', 'slug', 'author', 'published')
+        }),
+        ('محتوا', {
+            'fields': ('category', 'tags', 'body', 'featured_image')
+        }),
+        ('سئو', {
+            'fields': ('meta_description',),
+            'classes': ('collapse',) # این بخش را به صورت کشویی جمع می‌کند
+        }),
+    )
+
+# ثبت مدل FAQ به صورت جداگانه (اختیاری - اگر می‌خواهید مستقلا هم دسترسی داشته باشید)
+# admin.site.register(BlogPostFAQ)
+
 
 class CategoryImageAdmin(admin.ModelAdmin):
 	list_display = ('category', 'alt_name')

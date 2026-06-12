@@ -415,50 +415,42 @@
                 {% for product in products %}
                 <a href="{% url 'shop:product_detail' product.slug %}">
                     <div class="swiper-slide">
-                     <div class="product-box text-center">
-                         <div class="product-image text-center">
-                             <img alt="{{ product.name }}" class="img-fluid"
-                                  src="{{product.get_main_image}}">
-                         </div>
-                         <div class="product-title mt-4">
-                             <div class="title">
-                                 <h3 class="title-font font-14">{{ product.name }}</h3>
-                             </div>
-                         </div>
-                         <div class="product-action flex-column mt-3">
-                            {% if product.off_active == True %}
-                                <div >
-                                    <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
-                                        <p class="mb-0 old-price font-18 text-muted-two text-danger text-decoration-line-through me-3">
-                                            {{ product.get_normal_price  }}</p>
-                                        <h6 class="font-18 title-font new-price main-color-one-color">{{product.get_sales_price }}
-                                            تومان</h6>
+                     <div class="product-box p-2">
+                                <a href="{% url 'shop:product_detail' product.slug %}">
+                                <div class="p-0 mb-xl-2 text-center">
+                                    <img alt="{{ product.name }}" class="img-fluid img-fluid-custom text-center"
+                                         src="{{product.get_main_image}}" style="height: max-content; max-height: 200px;">
+                                </div>
+                                </a>
+                                <div class="product-title mt-2">
+                                    <div class="title">
+                                        <a href="{% url 'shop:product_detail' product.slug %}"><p class="title-font font-14">{{product.name}}</p></a>
                                     </div>
                                 </div>
-                            {% else %}
-                                <div >
-                                    <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
-                                        <h6 class="font-18 title-font new-price">{{product.get_normal_price }} تومان</h6>
+                                <div class="row align-items-center g-2 mt-2">
+                                    <div class="col-8 text-start">
+                                        <div class="price justify-content-between w-100 align-items-baseline">
+                                            {% if product.off_active == True %}
+                                                <div class="justify-content-sm-start text-start align-items-center">
+                                                    <p class="font-12 title-font new-price mb-0 text-start ">{{product.get_sales_price}}
+                                                        تومان</p>
+                                                    <span class="mb-0 mt-0 old-price font-12 text-muted-two text-danger text-decoration-line-through me-1">
+                                                        {{ product.get_normal_price }}</span>
+                                                </div>
+                                            {% else %}
+                                                    <h6 class="font-14 title-font new-price text-start">{{ product.get_normal_price }} تومان</h6>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <a class="btn rounded-3 main-color-one-bg text-end" href="{% url 'shop:product_detail' product.slug %}" rel="nofollow">
+                                            <i class="bi bi-eye text_white fs-6"></i>
+                                        </a>
                                     </div>
                                 </div>
-                            {% endif %}
-                             <div class="link w-100 mt-4 d-flex align-items-center justify-content-between">
-                                 <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:product_detail' product.slug %}">
-                                     مشاهده
-                                     <i class="bi bi-arrow-left ms-4 text-white"></i>
-                                 </a>
-                                 {% if user.is_authenticated %}
-                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='index' %}" rel="nofollow">
-                                            <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
-                                            </a>
-                                        {% else %}
-                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
-                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
-                                            </a>
-                                        {% endif %}
-                             </div>
-                         </div>
-                     </div>
+                                    
+                                 
+                            </div>
                  </div></a>
                  {% endfor %}
              </div>
@@ -554,8 +546,7 @@
                                         <div >
                                             <div class="cart-canvas-price my-3 d-flex align-items-center justify-content-between">
                                                 
-                                                <h6 class="title-font fs-10 new-price">{{product.get_normal_price }}
-                                                    تومان</h6>
+                                                <h6 class="title-font fs-10 new-price">{% if product.price != 0 %}{{product.get_sales_price }} تومان{% else %}ناموجود{% endif %}</h6>
                                             </div>
                                         </div>
                                         {% endif %}
@@ -627,7 +618,7 @@
                     <a href="{% url 'shop:post_detail' post.slug %}">
                         <div class="blog-item">
                             <div class="blog-item-image">
-                                <img src="{{ post.get_thumbnail }}" alt="{{ post.title }}">
+                                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
                             </div>
                             <div class="blog-item-desc">
                                 <div>

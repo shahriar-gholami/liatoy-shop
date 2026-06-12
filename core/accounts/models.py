@@ -33,7 +33,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
 
-    email = models.EmailField(max_length=255)
+    email = models.EmailField(max_length=255, default='YourEmail@gmail.com')
     phone_number = models.CharField(max_length = 11, unique = True)
     full_name = models.CharField(max_length = 250, default = 'نام و نام خانوادگی')
     otp_token = models.IntegerField(null=True, blank= True)

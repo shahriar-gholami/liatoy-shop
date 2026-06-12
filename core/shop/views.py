@@ -7,14 +7,11 @@ from django.utils import timezone
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime
-import re, os
 import requests
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
-from .utils import IsOwnerUserMixin, IsCustomerUserMixin
-from django.http import HttpResponse, JsonResponse
-import pytz
-from django.views.generic import  DeleteView
+from .utils import IsCustomerUserMixin
+from django.http import HttpResponse
 from .forms import *
 from django.views import View
 from shop.models import *
@@ -26,10 +23,8 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.apps import apps
 from datetime import datetime
-from khayyam import JalaliDatetime
 from django.db.models import Q
 from datetime import timedelta
-import re
 
 
 
@@ -65,7 +60,7 @@ class IndexView(View):
 		favorite_products = []
 		if request.user.is_authenticated:
 			try:
-				customer = Customer.objects.get(phone_number=request.user.phone_number)
+				customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 				favorite_products = customer.favorites.values_list('id', flat=True)
 			except Customer.DoesNotExist:
 				pass
@@ -95,7 +90,7 @@ class CustomerDashboardView(View):
 		store = Store.objects.all().first()
 		if isinstance(request.user, AnonymousUser):
 			return redirect(f'{current_app_name}:customer_authentication')
-		customer = Customer.objects.get(phone_number = request.user.phone_number)
+		customer = Customer.objects.filter(user = request.user).first()
 		orders = Order.objects.filter(customer=customer)
 		num_of_orders = orders.count()
 		paid_status = OrderStatus.objects.get(id=1)
@@ -122,7 +117,7 @@ class CustomerDashboardOrdersView(View):
 			return redirect(f'{current_app_name}:customer_authentication')
 		store_name = Store.objects.all().first().name
 		store = Store.objects.all().first()
-		customer = Customer.objects.get(phone_number=request.user.phone_number)		
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()		
 		paid_status = OrderStatus.objects.get(id=1)
 		paid_orders = Order.objects.filter(customer=customer, status=paid_status)
 		number_paid_orders = paid_orders.count()
@@ -151,7 +146,7 @@ class CustomerDashboardFavoritesView(View):
 		if isinstance(request.user, AnonymousUser):
 			return redirect(f'{current_app_name}:customer_authentication')
 		store = Store.objects.all().first()
-		customer = Customer.objects.get(phone_number=request.user.phone_number)
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 		products = customer.favorites.all()
 		to_products = f'{current_app_name}:product_detail'
 	
@@ -172,13 +167,13 @@ class CustomerDashboardInfoView(View):
 			return redirect(f'{current_app_name}:customer_authentication')
 		store = Store.objects.all().first()
 		store_name = store.name
-		customer = Customer.objects.get(phone_number=request.user.phone_number)
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 		form = CustomerForm
 		return render(request, f'{current_app_name}/customer-dashboard-info_{store.template_index}.html', 
 				{'form': form, 'customer':customer})
 
 	def post(self, request):
-		customer = Customer.objects.get(phone_number=request.user.phone_number)
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 		form = self.form_class(request.POST)
 		if form.is_valid():
 			customer.full_name = form.cleaned_data['full_name']
@@ -196,7 +191,7 @@ class CustomerDashboardCommentsView(View):
 			return redirect(f'{current_app_name}:customer_authentication')
 		store = Store.objects.all().first()
 		store_name = store.name
-		customer = Customer.objects.get(phone_number=request.user.phone_number)
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 		comments = Comment.objects.filter(sender=customer)
 		return render(request, f'{current_app_name}/customer-dashboard-comments_{store.template_index}.html',
 				 {'comments': comments, 'customer':customer})
@@ -225,7 +220,7 @@ class ProductListView(View):
 		favorite_products = []
 		if request.user.is_authenticated:
 			try:
-				customer = Customer.objects.get(phone_number=request.user.phone_number)
+				customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 				favorite_products = customer.favorites.values_list('id', flat=True)
 			except Customer.DoesNotExist:
 				pass
@@ -763,6 +758,12 @@ class ProductDetailView(View):
 		store = Store.objects.all().first()
 		store_name = store.name
 		product = get_object_or_404(Product, slug=product_slug)
+		if product.get_varieties().first() == None:
+			new_variety = Variety.objects.create(
+				name = 'default variety',
+				product = product,
+				stock = 1
+			)
 		purchased = 1
 		if product.views:
 			product.views = product.views + 1
@@ -779,14 +780,12 @@ class ProductDetailView(View):
 						message = f'شما در حال حاضر {value} عدد از این کالا را در سبد خرید خود دارید.'
 						purchased = value
 		else:
-			customer = Customer.objects.get(phone_number = request.user.phone_number)
+			customer = Customer.objects.filter(phone_number = request.user.phone_number).first()
 			cart , create= Cart.objects.get_or_create(customer = customer)
 			cart_item = cart.items.filter(variety__in = varieties).first()
 			if cart_item != None:
 				message = f'شما در حال حاضر {cart_item.quantity} عدد از این کالا را در سبد خرید خود دارید.'
 				purchased = cart_item.quantity
-
-		
 		
 		add_to_cart_url = f'{current_app_name}:add-to-cart'
 		products = product.get_related_products()
@@ -794,7 +793,7 @@ class ProductDetailView(View):
 		favorite_products = []
 		if request.user.is_authenticated:
 			try:
-				customer = Customer.objects.get(phone_number=request.user.phone_number)
+				customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 				favorite_products = customer.favorites.values_list('id', flat=True)
 			except Customer.DoesNotExist:
 				pass
@@ -814,7 +813,7 @@ class ProductDetailView(View):
 class CommentCreateView(IsCustomerUserMixin, View):
 
 	def post(self, request, product_id):
-		customer = Customer.objects.get(phone_number=request.user.phone_number)
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
 		product = get_object_or_404(Product, id=product_id)
 		form = CommentForm(request.POST)
 		if form.is_valid():
@@ -891,7 +890,8 @@ class AddToCartView(View):
 			product = Product.objects.get(pk = pk)
 			quantity = form.cleaned_data['count']
 			size = form.cleaned_data['size']
-			
+			print('dddddddddddddddddddddddddddddddddd')
+			print(size)
 			if size == '':
 				default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety')
 				variety_id = default_variety.id
@@ -899,6 +899,8 @@ class AddToCartView(View):
 			else:
 				variety_id = int(form.cleaned_data['size'])
 				variety = Variety.objects.get(id = variety_id)
+				print('tttttttttttttttttttttttttt')
+				print(variety)
 
 			if size=='0':
 				varieties = Variety.objects.filter(product=product)
@@ -932,14 +934,16 @@ class AddToCartView(View):
 					cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
 					messages.success(
 						request,
-						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success" href="{cart_url}">مشاهده سبد خرید</a>')
+						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
 					)
 				else:
+					print('cccccccccccccccccccccccccccccc')
+					print(variety.product)
 					cart_item = CartItem.objects.create(variety=variety, quantity=quantity)
 					cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
 					messages.success(
 						request,
-						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success" href="{cart_url}">مشاهده سبد خرید</a>')
+						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
 					)
 				cart.items.add(cart_item)
 				
@@ -961,17 +965,17 @@ class CustomerRegisterLoginView(View):
 			phone_number = form.cleaned_data['phone_number']
 			customer = Customer.objects.filter(phone_number=phone_number).first()
 			authen_form = AuthenticationCodeForm()
-			if customer != None:
-				previous_codes = OtpCode.objects.filter(phone_number = phone_number)
-				previous_codes.delete()
-				random_code = random.randint(100000,999999)
-				send_otp_code(phone_number,random_code)
-				new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
-				return redirect(f'login/{phone_number}')
-			customer = Customer.objects.create(phone_number = phone_number)
-			user = User.objects.get_or_create(phone_number = phone_number)
-			previous_codes = OtpCode.objects.filter(phone_number = phone_number)
-			previous_codes.delete()
+			# if customer != None:
+			# 	previous_codes = OtpCode.objects.filter(phone_number = phone_number)
+			# 	previous_codes.delete()
+			# 	random_code = random.randint(100000,999999)
+			# 	send_otp_code(phone_number,random_code)
+			# 	new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
+			# 	return redirect(f'login/{phone_number}')
+			# customer = Customer.objects.create(phone_number = phone_number)
+			# user = User.objects.get_or_create(phone_number = phone_number)
+			# previous_codes = OtpCode.objects.filter(phone_number = phone_number)
+			# previous_codes.delete()
 			random_code = random.randint(100000,999999)
 			send_otp_code(phone_number,random_code)
 			new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
@@ -989,38 +993,40 @@ class CustomerloginView(View):
 	def post(self, request, phone_number, *args, **kwargs):
 		form = AuthenticationCodeForm(request.POST)
 		if form.is_valid():
-			customer_phone = phone_number
-			customer = Customer.objects.filter(phone_number = customer_phone).first()
-			user = User.objects.filter(phone_number = customer_phone).first()
-			request.user = user
-			last_sent_otp = OtpCode.objects.filter(phone_number = customer_phone).first()
 			recieved_code = form.cleaned_data['code']
-			if last_sent_otp.code == recieved_code:
-				customer.otp_token = form.cleaned_data['code']
-				customer.save()
-				login(request, user)
-				cart, created = Cart.objects.get_or_create(customer = customer)
-				varieties = Variety.objects.all()
-				varieties_id_list = []
-				for variety in varieties:
-					varieties_id_list.append(str(variety.id))
-				for key, value in request.session.items():
-					if key in varieties_id_list:
-						variety = Variety.objects.filter(id = int(key)).first()
-						if cart.items.filter(variety=variety).exists():
-							cart_item = cart.items.get(variety=variety)
-							cart_item.quantity = value
-							cart_item.save()
-						else:
-							cart_item = CartItem.objects.create(variety=variety, quantity=value)
-							cart.items.add(cart_item)
-				for key in list(request.session.keys()):
-					if key in varieties_id_list:
-						del request.session[key]
+			otp = OtpCode.objects.filter(phone_number=phone_number, code = recieved_code).first()
+			if otp != None:
+				user = User.objects.filter(phone_number = phone_number).first()
+				if user == None:
+					user = User.objects.create(phone_number=phone_number)
+				else:
+					customer, create = Customer.objects.get_or_create(user=user, phone_number=phone_number)
+					login(request, user)
+					cart, created = Cart.objects.get_or_create(customer = customer)
+					varieties = Variety.objects.all()
+					varieties_id_list = []
+					for variety in varieties:
+						varieties_id_list.append(str(variety.id))
+					for key, value in request.session.items():
+						if key in varieties_id_list:
+							variety = Variety.objects.filter(id = int(key)).first()
+							if cart.items.filter(variety=variety).exists():
+								cart_item = cart.items.get(variety=variety)
+								cart_item.quantity = value
+								cart_item.save()
+							else:
+								cart_item = CartItem.objects.create(variety=variety, quantity=value)
+								cart.items.add(cart_item)
+					for key in list(request.session.keys()):
+						if key in varieties_id_list:
+							del request.session[key]
+					
+					return redirect(f'{current_app_name}:index')
+				return render(request, self.template_name, {'form':form, 'message':'wrong code'})
+			return render(request, self.template_name, {'form':form, 'message':'Invalid Input'})
+		return render(request, self.template_name, {'form':form, 'message':'کد اعتبار سنجی نامعتبر'})
+			
 				
-				return redirect(f'{current_app_name}:index')
-			return render(request, self.template_name, {'form':form, 'message':'wrong code'})
-		return render(request, self.template_name, {'form':form, 'message':'Invalid Input'})
 
 class CustomerOrdersView(IsCustomerUserMixin, View):
 
@@ -1932,7 +1938,7 @@ class OrderPayView(IsCustomerUserMixin, View):
 			'order_id': order.id,
 		}
 
-		if order.get_final_payment() == 0:
+		if order.get_final_payment()['unformated'] == 0:
 			order.status = OrderStatus.objects.get(id=1)
 			customer = order.customer
 			customer.wallet_balance -= order.get_without_cashback_cost()
@@ -1941,24 +1947,35 @@ class OrderPayView(IsCustomerUserMixin, View):
 			order.save()
 			return redirect(f'{current_app_name}:customer_dashboard_order_detail', order.id)
 		MERCHANT = store.merchant
-		req_data = {
+		data = {
 			"merchant_id": MERCHANT,
-			"amount": order.get_final_payment()*10,
-			"callback_url": f'https://picosite.ir/shop/{store_name}/orders/verify/',
+			"amount": order.get_final_payment()['unformated']*10,
+			"callback_url": f'https://liatoy.com/orders/verify/',
 			"description": description,
 			"metadata": {"mobile": request.user.phone_number, "email": request.user.email}
 		}
-		req_header = {"accept": "application/json",
-					"content-type": "application/json'"}
-		req = requests.post(url=ZP_API_REQUEST, data=json.dumps(
-			req_data), headers=req_header)
-		authority = req.json()['data']['authority']
-		if len(req.json()['errors']) == 0:
-			return redirect(ZP_API_STARTPAY.format(authority=authority))
+
+		headers = {
+			"accept": "application/json",
+			"content-type": "application/json",
+		}
+
+		response = requests.post(
+			"https://api.zarinpal.com/pg/v4/payment/request.json",
+			json=data,
+			headers=headers
+		).json()
+
+		print('sssssssssssssssssssssssssssssssss')
+		print(order.get_final_payment()['unformated'])
+		print(response)
+
+		if response["data"]["code"] == 100:
+			authority = response["data"]["authority"]
+			url = f"https://www.zarinpal.com/pg/StartPay/{authority}"
+			return redirect(url)
 		else:
-			e_code = req.json()['errors']['code']
-			e_message = req.json()['errors']['message']
-			return HttpResponse(f"Error code: {e_code}, Error Message: {e_message}")
+			return HttpResponse(f"Error {response['data']['code']}")
 
 class OrderVerifyView(LoginRequiredMixin, View):
 
@@ -1966,10 +1983,12 @@ class OrderVerifyView(LoginRequiredMixin, View):
 
 	def get(self, request):
 		paid_status = OrderStatus.objects.get(id=1)
+		print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
+		print(request.session)
 		order_id = request.session['order_pay']['order_id']
 		order = Order.objects.get(id=int(order_id))
-		store = order.store
-		store_name = order.store.name
+		store = Store.objects.first()
+		store_name = store.name
 		if store.merchant != None:
 			MERCHANT = store.merchant
 		t_status = request.GET.get('Status')
@@ -1979,7 +1998,7 @@ class OrderVerifyView(LoginRequiredMixin, View):
 						  "content-type": "application/json'"}
 			req_data = {
 				"merchant_id": MERCHANT,
-				"amount": order.get_final_payment()*10,
+				"amount": order.get_final_payment()['unformated']*10,
 				"authority": t_authority
 			}
 			req = requests.post(url=ZP_API_VERIFY, data=json.dumps(req_data), headers=req_header)
@@ -1988,13 +2007,13 @@ class OrderVerifyView(LoginRequiredMixin, View):
 				if t_status == 100:
 					order.status = paid_status
 					customer = order.customer
-					if order.get_final_payment() >= customer.wallet_balance:
+					if order.get_final_payment()['unformated'] >= customer.wallet_balance:
 						customer.wallet_balance = 0
 						order.paid_by_wallet = customer.wallet_balance
 						
 					else:
-						customer.wallet_balance -= order.get_final_payment()
-						order.paid_by_wallet = order.get_final_payment()
+						customer.wallet_balance -= order.get_final_payment()['unformated']
+						order.paid_by_wallet = order.get_final_payment()['unformated']
 					customer.save()
 					
 					order.save()

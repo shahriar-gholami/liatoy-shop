@@ -99,7 +99,9 @@ def base_template_context(request):
 			}
 	else:
 		top_categories = Category.objects.all()
-		customer, create = Customer.objects.get_or_create(phone_number=request.user.phone_number)
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		if customer == None:
+			customer = Customer.objects.create(user=request.user, phone_number=request.user.phone_number)
 		cart, create = Cart.objects.get_or_create(customer=customer)
 		cart_items_count = cart.items.all().count()
 		cart_url = f"'shop:cart_view' {cart.id}"

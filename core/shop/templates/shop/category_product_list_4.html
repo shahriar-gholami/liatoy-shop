@@ -2,79 +2,31 @@
 {% load static %}
 {% load humanize %}
 
+{% block title %}{% if category.seo_title %}{{ category.seo_title }}{% else %}خرید {{ category.name }} | قیمت انواع {{ category.name }} | فروشگاه اسباب بازی لیاتوی{% endif %}{% endblock %}
+
 {% block meta %}
 
 
 
-<meta name="description" content="
-{% if category.short_description %}
-{{ category.short_description|striptags|truncatechars:160 }}
-{% elif category.parent %}
-خرید {{ category.name }} از دسته {{ category.parent.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. تنوع بالا، ضمانت اصالت و ارسال سریع.
-{% else %}
-خرید انواع {{ category.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. بررسی مدل‌ها، مشخصات، قیمت روز و ارسال سریع.
-{% endif %}
-">
-
-<meta name="keywords" content="
-{% if category.parent %}
-خرید {{ category.name }}, قیمت {{ category.name }}, {{ category.parent.name }}, اسباب بازی {{ category.name }}
-{% else %}
-خرید {{ category.name }}, قیمت {{ category.name }}, فروش {{ category.name }}, اسباب بازی {{ category.name }}
-{% endif %}
-">
-
-
+<meta name="description" content="{% if category.meta_description %}{{ category.meta_description }}{% else %}{% if category.short_description %}{{ category.short_description|striptags|truncatechars:160 }}{% elif category.parent %}خرید {{ category.name }} از دسته {{ category.parent.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. تنوع بالا، ضمانت اصالت و ارسال سریع.{% else %}خرید انواع {{ category.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. بررسی مدل‌ها، مشخصات، قیمت روز و ارسال سریع.{% endif %}{% endif %}">
+<meta name="keywords" content="{% if category.parent %}خرید {{ category.name }}, قیمت {{ category.name }}, {{ category.parent.name }}, اسباب بازی {{ category.name }}{% else %}خرید {{ category.name }}, قیمت {{ category.name }}, فروش {{ category.name }}, اسباب بازی {{ category.name }}{% endif %}">
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
-
 <meta name="robots" content="index, follow">
-
 <meta property="og:type" content="website">
-
-<meta property="og:title" content="
-{% if category.parent %}
-خرید {{ category.name }} | قیمت {{ category.name }} از {{ category.parent.name }}
-{% else %}
-خرید {{ category.name }} | قیمت انواع {{ category.name }}
-{% endif %}
-">
-
-<meta property="og:description" content="
-{% if category.short_description %}
-{{ category.short_description|striptags|truncatechars:160 }}
-{% else %}
-خرید {{ category.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. ارسال سریع و ضمانت اصالت کالا.
-{% endif %}
-">
-
+<meta property="og:title" content="{% if category.seo_title %}{{ category.seo_title }}{% else %}{% if category.parent %}خرید {{ category.name }} | قیمت {{ category.name }} از {{ category.parent.name }}{% else %}خرید {{ category.name }} | قیمت انواع {{ category.name }}{% endif %}{% endif %}">
+<meta property="og:description" content="{% if category.meta_description %}{{ category.meta_description }}{% else %}{% if category.short_description %}{{ category.short_description|striptags|truncatechars:160 }}{% elif category.parent %}خرید {{ category.name }} از دسته {{ category.parent.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. تنوع بالا، ضمانت اصالت و ارسال سریع.{% else %}خرید انواع {{ category.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. بررسی مدل‌ها، مشخصات، قیمت روز و ارسال سریع.{% endif %}{% endif %}">
 <meta property="og:url" content="{{ request.build_absolute_uri }}">
-
 {% if category.image %}
 <meta property="og:image" content="{{ category.image.url }}">
 {% else %}
 <meta property="og:image" content="{{store.get_logo_image}}">
 {% endif %}
-
 <meta property="og:site_name" content="فروشگاه اسباب بازی لیاتوی">
 <meta property="og:locale" content="fa_IR">
-
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% if category.seo_title %}{{ category.seo_title }}{% else %}{% if category.parent %}خرید {{ category.name }} | قیمت {{ category.name }} از {{ category.parent.name }}{% else %}خرید {{ category.name }} | قیمت انواع {{ category.name }}{% endif %}{% endif %}">
+<meta name="twitter:description" content="{% if category.meta_description %}{{ category.meta_description }}{% else %}{% if category.short_description %}{{ category.short_description|striptags|truncatechars:160 }}{% elif category.parent %}خرید {{ category.name }} از دسته {{ category.parent.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. تنوع بالا، ضمانت اصالت و ارسال سریع.{% else %}خرید انواع {{ category.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. بررسی مدل‌ها، مشخصات، قیمت روز و ارسال سریع.{% endif %}{% endif %}">
 
-<meta name="twitter:title" content="
-{% if category.parent %}
-خرید {{ category.name }} | قیمت {{ category.name }} از {{ category.parent.name }}
-{% else %}
-خرید {{ category.name }} | قیمت انواع {{ category.name }}
-{% endif %}
-">
-
-<meta name="twitter:description" content="
-{% if category.short_description %}
-{{ category.short_description|striptags|truncatechars:160 }}
-{% else %}
-خرید {{ category.name }} با بهترین قیمت از فروشگاه اسباب بازی لیاتوی. تنوع بالا و ارسال سریع.
-{% endif %}
-">
 
 {% if category.image %}
 <meta name="twitter:image" content="{{ category.image.url }}">
@@ -176,8 +128,6 @@
 }
 </script>
 
-
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -210,14 +160,12 @@
 }
 </script>
 
-{# ✅ Canonical هوشمند #}
 {% if products.number == 1 %}
 <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
 {% else %}
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
 {% endif %}
 
-{# ✅ Prev / Next برای Pagination #}
 {% if products.has_previous %}
 <link rel="prev" href="?page={{ products.previous_page_number }}">
 {% endif %}
@@ -230,9 +178,6 @@
 
 {% endblock %}
 
-{% block title %}
-خرید {{ category.name }} | قیمت انواع {{ category.name }} | فروشگاه اسباب بازی لیاتوی
-{% endblock %}
 
 
 {% block content %}
@@ -282,7 +227,6 @@
         <div class="ui-boxs">
             <div class="ui-box" >
                 <div class="ui-box-item slider-parent ui-box-white py-4 px-2 text-center">
-                    <h1 >خرید {{ category.name }}</h1>
                     <p>
                         {{ category.short_description|safe }}
                     </p>
@@ -673,14 +617,14 @@
             </div>
             <div class="col-lg-9">
                 <div class="category-items">
-                    <div class="row g-3">
+                    <div class="row g-2">
                         {% for product in products %}
                         <div class="col-6 col-lg-3 col-md-3 col-xl-3 g-1 gy-1">
                             <div class="product-box p-2">
                                 <a href="{% url 'shop:product_detail' product.slug %}">
-                                <div class="product-image p-0">
-                                    <img alt="{{ product.name }}" class="img-fluid"
-                                         src="{{product.get_main_image}}">
+                                <div class="p-0 mb-xl-2 text-center">
+                                    <img alt="{{ product.name }}" class="img-fluid img-fluid-custom text-center"
+                                         src="{{product.get_main_image}}" style="height: max-content; max-height: 200px;">
                                 </div>
                                 </a>
                                 <div class="product-title mt-2">
@@ -688,42 +632,29 @@
                                         <a href="{% url 'shop:product_detail' product.slug %}"><p class="title-font font-14">{{product.name}}</p></a>
                                     </div>
                                 </div>
-                                <div class="product-action flex-column mt-1">
-                                    <div class="price d-flex justify-content-between w-100 align-items-baseline">
-                                        {% if product.off_active == True %}
-                                                <div >
-                                                    <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
-                                                        <p class="mb-0 old-price font-14 text-muted-two text-danger text-decoration-line-through me-3">
-                                                            {{ product.get_normal_price }}</p>
-                                                        <h6 class="font-14 title-font new-price">{{product.get_sales_price}}
-                                                            تومان</h6>
-                                                    </div>
+                                <div class="row align-items-center g-2 mt-2">
+                                    <div class="col-8 text-start">
+                                        <div class="price justify-content-between w-100 align-items-baseline">
+                                            {% if product.off_active == True %}
+                                                <div class="justify-content-sm-start text-start align-items-center">
+                                                    <p class="font-12 title-font new-price mb-0 text-start ">{{product.get_sales_price}}
+                                                        تومان</p>
+                                                    <span class="mb-0 mt-0 old-price font-12 text-muted-two text-danger text-decoration-line-through me-1">
+                                                        {{ product.get_normal_price }}</span>
                                                 </div>
-                                        {% else %}
-                                            <div >
-                                                <div class="d-flex align-items-center justify-content-sm-start justify-content-center">
-                                                    
-                                                    <h6 class="font-14 title-font new-price">{{ product.get_normal_price }} تومان</h6>
-                                                </div>
-                                            </div>
-                                        {% endif %}
+                                            {% else %}
+                                                    <h6 class="font-14 title-font new-price text-start">{% if product.price != 0 %}{{ product.get_normal_price }} تومان{% else %}ناموجود{% endif %}</h6>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                    <div class="link w-100 mt-4 d-flex align-items-center justify-content-between">
-                                        <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg fs-12"
-                                           href="{% url 'shop:product_detail'  product.slug %}">
-                                            مشاهده
+                                    <div class="col-4 text-end">
+                                        <a class="btn rounded-3 main-color-one-bg text-end" href="{% url 'shop:product_detail' product.slug %}" rel="nofollow">
+                                            <i class="bi bi-eye text_white fs-6"></i>
                                         </a>
-                                        {% if user.is_authenticated %}
-                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-one-bg" href="{% url 'shop:add_to_favorites' product_id=product.id ref='products' %}" rel="nofollow">
-                                                <i class="bi {% if product.id in favorite_products %}bi-heart-fill  text-danger{% else %}bi-heart text_white{% endif %} fs-7"></i>
-                                            </a>
-                                        {% else %}
-                                            <a class="btn border-0 d-flex align-items-center rounded-3 main-color-three-bg" href="{% url 'shop:customer_authentication' %}" rel="nofollow">
-                                                <i class="bi bi-heart-fill fs-7 text-white"></i>
-                                            </a>
-                                        {% endif %}
                                     </div>
                                 </div>
+                                    
+                                 
                             </div>
                         </div>
                         {% endfor %}
@@ -737,8 +668,7 @@
                                         </li>
                                         <li class="page-item"><a class="page-link rounded-3" href="?page=1">1</a></li>
                                         {% endif %}
-                                        <li class="page-item active">
-                                        <a class="page-link rounded-3" href="?page={{ products.number }}">{{ products.number }}</a>
+                                        <li class="page-item active"><a class="page-link rounded-3" href="#">{{ products.number }}</a>
                                         </li>
                                         {% if products.has_next %}
                                         <li class="page-item"><a class="page-link rounded-3" href="?page={{ products.next_page_number }}">بعدی</a></li>
@@ -754,21 +684,10 @@
                 <div>
                     
                         
-                    {% if category.image %}
-                    <div class="row align-items-center mb-4">
-                        
-                        <div class="col-lg-2 col xl-2 col-12 justify-content-center align-items-center">
-                            <img src="{{category.image.url}}" alt="{{ category.name }}" style="width: 150px;">
-                        </div>
-                        <div class="col-lg-10 col xl-10 col-12 justify-content-center align-items-center">
-                            <h2 class="font-24">محصولات دسته‌بندی {{ category.name }}</h2>
-                        </div>
-                        
+                    
+                    <div>
+                    {{category.description|safe}}
                     </div>
-                    {% endif %}
-                    <p>
-                        {{category.description|safe}}
-                    </p>
                     <hr>
                     {% if faqs %}
                     <section class="category-faq">
