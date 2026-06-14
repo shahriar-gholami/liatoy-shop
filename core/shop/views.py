@@ -17,7 +17,6 @@ from django.views import View
 from shop.models import *
 import random
 from accounts.models import User
-from utils import send_otp_code, send_order_verification_sms
 from django.contrib.auth import login, logout
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -26,7 +25,44 @@ from datetime import datetime
 from django.db.models import Q
 from datetime import timedelta
 
+def send_otp_code(phone_number, code):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
+    payload = json.dumps({
+    "code": "2frcg7j9tgi8mdb",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "verification-code": code,
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+def order_verification(phone_number, order_id):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
+    payload = json.dumps({
+    "code": "ehuynsayt2ku2mh",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "order-id": order_id
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text)
 
 
 
@@ -64,8 +100,6 @@ class IndexView(View):
 				favorite_products = customer.favorites.values_list('id', flat=True)
 			except Customer.DoesNotExist:
 				pass
-		print('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
-		print(tomorrow)
 		return render(request, f'{current_app_name}/index_{store.template_index}.html', {
 																				   'store':store,
 																				   'sales_products':sales_products,
@@ -1966,10 +2000,6 @@ class OrderPayView(IsCustomerUserMixin, View):
 			headers=headers
 		).json()
 
-		print('sssssssssssssssssssssssssssssssss')
-		print(order.get_final_payment()['unformated'])
-		print(response)
-
 		if response["data"]["code"] == 100:
 			authority = response["data"]["authority"]
 			url = f"https://www.zarinpal.com/pg/StartPay/{authority}"
@@ -1977,61 +2007,206 @@ class OrderPayView(IsCustomerUserMixin, View):
 		else:
 			return HttpResponse(f"Error {response['data']['code']}")
 
+
 class OrderVerifyView(LoginRequiredMixin, View):
+    template_name = f'{current_app_name}/customer-payment-result.html'
 
-	template_name = f'{current_app_name}/customer-payment-result.html'
+    def get(self, request):
+        store = Store.objects.first()
+        store_name = store.name if store else ''
 
-	def get(self, request):
-		paid_status = OrderStatus.objects.get(id=1)
-		print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
-		print(request.session)
-		order_id = request.session['order_pay']['order_id']
-		order = Order.objects.get(id=int(order_id))
-		store = Store.objects.first()
-		store_name = store.name
-		if store.merchant != None:
-			MERCHANT = store.merchant
-		t_status = request.GET.get('Status')
-		t_authority = request.GET['Authority']
-		if request.GET.get('Status') == 'OK':
-			req_header = {"accept": "application/json",
-						  "content-type": "application/json'"}
-			req_data = {
-				"merchant_id": MERCHANT,
-				"amount": order.get_final_payment()['unformated']*10,
-				"authority": t_authority
-			}
-			req = requests.post(url=ZP_API_VERIFY, data=json.dumps(req_data), headers=req_header)
-			if len(req.json()['errors']) == 0:
-				t_status = req.json()['data']['code']
-				if t_status == 100:
-					order.status = paid_status
-					customer = order.customer
-					if order.get_final_payment()['unformated'] >= customer.wallet_balance:
-						customer.wallet_balance = 0
-						order.paid_by_wallet = customer.wallet_balance
-						
-					else:
-						customer.wallet_balance -= order.get_final_payment()['unformated']
-						order.paid_by_wallet = order.get_final_payment()['unformated']
-					customer.save()
-					
-					order.save()
-					send_order_verification_sms(order.customer.phone_number, order.id)
-					coupon = order.coupon
-					if coupon.is_cashback == True:
-						coupon.delete()					
-					return render(request, self.template_name, {'message':'پرداخت شما موفقیت آمیز بود. سفارش شما ثبت گردید و در حال پردازش است ', 'ref_id':req.json()['data']['ref_id'], 'store_name':store_name})
-				elif t_status == 101:
-					return render(request, self.template_name, {'message':str(req.json()['data']['message']), 'store_name':store_name})
-				else:
-					return render(request, self.template_name, {'message':'پرداخت ناموفق ', 'store_name':store_name})
-			else:
-				e_code = req.json()['errors']['code']
-				e_message = req.json()['errors']['message']
-				return HttpResponse(f"Error code: {e_code}, Error Message: {e_message}")
-		else:
-			return render(request, self.template_name, {'message':'پرداخت ناموفق ', 'store_name':store_name})
+        order = self._get_order_from_session(request)
+        if not order:
+            return render(request, self.template_name, {
+                'message': 'سفارش معتبر یافت نشد.',
+                'store_name': store_name,
+            })
+
+        if request.GET.get('Status') != 'OK':
+            return render(request, self.template_name, {
+                'message': 'پرداخت ناموفق',
+                'store_name': store_name,
+            })
+
+        authority = request.GET.get('Authority')
+        if not authority:
+            return render(request, self.template_name, {
+                'message': 'اطلاعات پرداخت ناقص است.',
+                'store_name': store_name,
+            })
+
+        if not store or not store.merchant:
+            return render(request, self.template_name, {
+                'message': 'اطلاعات درگاه پرداخت تنظیم نشده است.',
+                'store_name': store_name,
+            })
+
+        gateway_result = self._verify_payment_with_gateway(
+            merchant=store.merchant,
+            order=order,
+            authority=authority,
+        )
+
+        if gateway_result['has_error']:
+            return HttpResponse(
+                f"Error code: {gateway_result['error_code']}, "
+                f"Error Message: {gateway_result['error_message']}"
+            )
+
+        gateway_status = gateway_result['status_code']
+
+        if gateway_status == 100:
+            return self._handle_successful_payment(
+                request=request,
+                order=order,
+                store_name=store_name,
+                ref_id=gateway_result['ref_id'],
+            )
+
+        if gateway_status == 101:
+            return render(request, self.template_name, {
+                'message': str(gateway_result['message']),
+                'store_name': store_name,
+            })
+
+        return render(request, self.template_name, {
+            'message': 'پرداخت ناموفق',
+            'store_name': store_name,
+        })
+
+    def _get_order_from_session(self, request):
+        order_pay = request.session.get('order_pay')
+        if not order_pay:
+            return None
+
+        order_id = order_pay.get('order_id')
+        if not order_id:
+            return None
+
+        try:
+            return Order.objects.select_related('customer', 'coupon', 'status').get(id=int(order_id))
+        except Order.DoesNotExist:
+            return None
+
+    def _verify_payment_with_gateway(self, merchant, order, authority):
+        headers = {
+            'accept': 'application/json',
+            'content-type': 'application/json',
+        }
+
+        data = {
+            'merchant_id': merchant,
+            'amount': order.get_final_payment()['unformated'] * 10,
+            'authority': authority,
+        }
+
+        response = requests.post(
+            url=ZP_API_VERIFY,
+            data=json.dumps(data),
+            headers=headers,
+            timeout=20,
+        )
+
+        response_data = response.json()
+        errors = response_data.get('errors') or {}
+
+        if errors:
+            return {
+                'has_error': True,
+                'error_code': errors.get('code'),
+                'error_message': errors.get('message'),
+            }
+
+        data = response_data.get('data') or {}
+
+        return {
+            'has_error': False,
+            'status_code': data.get('code'),
+            'message': data.get('message'),
+            'ref_id': data.get('ref_id'),
+        }
+
+    def _handle_successful_payment(self, request, order, store_name, ref_id):
+        paid_status = OrderStatus.objects.get(id=1)
+
+        try:
+            with transaction.atomic():
+                order = Order.objects.select_for_update().select_related(
+                    'customer',
+                    'coupon',
+                    'status',
+                ).get(id=order.id)
+
+                # جلوگیری از کسر دوباره موجودی در صورت callback تکراری درگاه
+                if order.status_id != paid_status.id:
+                    self._reduce_order_stock(order)
+                    self._update_customer_wallet(order)
+                    self._handle_coupon_after_payment(order)
+
+                    order.status = paid_status
+                    order.save(update_fields=[
+                        'status',
+                        'paid_by_wallet',
+                        'status_updated_date',
+                    ])
+
+        except ValidationError as error:
+            return render(request, self.template_name, {
+                'message': str(error),
+                'store_name': store_name,
+            })
+
+        order_verification(order.customer.phone_number, order.id)
+
+        return render(request, self.template_name, {
+            'message': 'پرداخت شما موفقیت آمیز بود. سفارش شما ثبت گردید و در حال پردازش است',
+            'ref_id': ref_id,
+            'store_name': store_name,
+        })
+
+    def _reduce_order_stock(self, order):
+        items = order.items.select_related('variety').all()
+
+        for item in items:
+            if not item.variety_id:
+                continue
+
+            variety = Variety.objects.select_for_update().get(id=item.variety_id)
+
+            if variety.stock < item.quantity:
+                raise ValidationError(
+                    f'موجودی "{variety.name}" کافی نیست.'
+                )
+
+            Variety.objects.filter(id=variety.id).update(
+                stock=F('stock') - item.quantity
+            )
+
+    def _update_customer_wallet(self, order):
+        customer = order.customer
+
+        if customer.full_name == 'کاربر میهمان':
+            customer.full_name = f'{order.reciever_name or ""} {order.reciever_familly_name or ""}'.strip()
+
+        final_payment = order.get_final_payment()['unformated']
+
+        if final_payment >= customer.wallet_balance:
+            order.paid_by_wallet = customer.wallet_balance
+            customer.wallet_balance = 0
+        else:
+            customer.wallet_balance -= final_payment
+            order.paid_by_wallet = final_payment
+
+        customer.save(update_fields=[
+            'full_name',
+            'wallet_balance',
+        ])
+
+    def _handle_coupon_after_payment(self, order):
+        coupon = order.coupon
+
+        if coupon and coupon.is_cashback:
+            coupon.delete()
 
 class UserLogoutView(View):
 

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django_jalali',
     'rest_framework',
     'accounts',
+    'income',
     'core',
     'shop',
     'ckeditor',]

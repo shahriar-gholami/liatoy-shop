@@ -2,7 +2,9 @@ from django.db import models
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils.html import strip_tags
-
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
+from django.db.models import F
 from django.utils import timezone
 from ckeditor.fields import RichTextField
 from khayyam import JalaliDatetime
@@ -510,7 +512,7 @@ class Product(models.Model):
 
     
     def get_active_price(self):
-        if self.off_active == True and self.sales_price != None:
+        if self.off_active and self.sales_price:
             active_price = self.sales_price
         else:
             active_price = self.price
@@ -716,7 +718,7 @@ class Order(models.Model):
     used_coupon = models.BooleanField(default=False, verbose_name='استفاده از کوپن تخفیف')
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     delivery_method = models.ForeignKey(Delivery, on_delete = models.SET_NULL, null=True, blank=True, verbose_name='شیوه ارسال')
-    status_updated_date = models.DateTimeField(auto_now_add = True, verbose_name='تاریخ بروزرسانی')
+    status_updated_date = models.DateTimeField(auto_now = True, verbose_name='تاریخ بروزرسانی')
     reciever_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='نام تحویل گیرنده')
     reciever_familly_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='نام خانوادگی تحویل گیرنده')
     reciever_phone_number = models.CharField(max_length=11, null=True, blank=True, verbose_name='شماره تماس تحویل گیرنده')
@@ -730,11 +732,35 @@ class Order(models.Model):
     delivery_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
     delivery_off = models.BooleanField(default=False, verbose_name='ارسال رایگان')
 
+    @transaction.atomic
+    def finalize_payment(self, paid_status):
+        # اگر قبلا پرداخت شده، دوباره موجودی کم نشود
+        if self.status_id == paid_status.id:
+            return
+
+        items = self.items.select_related('variety').select_for_update()
+
+        for item in items:
+            variety = item.variety
+            if not variety:
+                continue
+
+            if variety.stock < item.quantity:
+                raise ValidationError(
+                    f'موجودی "{variety.name}" کافی نیست.'
+                )
+
+            variety.stock = F('stock') - item.quantity
+            variety.save(update_fields=['stock'])
+
+        self.status = paid_status
+        self.save(update_fields=['status', 'status_updated_date'])
+
     def get_total_price(self):
         return f'{self.total_price:,}'
 
     class Meta:
-        ordering = ('created_date',)
+        ordering = ('-created_date',)
         verbose_name = 'سفارشات'
         verbose_name_plural = 'سفارشات'
 
