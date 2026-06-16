@@ -920,7 +920,7 @@ class CartView(IsCustomerUserMixin, View):
         if form.is_valid():
             count = form.cleaned_data['count']
             if count>cart_item.variety.stock:
-                messages.success(request, f'از این کالا تنها {cart_item.variety.stock} عدد موجود است')
+                messages.error(request, f'از این کالا تنها {cart_item.variety.stock} عدد موجود است')
                 return redirect(request.META.get("HTTP_REFERER", "/"))
             cart_item.quantity = count
             cart_item.save()
@@ -943,8 +943,6 @@ class AddToCartView(View):
             product = Product.objects.get(pk = pk)
             quantity = form.cleaned_data['count']
             size = form.cleaned_data['size']
-            print('dddddddddddddddddddddddddddddddddd')
-            print(size)
             if size == '':
                 default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety')
                 variety_id = default_variety.id
@@ -952,8 +950,6 @@ class AddToCartView(View):
             else:
                 variety_id = int(form.cleaned_data['size'])
                 variety = Variety.objects.get(id = variety_id)
-                print('tttttttttttttttttttttttttt')
-                print(variety)
 
             if size=='0':
                 varieties = Variety.objects.filter(product=product)
@@ -964,7 +960,9 @@ class AddToCartView(View):
             if quantity>variety.stock:
                 varieties = Variety.objects.filter(product=product)
                 add_to_cart_url = f'{current_app_name}:add-to-cart'
-                return render(request,  f'{current_app_name}/product_detail_{store.template_index}.html', {'message':f'از این تنوع تنها {variety.stock} عدد در انبار موجود است.','product': product, 'varieties':varieties,'form':form, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
+                messages.error(
+                        request,f'از این تنوع تنها {variety.stock} عدد در انبار موجود است.')
+                return redirect(f'{current_app_name}:product_detail' ,product.slug)
             
             new_item = {'product': product, 'quantity': quantity}
             if isinstance(request.user, AnonymousUser):
@@ -990,8 +988,6 @@ class AddToCartView(View):
                         mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
                     )
                 else:
-                    print('cccccccccccccccccccccccccccccc')
-                    print(variety.product)
                     cart_item = CartItem.objects.create(variety=variety, quantity=quantity)
                     cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
                     messages.success(
@@ -1002,6 +998,7 @@ class AddToCartView(View):
                 
 
             return redirect(f'{current_app_name}:product_detail' ,product.slug)
+        return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', {'message':'لطفا تنوع مورد نظر خود را انتخاب نمایید.','product': product, 'varieties':varieties,'form':form, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
 
 class CustomerRegisterLoginView(View):
     

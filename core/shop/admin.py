@@ -144,7 +144,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'slug']
     autocomplete_fields = ['category', 'tags']
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, VarietyInline, FilterValueInline]
 
     actions = [erase_stock,update_slugs]  # اگر اکشن داری دوباره اضافه کن
 
