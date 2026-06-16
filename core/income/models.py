@@ -13,6 +13,7 @@ def date2jalali(g_date):
 
 class Owner(models.Model):
     name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.name

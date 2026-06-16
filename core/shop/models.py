@@ -380,12 +380,6 @@ class Product(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name = 'تاریخ ایجاد')
     updated = models.DateTimeField(auto_now=True, verbose_name = 'آخرین بروزرسانی')
     views = models.IntegerField(default=0, verbose_name = 'بازدیدها')
-    meta_description = models.TextField(null=True, blank=True, verbose_name = 'توضیحات متا')
-    meta_keywords = models.TextField(null=True, blank=True, verbose_name = 'کلمات کلیدی')
-    meta_og_title = models.TextField(null=True, blank=True, verbose_name = 'عنوان OpenGraph')
-    meta_og_description = models.TextField(null=True, blank=True, verbose_name = 'توضیحات OpenGraph')
-    meta_tc_title = models.TextField(null=True, blank=True, verbose_name = 'عنوان TwitterCard')
-    meta_tc_description = models.TextField(null=True, blank=True, verbose_name = 'توضیحات TwitterCard')
     stock_alarm_volume = models.IntegerField(default=0, null=True, blank=True, verbose_name = 'هشدار اتمام موجودی')
     video_code = models.TextField(null=True, blank=True)
 
