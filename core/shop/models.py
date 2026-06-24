@@ -967,6 +967,9 @@ class BlogTag(models.Model):
     description = models.TextField()
     created_date = models.DateField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         ordering = ('-created_date',)
         verbose_name = 'تگ‌های وبلاگی'
