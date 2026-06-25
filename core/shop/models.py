@@ -394,6 +394,11 @@ class Product(models.Model):
         else:
             main_image_url = main_image.image.url.split('?')[0]
         return main_image_url
+    
+    def has_video(self):
+        if self.video_code:
+            return True
+        return False
 
 
     def get_normal_price(self):

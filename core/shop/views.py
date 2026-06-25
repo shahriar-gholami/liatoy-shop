@@ -2235,3 +2235,19 @@ class UserLogoutView(View):
         logout(request)
         return redirect('shop:index')
 
+class VideosView(View):
+
+    template_name = 'shop/videos.html'
+
+    def get(self, request):
+        videos = [{'video':product.video_code, 'product':product} for product in Product.objects.all() if product.video_code]
+        items_per_page = 12
+        paginator = Paginator(videos, items_per_page)
+        page = request.GET.get('page', 1)
+        try:
+            videos = paginator.page(page)
+        except PageNotAnInteger:
+            videos = paginator.page(1)
+        except EmptyPage:
+            videos = paginator.page(paginator.num_pages)
+        return render(request, self.template_name, {'videos':videos})

@@ -245,6 +245,13 @@
                       <li class="nav-item bg-ul-f7">
                         <a
                           class="nav-link"
+                          href="{% url 'shop:videos' %}"
+                          >ویدئوها</a
+                        >
+                      </li>
+                      <li class="nav-item bg-ul-f7">
+                        <a
+                          class="nav-link"
                           href="{% url 'shop:filter_tag_products' 'دخترانه' %}"
                           >دخترانه</a
                         >
@@ -502,6 +509,7 @@
                       {% endfor %}
                     </ul>
                   </li>
+                  
                   {% endif %} {% if store.show_specials == True %}
                   <li class="nav-item">
                     <a
@@ -525,7 +533,13 @@
                     </ul>
                   </li>
                   {% endif %}
-
+                  <li class="nav-item">
+                    <a
+                      href="{% url 'shop:videos' %}"
+                      class="nav-link border-animate fromCenter"
+                      ><i class="bi bi-play-circle"></i> ویدئوها</a
+                    >
+                  </li>
                   <li class="nav-item">
                     <a
                       href="{% url 'shop:filter_tag_products' 'دخترانه' %}"

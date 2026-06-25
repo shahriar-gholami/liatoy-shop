@@ -1,0 +1,148 @@
+{% extends "base_4.html" %}
+{% load static %}
+{% block title %}ویدئوهای محصولات | فروشگاه اسباب بازی لیاتوی{% endblock %}
+{% block meta %}
+
+
+<meta name="description" content="مشاهده ویدئوهای معرفی و نقد و بررسی محصولات فروشگاه اسباب بازی لیاتوی. با دیدن ویدئوها بهترین انتخاب را برای خرید اسباب بازی داشته باشید.">
+<meta name="keywords" content="ویدئو اسباب بازی, آنباکسینگ اسباب بازی, فروشگاه لیاتوی, معرفی محصولات لیاتوی, liatoy">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://liatoy.com{{ request.path }}">
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="لیاتوی">
+<meta property="og:title" content="ویدئوهای محصولات | فروشگاه اسباب بازی لیاتوی">
+<meta property="og:description" content="مشاهده ویدئوهای معرفی اسباب بازی‌ها در فروشگاه لیاتوی.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://liatoy.com{{ request.path }}">
+<meta property="og:image" content="{{ logo }}"> <!-- آدرس لوگوی خود را جایگزین کنید -->
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ویدئوهای محصولات | فروشگاه اسباب بازی لیاتوی">
+<meta name="twitter:description" content="ویدئوهای معرفی محصولات فروشگاه اسباب بازی لیاتوی">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "ویدئوهای محصولات لیاتوی",
+  "url": "https://liatoy.com{{ request.path }}",
+  "description": "لیست ویدئوهای معرفی محصولات و اسباب بازی های فروشگاه لیاتوی",
+  "itemListElement": [
+    {% for item in videos %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "item": {
+        "@type": "VideoObject",
+        "name": "{{ item.product.name|escapejs }}",
+        "description": "ویدئوی معرفی محصول {{ item.product.name|escapejs }}",
+        "uploadDate": "{{ item.product.created|date:'c' }}",
+        "contentUrl": "https://liatoy.com{{ item.product.get_absolute_url }}",
+        "embedUrl": "https://liatoy.com{{ item.product.get_absolute_url }}", 
+        "thumbnailUrl": [
+            "{{ item.product.get_main_image }}"
+         ]
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "خانه",
+    "item": "https://liatoy.com"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "ویدئوها",
+    "item": "https://liatoy.com{{ request.path }}"
+  }]
+}
+</script>
+{% endblock %}
+
+
+
+{% block content %}
+
+<section class="bread-crumb py-0 my-4">
+    <div class="container-fluid">
+        <div class="content-box">
+            <div class="container-fluid">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'shop:index' %}" class="font-14 text-muted">خانه</a>
+                        </li>
+
+                        <li class="breadcrumb-item active main-color-one-color font-14" aria-current="page">
+                            ویدئوها
+                        </li>
+
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content my-25">
+    <div class="container-fluid">
+
+ 
+        <div class="category-items">
+            <div class="row g-2">
+                {% for video in videos %}
+                <div class="col-6 col-lg-3 col-md-3 col-xl-3 g-1 gy-1">
+                    <div class="product-box p-2">
+                        <div class="p-0 mb-xl-2 text-center">
+                            {{ video.video|safe }}
+                        </div>
+                        <div class="product-title mt-2">
+                            <div class="title">
+                                <a href="{{video.product.get_absolute_url}}"><p class="title-font font-14">{{video.product.name}}</p></a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="col-12">
+                    <div class="my-paginate my-4">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination flex-wrap justify-content-center">
+                                {% if videos.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link rounded-3" href="?page={{ videos.previous_page_number }}">قبلی</a>
+                                </li>
+                                <li class="page-item"><a class="page-link rounded-3" href="?page=1">1</a></li>
+                                {% endif %}
+                                <li class="page-item active"><a class="page-link rounded-3" href="#">{{ videos.number }}</a>
+                                </li>
+                                {% if videos.has_next %}
+                                <li class="page-item"><a class="page-link rounded-3" href="?page={{ videos.next_page_number }}">بعدی</a></li>
+                                <li class="page-item"><a class="page-link rounded-3" href="?page={{ videos.paginator.num_pages }}">آخرین</a></li>
+                                {% endif %}
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+                
+    </div>
+</section>
+
+{% endblock %}
+

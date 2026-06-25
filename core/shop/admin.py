@@ -139,7 +139,7 @@ class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
     change_list_template = 'shop/change_list.html'
 
-    list_display = ('name', 'id', 'cost', 'price', 'sales_price', 'off_active', 'active_price', 'brand', 'stock_alarm')
+    list_display = ('name', 'id', 'cost', 'price', 'sales_price', 'off_active', 'active_price', 'brand', 'stock_alarm', 'has_video')
     list_editable = ('cost', 'price', 'off_active', 'sales_price')
     search_fields = ['name', 'slug']
     autocomplete_fields = ['category', 'tags']
@@ -151,6 +151,10 @@ class ProductAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description='Stock Alarm')
     def stock_alarm(self, obj):
         return obj.get_stock_alarm_status()
+    
+    @admin.display(boolean=True, description='Has Vid')
+    def has_video(self, obj):
+        return obj.has_video()
 
     @admin.display(description='Active Price')
     def active_price(self, obj):

@@ -52,6 +52,7 @@ urlpatterns = [
     path('contact/', views.ContactUsPageView.as_view(), name='contact'),
     path('faq/', views.FaqView.as_view(), name='faq_list'),
     path('policies/', views.PoliciesView.as_view(), name='policies'),
+    path('videos/', views.VideosView.as_view(), name='videos'),
     path('blog/', views.BlogView.as_view(), name='post_list'),
     path('blog/category/<str:category_slug>/', views.CategoryBlogPostList.as_view(), name='category_post_list'),
     path('blog/<str:post_slug>/', views.BlogPostDetailView.as_view(), name='post_detail'),
