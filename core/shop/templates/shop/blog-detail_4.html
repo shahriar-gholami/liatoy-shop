@@ -189,7 +189,7 @@
                                             <div class="blog-content-meta-detail-item">
                                                 <i class="bi bi-stack"></i>
                                                 <h6>دسته بندی: </h6>
-                                                <a href="">{{post.category.name}}</a>
+                                                <a href="{% url 'shop:category_post_list' post.category.id post.category.get_slug %}">{{post.category.name}}</a>
                                             </div>
                                         </div>
                                         <div class="col-lg-3 col-sm-6">
@@ -247,7 +247,7 @@
                                         <ul class="navbar-nav">
                                             {% for category in blog_categories %}
                                             <li class="nav-item">
-                                                <a href="{% url 'shop:category_post_list' category.get_slug %}" class="nav-link text-muted"><i class="bi bi-tag me-2"></i>
+                                                <a href="{% url 'shop:category_post_list' category.id category.get_slug %}" class="nav-link text-muted"><i class="bi bi-tag me-2"></i>
                                                     {{category.name}}</a>
                                             </li>
                                             {% endfor %}

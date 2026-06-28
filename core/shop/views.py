@@ -707,13 +707,16 @@ class AddToFavoritesView(View):
 
 class CategoryBlogPostList(View):
 
-    def get(self, request, category_slug):
+    def get(self, request, pk, category_slug):
         store = Store.objects.all().first()
         store_name = store.name
-        category = Category.objects.get(slug = category_slug)
+        category = BlogCategory.objects.get(id = pk)
         blog_posts= BlogPost.objects.filter(category=category)
         recent_posts = BlogPost.objects.all()[:4]
-        return render(request, f'shop/blog_{store.template_index}', {'posts':blog_posts, 'recent_posts':recent_posts})
+        categories = BlogCategory.objects.all()
+        return render(request, f'shop/blog_4.html', {'posts':blog_posts, 
+                                                     'recent_posts':recent_posts,
+                                                     'blog_categories':categories})
 
 class CategoryProductsListView(View):
 
