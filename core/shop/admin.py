@@ -371,8 +371,8 @@ class BrandFAQInline(admin.TabularInline):
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name','slug' ,'is_special')
-    list_editable = ['is_special',]
+    list_display = ('name','slug' ,'is_special','products_count')
+    list_editable = ['is_special','slug']
     search_fields = ['name']
     inlines = [BrandFAQInline]
 

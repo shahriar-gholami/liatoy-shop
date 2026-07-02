@@ -234,7 +234,7 @@
                           <li class="nav-item">
                             <a
                               class="nav-link"
-                              href="{% url 'shop:special_brand_products'  brand.name %}"
+                              href="{{ brand.get_absolute_url }}"
                               >{{ brand.name }}</a
                             >
                           </li>
@@ -501,7 +501,7 @@
                       {% for brand in store.get_brands %}
                       <li>
                         <a
-                          href="{% url 'shop:special_brand_products'  brand.name %}"
+                          href="{{ brand.get_absolute_url }}"
                           class="title"
                           >{{ brand.name }}</a
                         >

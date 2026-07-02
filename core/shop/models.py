@@ -134,7 +134,7 @@ class Store(models.Model):
         return payed_orders_volume
 
     def get_brands(self):
-        return Brand.objects.all()
+        return Brand.objects.filter(is_special = True)
     
     def __str__(self):
         return f'{self.name}'
@@ -1082,6 +1082,12 @@ class Brand(models.Model):
     class Meta:
         verbose_name = 'برندها'
         verbose_name_plural = 'برندها'
+
+    def products_count(self):
+        return Product.objects.filter(brand=self).count()
+
+    def get_absolute_url(self):
+        return reverse('shop:special_brand_products', kwargs={'brand_slug': self.slug})
 
     def __str__(self):
         return self.name

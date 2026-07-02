@@ -1696,8 +1696,8 @@ class SpecialProductListView(View):
 
 class BrandProductListView(View):
 
-    def get(self, request, brand_name):
-        brand = get_object_or_404(Brand, name=brand_name)
+    def get(self, request, brand_slug):
+        brand = get_object_or_404(Brand, slug=brand_slug)
         products = Product.objects.filter(brand=brand.id)
         items_per_page = 12
         store = Store.objects.all().first()
