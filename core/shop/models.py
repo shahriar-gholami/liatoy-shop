@@ -1074,6 +1074,7 @@ def brand_upload_path(instance):
 class Brand(models.Model):
     name = models.CharField(max_length=250, verbose_name='نام برند')
     slug = models.CharField(max_length=255, null=True, blank=True)
+    is_special = models.BooleanField(default=False)
     short_description = RichTextField(verbose_name = 'توضیحات مختصر برند', null=True, blank=True)
     description = RichTextField(verbose_name = 'توضیحات برند', null=True, blank=True)
     image = models.ImageField(upload_to='brands/', default='media/11.png', blank=True)
