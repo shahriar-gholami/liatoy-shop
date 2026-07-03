@@ -248,6 +248,7 @@ admin.site.register(ContactMessage, ContactMessageAdmin)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'is_special')
     search_fields = ['name', 'slug']
+    list_editable = ['slug',]
 
 
 @admin.register(Slide)
