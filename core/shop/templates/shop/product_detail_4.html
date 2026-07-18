@@ -178,7 +178,7 @@
                   <div class="d-flex justify-content-end align-items-center">
                     {% if product.brand and product.brand.name != 'متفرقه' %}
                     <a
-                      href="{% url 'shop:special_brand_products' product.brand.name %}"
+                      href="{% url 'shop:special_brand_products' product.brand.slug %}"
                       class="badge success-label btn btn-lg rounded-pill font-12 py-2"
                       >{{product.brand.name}}</a
                     >

@@ -6,6 +6,6 @@ from django.conf import settings
 class LiaraStorage(S3Boto3Storage):
 
     def url(self, name, parameters=None, expire=None, http_method=None):
-        base_url = 'https://storage.liatoy.com'  
+        base_url = 'https://liatoy.ir'  
         name = name.lstrip('/')  
         return f"{base_url}/{name}"
