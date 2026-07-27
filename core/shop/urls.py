@@ -1,6 +1,8 @@
 from django.urls import path, include
 from . import views
 from django.apps import apps
+from .torob_api import TorobProductsAPIView
+
 
 current_app_name = apps.get_containing_app_config(__name__).name
 
@@ -61,5 +63,7 @@ urlpatterns = [
     path('orders/verify/', views.OrderVerifyView.as_view(), name='order_verify'),
     path('api/v1/', include('shop.api.v1.urls')),
     path('logout/', views.UserLogoutView.as_view(), name='logout'),
+
+    path("torob_api/v3/products", TorobProductsAPIView.as_view(), name="torob_products_api"),
     
    ]

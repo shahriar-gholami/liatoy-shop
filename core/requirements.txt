@@ -21,3 +21,4 @@ django-debug-toolbar
 bs4
 pytz
 django_jalali
+PyJWT[crypto]

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
 SITE_ID = config("SITE_ID", cast=int, default=1)
 
+SITE_URL = "https://liatoy.com"
 
 
 MIDDLEWARE = [
@@ -196,3 +197,22 @@ CKEDITOR_CONFIGS = {
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 USE_L10N = True
+
+TOROB_PUBLIC_KEY = """
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAt6Mu4T0pBORY11W+QeM35UsmLO3vsf+6yKpFDEImFk0=
+-----END PUBLIC KEY-----
+"""
+
+TOROB_TOKEN_VERSION = "1"
+
+# برای سایت اصلی:
+TOROB_EXPECTED_AUDIENCE = "liatoy.com"
+
+# برای تست لوکال اگر بخواهی موقتاً auth را غیرفعال کنی:
+TOROB_API_AUTH_ENABLED = True
+
+
+
+
+
