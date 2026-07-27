@@ -383,6 +383,9 @@ class Product(models.Model):
     stock_alarm_volume = models.IntegerField(default=0, null=True, blank=True, verbose_name = 'هشدار اتمام موجودی')
     video_code = models.TextField(null=True, blank=True)
 
+    def is_available(self):
+        return Variety.objects.filter(product=self, stock__gt=0).exists()
+
     def get_absolute_url(self):
         return reverse('shop:product_detail', kwargs={'product_slug':self.slug})
         
@@ -589,6 +592,19 @@ class ProductImage(models.Model):
     def get_absolute_url(self):
         return self.image.url
 
+
+class Variety(models.Model):
+    name = models.CharField(max_length=255, verbose_name='عنوان')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='محصول')
+    stock = models.PositiveIntegerField(verbose_name='تعداد موجود در انبار')
+
+    def __str__(self):
+        return f'{self.product.name} - {self.name}'
+    
+    class Meta:
+        verbose_name = 'تنوع محصولات'
+        verbose_name_plural = 'تنوع محصولات'
+
 class StoreLogoImage(models.Model):
     alt_name = models.CharField(max_length=250, null=True, blank=True, verbose_name='نام جایزگین')
     image = models.ImageField(upload_to=logo_upload_path, default='media/11.png', verbose_name='تصویر')
@@ -604,17 +620,6 @@ class StoreLogoImage(models.Model):
         return JalaliDatetime(self.created).strftime('%Y/%m/%d')
     shamsi_created_date.fget.short_description = "تاریخ ایجاد"
 
-class Variety(models.Model):
-    name = models.CharField(max_length=255, verbose_name='عنوان')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='محصول')
-    stock = models.PositiveIntegerField(verbose_name='تعداد موجود در انبار')
-
-    def __str__(self):
-        return f'{self.product.name} - {self.name}'
-    
-    class Meta:
-        verbose_name = 'تنوع محصولات'
-        verbose_name_plural = 'تنوع محصولات'
 
 class Comment(models.Model):
     sender = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name='فرستنده')

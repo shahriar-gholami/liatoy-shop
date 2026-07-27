@@ -635,6 +635,7 @@
                                 <div class="row align-items-center g-2 mt-2">
                                     <div class="col-8 text-start">
                                         <div class="price justify-content-between w-100 align-items-baseline">
+                                            {% if product.is_available %}
                                             {% if product.off_active == True %}
                                                 <div class="justify-content-sm-start text-start align-items-center">
                                                     <p class="font-12 title-font new-price mb-0 text-start ">{{product.get_sales_price}}
@@ -643,7 +644,10 @@
                                                         {{ product.get_normal_price }}</span>
                                                 </div>
                                             {% else %}
-                                                    <h6 class="font-14 title-font new-price text-start">{% if product.price != 0 %}{{ product.get_normal_price }} تومان{% else %}ناموجود{% endif %}</h6>
+                                                <h6 class="font-14 title-font new-price text-start">{% if product.price != 0 %}{{ product.get_normal_price }} تومان{% else %}ناموجود{% endif %}</h6>
+                                            {% endif %}
+                                            {% else %}
+                                                <h6 class="font-14 title-font new-price text-start">ناموجود</h6>
                                             {% endif %}
                                         </div>
                                     </div>
