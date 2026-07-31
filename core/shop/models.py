@@ -882,8 +882,7 @@ class Slide(models.Model):
     index = models.PositiveIntegerField(default=1, verbose_name='شماره اسلاید')
     image = models.ImageField(upload_to=slide_upload_path, default='media/11.png', verbose_name='تصویر')
     created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
-    tag = models.ManyToManyField(Tag, verbose_name='تگ محصولات هدف')
-    category = models.ManyToManyField(Category, verbose_name='دسته‌بندی محصولات هدف')
+    link = models.CharField(max_length=2000, default='#')
 
     def get_image_url(self):
         return self.image.url.split('?')[0]

@@ -255,7 +255,6 @@ class TagAdmin(admin.ModelAdmin):
 class SlideAdmin(admin.ModelAdmin):
     list_display = ('index', 'alt_name', 'image_preview')
     search_fields = ['alt_name', ]
-    autocomplete_fields = ['category', 'tag']
 
     def image_preview(self, obj):
         if obj.image:

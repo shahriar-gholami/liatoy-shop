@@ -89,7 +89,7 @@
                          <div class="swiper-wrapper">
                             {% for slide in slides %}
                             <div class="swiper-slide" style="object-fit: fill;">
-                                <a href="{% url 'shop:featured_products' slide.id %}">
+                                <a href="{{ slide.link }}">
                                     <img src="{{slide.get_image_url}}" class="img-fluid" alt="{{ slide.alt_name }}" style="object-fit: inherit;">
                                 </a>
                             </div>
@@ -97,7 +97,7 @@
                          </div>
                          <div class="swiper-button-next d-lg-flex d-none"></div>
                          <div class="swiper-button-prev d-lg-flex d-none"></div>
-                         <div class="swiper-pagination-bg">
+                         <!-- <div class="swiper-pagination-bg">
                              <div>
                                  <svg fill="none" height="75" viewBox="0 0 231 75" width="231"
                                       xmlns="http://www.w3.org/2000/svg">
@@ -107,7 +107,7 @@
                                  </svg>
                              </div>
                              <div class="swiper-pagination"></div>
-                         </div>
+                         </div> -->
                      </div>
                  </div>
              </div>
