@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 import jdatetime
 from django_jalali.db import models as jmodels
 from datetime import datetime
+from django.db.models import Q
+
 
 
 
@@ -112,3 +114,52 @@ class Month(models.Model):
     class Meta:
         verbose_name = 'حساب‌های ماهانه'
         verbose_name_plural = 'حساب‌های ماهانه'
+
+from django.db import models
+from django.core.exceptions import ValidationError
+
+class CartUpdate(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        limit_choices_to=Q(
+            status__latest_status__in=[
+                "پرداخت شده",
+                "ارسال شده",
+            ]
+        ),
+        verbose_name="سفارش",
+    )
+    cost = models.IntegerField(null=True, blank=True)
+    new_balance = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+            verbose_name = 'بروزرسانی موجودی حساب'
+            verbose_name_plural = 'بروزرسانی موجودی حساب'
+
+    def get_jalali_created_at(self):
+        if not self.created_at:
+            return "-"
+
+        jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
+        return jalali_date.strftime("%Y/%m/%d - %H:%M")
+
+    def save(self, *args, **kwargs):
+        # 1. پیدا کردن آبجکت قبلی (بر اساس تاریخ ثبت که مرتب شده باشد)
+        previous_update = CartUpdate.objects.exclude(pk=self.pk).order_by('-created_at').first()
+
+        # اگر آبجکت قبلی وجود دارد، از new_balance آن استفاده کن، وگرنه از 0 یا مقدار پیش‌فرض شروع کن
+        base_balance = previous_update.new_balance if previous_update else 0
+
+        # اگر new_balance دستی وارد نشده (یا خالی است)، آن را محاسبه کن
+        # شرط 'if not self.new_balance' باعث می‌شود اگر کاربر دستی وارد کرد، تغییر نکند
+        if self.cost is not None:
+            # فرمول: موجودی قبلی + (قیمت کل سفارش - هزینه)
+            # توجه: total_price باید در مدل Order موجود باشد
+            self.new_balance = base_balance + (self.order.total_price - self.cost)
+        
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Order: {self.order.id} - Balance: {self.new_balance}"

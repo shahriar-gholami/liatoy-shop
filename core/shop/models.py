@@ -736,6 +736,9 @@ class Order(models.Model):
     delivery_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
     delivery_off = models.BooleanField(default=False, verbose_name='ارسال رایگان')
 
+    def __str__(self):
+        return f'{self.reciever_name} {self.reciever_familly_name} - {self.total_price} - {self.reciever_city} - {self.status}'
+
     @transaction.atomic
     def finalize_payment(self, paid_status):
         # اگر قبلا پرداخت شده، دوباره موجودی کم نشود

@@ -1,0 +1,15 @@
+/* Form page */
+.change-form input[type="number"] {
+    width: 180px;
+}
+
+/* Changelist editable fields */
+.change-list input[type="number"] {
+    width: 140px;
+}
+
+
+body.model-cartupdate.change-list input[type="number"] {
+    width: 150px;
+    min-width: 150px;
+}

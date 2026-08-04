@@ -134,3 +134,62 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = ('paid_by', 'pay_date') # اضافه کردن فیلتر بر اساس مدیر و تاریخ
     search_fields = ('title', 'paid_by__name') # جستجو بر اساس عنوان هزینه و نام مدیر
 
+
+
+@admin.register(CartUpdate)
+class CartUpdateAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "order",
+        "order_total_price",
+        "cost",
+        "profit",
+        "new_balance",
+        "get_jalali_created_at",
+    )
+
+    list_editable = (
+        "cost",
+    )
+
+    readonly_fields = (
+        "order_total_price",
+        "profit",
+        "created_at",
+    )
+
+    fields = (
+        "order",
+        "order_total_price",
+        "cost",
+        "profit",
+        "new_balance",
+        "created_at",
+    )
+
+    search_fields = (
+        "id",
+        "order__id",
+    )
+
+
+    ordering = (
+        "-created_at",
+    )
+
+    @admin.display(description="Order total price")
+    def order_total_price(self, obj):
+        if obj.order_id:
+            return obj.order.total_price
+        return "-"
+
+    @admin.display(description="Profit")
+    def profit(self, obj):
+        if obj.cost is None or not obj.order_id:
+            return "-"
+        return obj.order.total_price - obj.cost
+
+    class Media:
+            css = {
+                "all": ("admin/css/cart_update_admin.css",)
+            }

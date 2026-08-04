@@ -185,9 +185,39 @@ class ProductAdmin(admin.ModelAdmin):
 # 	list_display = ('customer',)
 # 	filter_horizontal = ('items',) 
 
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import OrderStatus
+
+
 @admin.register(OrderStatus)
 class OrderStatusAdmin(admin.ModelAdmin):
-    list_display = ('latest_status',)
+    list_display = ("colored_latest_status",)
+
+    @admin.display(description="آخرین وضعیت")
+    def colored_latest_status(self, obj):
+        status = obj.latest_status
+
+        if status == "پرداخت شده":
+            color = "green"
+            font_weight = "bold"
+        elif status == "ارسال شده":
+            color = "black"
+            font_weight = "bold"
+        elif status == "پرداخت نشده":
+            color = "red"
+            font_weight = "bold"
+        else:
+            color = "inherit"
+            font_weight = "normal"
+
+        return format_html(
+            '<span style="color: {}; font-weight: {};">{}</span>',
+            color,
+            font_weight,
+            status,
+        )
+
 
 # @admin.register(CartItem)
 # class CartItemAdmin(admin.ModelAdmin):
@@ -195,10 +225,64 @@ class OrderStatusAdmin(admin.ModelAdmin):
 #     list_filter = ('variety',)  # امکان فیلتر کردن بر اساس فیلد variety
 #     search_fields = ('variety__name',)  # امکان جستجو بر اساس نام variety
 
+from django.contrib import admin
+from django.utils.html import format_html
+
+from .models import Order
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'total_price', 'status', 'shamsi_created_date', 'used_coupon', 'shamsi_updated_date')
-    list_filter = ('status', 'used_coupon')
+    list_display = (
+        "customer",
+        "total_price",
+        "colored_status",
+        "shamsi_created_date",
+        "shamsi_updated_date",
+    )
+
+    list_filter = ("status", "used_coupon")
+
+    search_fields = [
+        "customer__full_name",
+        "status__latest_status",
+    ]
+
+    readonly_fields = [
+        "items",
+    ]
+
+    exclude = (
+        "delivery_description",
+    )
+
+    actions = [
+        send_delivery_inform_sms,
+        send_order_verification_sms,
+    ]
+
+    @admin.display(description="وضعیت", ordering="status__latest_status")
+    def colored_status(self, obj):
+        if not obj.status:
+            return "-"
+
+        latest_status = obj.status.latest_status
+
+        if latest_status == "پرداخت شده":
+            color = "green"
+        elif latest_status == "ارسال شده":
+            color = "black"
+        elif latest_status == "پرداخت نشده":
+            color = "red"
+        else:
+            color = "inherit"
+
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color,
+            latest_status,
+        )
+
     search_fields = ['customer__full_name', 'status__latest_status']
     readonly_fields = ['items',]
     exclude = ('delivery_description',)
