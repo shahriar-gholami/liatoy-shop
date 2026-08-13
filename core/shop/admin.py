@@ -12,7 +12,12 @@ from django.core.exceptions import ValidationError
 from django.urls import path
 from . import views
 from django.contrib.auth.models import User, Group
-
+from django.contrib import admin
+from django.db.models import Count, Q, Max, Sum
+from django.utils import timezone
+from datetime import timedelta
+from django.utils.html import format_html
+from .models import Customer, Order, OrderStatus
 # admin.py
 from django import forms
 from django.contrib import admin
@@ -348,9 +353,8 @@ class SlideAdmin(admin.ModelAdmin):
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    list_display = ('index', 'alt_name', 'image_preview', 'size')
+    list_display = ('index', 'alt_name', 'image_preview',)
     search_fields = ['alt_name',]
-    autocomplete_fields = ['category', 'tag']
 
     def image_preview(self, obj):
         if obj.image:
@@ -503,6 +507,114 @@ class SocialAccountAdmin(admin.ModelAdmin):
 
 
 
+class CustomerBehaviorFilter(admin.SimpleListFilter):
+    title = 'رفتار مشتری'
+    parameter_name = 'behavior'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('never_bought', 'ثبت‌نام شده (بدون خرید)'),
+            ('risky', 'در خطر ریزش (۱۴ روز بدون سفارش)'),
+            ('has_unpaid', 'دارای سفارش پرداخت نشده'),
+        )
+
+    def queryset(self, request, queryset):
+        now = timezone.now()
+        two_weeks_ago = now - timedelta(days=14)
+
+        if self.value() == 'never_bought':
+            return queryset.filter(total_orders=0)
+        
+        if self.value() == 'risky':
+            # مشتریانی که قبلا خرید داشتند ولی در ۲ هفته اخیر سفارشی نداشتند
+            return queryset.filter(total_orders__gt=0).exclude(last_order_date__gte=two_weeks_ago)
+
+        if self.value() == 'has_unpaid':
+            return queryset.filter(order__status__latest_status='پرداخت نشده').distinct()
+
+# تعریف پروکسی مدل در models.py یا بالای همین فایل ادمین
+class CustomerClub(Customer):
+    class Meta:
+        proxy = True
+        verbose_name = 'باشگاه مشتریان'
+        verbose_name_plural = 'باشگاه مشتریان لیاتوی'
+
+@admin.register(CustomerClub)
+class CustomerClubAdmin(admin.ModelAdmin):
+    # ستون‌هایی که در لیست نمایش داده می‌شوند
+    list_display = [
+        'full_name', 
+        'phone_number', 
+        'display_total_orders', 
+        'display_total_spent', 
+        'display_last_order', 
+        'customer_status_icon'
+    ]
+    
+    list_filter = [CustomerBehaviorFilter, 'city']
+    search_fields = ['full_name', 'phone_number']
+
+    def get_queryset(self, request):
+        """بهینه‌سازی کوئری برای محاسبه تعداد و مبالغ در لحظه"""
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            total_orders=Count('order', filter=Q(order__status__latest_status__in=['پرداخت شده', 'ارسال شده'])),
+            total_spent=Sum('order__total_price', filter=Q(order__status__latest_status__in=['پرداخت شده', 'ارسال شده'])),
+            last_order_date=Max('order__created_date', filter=Q(order__status__latest_status__in=['پرداخت شده', 'ارسال شده']))
+        )
+        return qs
+
+    # --- متدهای نمایش ستون‌ها ---
+
+    def display_total_orders(self, obj):
+        return f"{obj.total_orders} سفارش"
+    display_total_orders.short_description = 'تعداد خریدهای موفق'
+    display_total_orders.admin_order_field = 'total_orders'
+
+    def display_total_spent(self, obj):
+        amount = obj.total_spent or 0
+        return f"{amount:,} تومان"
+    display_total_spent.short_description = 'مجموع پرداختی'
+    display_total_spent.admin_order_field = 'total_spent'
+
+    def display_last_order(self, obj):
+        if obj.last_order_date:
+            return obj.shamsi_created_date # یا تبدیل last_order_date به شمسی
+        return "بدون سفارش"
+    display_last_order.short_description = 'آخرین خرید موفق'
+
+    def customer_status_icon(self, obj):
+        """نمایش آیکون‌های وضعیت بصری"""
+        now = timezone.now()
+        two_weeks_ago = now - timedelta(days=14)
+
+        if obj.total_orders == 0:
+            return format_html('<span style="color: gray;">⚪ تازه وارد</span>')
+        
+        if obj.last_order_date and obj.last_order_date < two_weeks_ago:
+            return format_html('<span style="color: red;">🔴 در خطر ریزش</span>')
+        
+        return format_html('<span style="color: green;">🟢 فعال</span>')
+    
+    customer_status_icon.short_description = 'وضعیت وفاداری'
+
+    # --- عملیات گروهی (Actions) ---
+
+    actions = ['send_promo_sms', 'charge_wallet_gift']
+
+    def send_promo_sms(self, request, queryset):
+        # منطق اتصال به وب‌سرویس پیامک شما
+        count = queryset.count()
+        self.message_user(request, f"درخواست ارسال پیامک برای {count} مشتری به صف ارسال افزوده شد.")
+    send_promo_sms.short_description = "ارسال کد تخفیف به انتخاب شده‌ها"
+
+    def charge_wallet_gift(self, request, queryset):
+        # هدیه ۵۰ هزار تومانی به کیف پول برای بازگشت مشتری
+        for customer in queryset:
+            customer.wallet_balance += 50000
+            customer.save()
+        self.message_user(request, "کیف پول مشتریان انتخاب شده شارژ شد.")
+    charge_wallet_gift.short_description = "شارژ هدیه (۵۰،۰۰۰ تومان) جهت ترغیب"
 
 
 

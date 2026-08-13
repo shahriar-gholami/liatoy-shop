@@ -96,7 +96,8 @@
                             <p class="p-0 m-0">انتخاب روش‌های ارسال</p>
                             <select name="delivery_method" class="form-select width-200 form-group">
                                 {% for delivery in delivery_mthods %}
-                                <option value= "{{delivery.id}}">{{ delivery.name }} - هزینه: {{delivery.price}}</option>
+                                <!-- <option value= "{{delivery.id}}">{{ delivery.name }} - هزینه: {{delivery.price}}</option> -->
+                                 <option value= "{{delivery.id}}">{{ delivery.name }}
                                 {% endfor %}
                             </select>
                             </div> 

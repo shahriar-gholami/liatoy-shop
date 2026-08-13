@@ -101,9 +101,7 @@ class IndexView(View):
         store_name = Store.objects.all().first().name
         store = Store.objects.all().first()
         slides = Slide.objects.all()
-        triple_banners = [banner for banner in Banner.objects.filter(size='1/3')]
-        small_banners = Banner.objects.filter(size='1/2')
-        big_banners = Banner.objects.filter(size='1')
+        small_banners = Banner.objects.all()
         posts = BlogPost.objects.all()
         sales_products = Product.objects.filter(off_active=True)[:6]
         products = Product.objects.all()[:7]
@@ -130,9 +128,7 @@ class IndexView(View):
                                                                                    'store_name':store_name, 
                                                                                    'slides':slides, 
                                                                                    'favorite_products':favorite_products,
-                                                                                   'triple_banners':triple_banners,
-                                                                                   'small_banners':small_banners, 
-                                                                                   'big_banners':big_banners,
+                                                                                   'triple_banners':small_banners,
                                                                                    'tomorrow':str(tomorrow),
                                                                                    'most_viewed_products':most_viewed_products})
     
@@ -1917,21 +1913,21 @@ class OrderDetailView(IsCustomerUserMixin ,View):
                 delivery_description = delivery_description+f"{item.variety.product.name} - تنوع: {item.variety.name.replace('default variety','ندارد')} - قیمت: {item.get_single_item_price()} تومان - تعداد: {item.quantity} عدد - مجموع هزینه: {int(item.get_single_item_price().replace(',',''))*item.quantity:,} تومان<br>"
             delivery_description = delivery_description+'شیوه ارسال: <br>'
             if order.total_price <= delivery_method.min_cart_free:
-                delivery_description = delivery_description+f'{delivery_method.name} + {delivery_method.price:,} تومان  <br>'
+                # delivery_description = delivery_description+f'{delivery_method.name} + {delivery_method.price:,} تومان  <br>'
+                delivery_description = delivery_description + f'{delivery_method.name} <br>'
                 order.delivery_cost = delivery_method.price
                 delivery_cost = delivery_method.price
             else:
-                delivery_description = delivery_description+f'{delivery_method.name}، هزینه رایگان <br>'
+                # delivery_description = delivery_description+f'{delivery_method.name}، هزینه رایگان <br>'
+                delivery_description = delivery_description+f'{delivery_method.name} <br>'
                 order.delivery_cost = 0
                 delivery_cost = 0
-            delivery_description = delivery_description + '---------------------------------------------<br>'
             delivery_description = delivery_description + f'هزینه کالاهای سفارش: {order.total_price:,} تومان<br>'
-            delivery_description = delivery_description + '---------------------------------------------<br>'
             if order.total_price <= delivery_method.min_cart_free:
-                delivery_description = delivery_description+f'هزینه ارسال: {delivery_method.price:,} تومان  <br>'
+                # delivery_description = delivery_description+f'هزینه ارسال: {delivery_method.price:,} تومان  <br>'
+                delivery_description = delivery_description
             else:
                 delivery_description = delivery_description+f'هزینه ارسال: رایگان <br>'
-            delivery_description = delivery_description + '---------------------------------------------<br>'
             delivery_description = delivery_description + f'مجموع هزینه: {order.total_price+delivery_cost:,} تومان<br>'
             order.delivery_description = delivery_description
             order.save()

@@ -377,9 +377,8 @@
         <div class="row gy-4">
            {% for banner in triple_banners %}
            <div class="col-md-4">
-                <h2 class="sr-only">خرید انواع {{banner.category.first.name}}</h2>
                 <div class="banner-item running-top">
-                    <a href="{% url 'shop:special_products' banner.id %}">
+                    <a href="{{ banner.link }}">
                         <img src="{{banner.get_main_image}}" class="w-100 rounded-3" alt="{{ banner.alt_name }}">
                     </a>
                 </div>

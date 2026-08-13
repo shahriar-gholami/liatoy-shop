@@ -891,7 +891,7 @@ class Slide(models.Model):
         return self.image.url.split('?')[0]
 
     class Meta:
-        ordering = ('created',)
+        ordering = ('-index','created')
         verbose_name = 'اسلایدها'
         verbose_name_plural = 'اسلایدها'
 
@@ -906,9 +906,7 @@ class Banner(models.Model):
     index = models.PositiveIntegerField(default=1, verbose_name='شماره بنر')
     image = models.ImageField(upload_to=banner_upload_path, default='media/11.png', verbose_name='تصویر')
     created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
-    tag = models.ManyToManyField(Tag, blank=True, verbose_name='تگ محصولات هدف')
-    category = models.ManyToManyField(Category, blank=True, verbose_name='دسته‌بندی محصولات هدف')
-    size = models.CharField(max_length=250, default='small', verbose_name='سایز بنر')
+    link = models.CharField(max_length=1024, default='#')
 
     class Meta:
         ordering = ('created',)
@@ -1210,9 +1208,6 @@ class SocialAccount(models.Model):
     class Meta:
         verbose_name = 'شبکه‌های اجتماعی'
         verbose_name_plural = 'شبکه‌های اجتماعی'
-
-
-
 
 
 
