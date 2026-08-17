@@ -380,7 +380,10 @@
                                     </td>
                                     <td colspan="2" class="align-middle">
                                         <div class="text-center">
-                                            {% if order.status.id == 1 %} پرداخت شده
+                                            {% if order.status.id == 1 %} 
+                                            <div class="text-center">
+                                                <a href="{% url 'shop:factor' order.id %}" class="btn main-color-one-bg">فاکتور</a>
+                                            </div>
                                             {% elif order.status.latest_status == 'ارسال شده' %} ارسال شده
                                             {% elif order.status.id == 2 %} <a class="btn main-color-one-bg" href="{% url 'shop:order_detail' order.id %}">پرداخت</a> {% endif %}
                                         </div>

@@ -25,6 +25,24 @@ def send_otp_code(phone_number, code):
 
     print(response.text)
 
+def send_reminder_sms(phone_number, name):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
+    payload = json.dumps({
+    "code": "2frcg7j9tgi8mdb",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "name": name,
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text)
+
 def order_verification(phone_number, order_id):
     url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
@@ -45,7 +63,7 @@ def order_verification(phone_number, order_id):
     print(response.text)
 
 
-def delivery_inform(phone_number, order_id):
+def delivery_inform(phone_number, order_id, delivery_code):
     url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
     payload = json.dumps({
@@ -53,7 +71,8 @@ def delivery_inform(phone_number, order_id):
     "sender": "+983000505",
     "recipient": phone_number,
     "variable": {
-        "order-id": order_id
+        "order-id": order_id,
+        "delivery_code": delivery_code
     }
     })
     headers = {
@@ -65,7 +84,7 @@ def delivery_inform(phone_number, order_id):
 
     print(response.text)
 
-def cashback_inform(phone_number, order_id, discount, code):
+def cashback_inform(phone_number, order_id, delivery_code, discount, code):
     url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
     payload = json.dumps({
@@ -116,6 +135,7 @@ def send_delivery_inform_sms(modeladmin, request, queryset):
         discount = 0
         phone_number = order.customer.phone_number
         order_id = order.id
+        delivery_code = order.delivery_code
         if cashbacks:
             cashback = CashBack.objects.filter(order_level=order.customer.orders_num).first()
             if cashback != None:
@@ -138,9 +158,9 @@ def send_delivery_inform_sms(modeladmin, request, queryset):
                 ) 
                 code = new_coupon.code
                 print(phone_number, discount, code)
-                cashback_inform(phone_number, order_id, discount, code)
+                cashback_inform(phone_number, order_id, delivery_code, discount, code)
         else:
-            delivery_inform(phone_number, order_id)
+            delivery_inform(phone_number, order_id, delivery_code)
     modeladmin.message_user(request, "پیامک ارسال سفارش برای سفارشات انتخابی ارسال شد.")
 send_delivery_inform_sms.short_description = "ارسال پیامک اطلاع‌رسانی ارسال و پاداش‌"
 

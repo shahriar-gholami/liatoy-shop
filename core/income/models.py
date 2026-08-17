@@ -29,6 +29,7 @@ class Payment(models.Model):
     paid_by = models.ForeignKey(Owner, on_delete=models.CASCADE)
     pay_date = jmodels.jDateField(verbose_name="تاریخ", null=True, blank=True)
     amount = models.IntegerField(verbose_name="مقدار (تومان)", default=0)
+    paid_back = models.BooleanField(default=False)
 
     @property
     def shamsi_payment_date(self):
@@ -40,10 +41,21 @@ class Payment(models.Model):
         verbose_name = 'هزینه‌ها'
         verbose_name_plural = 'هزینه‌ها'
 
+    def __str__(self):
+        return f'{self.title} توسط {self.paid_by} - {self.amount} تومان'
+
+
 class Month(models.Model):
     name = models.CharField(max_length=255)
     month_num = models.IntegerField(default=1)
     year_num = models.IntegerField(default=1405)
+
+    def get_withdraw_list(self):
+        return Withdraw.objects.filter(month=self)
+
+    def get_monthly_withdraw_amount(self):
+        total = sum(withdraw.get_total_amount() for withdraw in self.get_withdraw_list().all())
+        return total
 
     def get_total_earnings(self):
         """جمع کل فروش (درآمد) ماه"""
@@ -53,14 +65,36 @@ class Month(models.Model):
         total = sum(order.get_final_payment()["unformated"] for order in orders)
         return total
 
+    def get_total_items_cost(self):
+        """جمع کل هزینه تامین کالاها ماه"""
+        orders = self.get_orders()
+        # فرض بر این است که متد get_final_payment یک دیکشنری برمی‌گرداند که کلید raw یا مبلغ عددی دارد
+        # اگر ندارد، باید بر اساس فیلد قیمت در مدل Order جمع بزنید
+        total = sum(order.items_cost for order in orders)
+        return total
+
+    def get_monthly_profit_percentage(self):
+        """
+        درصد سود ماهانه نسبت به هزینه تامین:
+        ((فروش - هزینه تامین) / هزینه تامین) * 100
+        """
+        total_earnings = self.get_total_earnings()
+        total_items_cost = self.get_total_items_cost()
+
+        if total_items_cost == 0:
+            return 0
+
+        profit = total_earnings - total_items_cost
+        return (profit / total_items_cost) * 100
+
     def get_total_payments(self):
         """جمع کل هزینه‌های ماه"""
-        payments = self.get_payments()
+        payments = self.get_payments() + self.get_total_items_cost()
         return sum(p.amount for p in payments)
 
     def get_net_profit(self):
         """محاسبه سود یا ضرر نهایی"""
-        return self.get_total_earnings() - self.get_total_payments()
+        return self.get_total_earnings() - self.get_total_payments() - self.get_monthly_withdraw_amount()
 
     def get_orders(self):
         
@@ -110,56 +144,47 @@ class Month(models.Model):
             pay_date__gte=start_datetime,
             pay_date__lt=end_datetime,
         )
+
+    def __str__(self):
+        return self.name
+    
+    def get_gross_profit(self):
+        """سود ناخالص: فروش منهای هزینه تامین کالا"""
+        return self.get_total_earnings() - self.get_total_items_cost()
+
+    def get_total_other_payments(self):
+        """جمع کل هزینه‌های جانبی ماه (بدون هزینه تامین کالا)"""
+        return sum(p.amount for p in self.get_payments())
+
+    def get_net_profit(self):
+        """سود خالص نهایی: سود ناخالص منهای هزینه‌های جانبی"""
+        # نکته: تصفیه حساب (Withdraw) هزینه جدید نیست، بلکه پرداختِ هزینه‌های قبلی است.
+        # سود واقعی کسب و کار = درآمد - (هزینه کالا + هزینه‌های جانبی)
+        return self.get_gross_profit() - self.get_total_other_payments()
+
     
     class Meta:
         verbose_name = 'حساب‌های ماهانه'
         verbose_name_plural = 'حساب‌های ماهانه'
 
-from django.db import models
-from django.core.exceptions import ValidationError
-
-class CartUpdate(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        limit_choices_to=Q(
-            status__latest_status__in=[
-                "پرداخت شده",
-                "ارسال شده",
-            ]
-        ),
-        verbose_name="سفارش",
+class Withdraw(models.Model):
+    # اضافه کردن limit_choices_to
+    payments = models.ManyToManyField(
+        Payment, 
+        blank=True, 
+        limit_choices_to={'paid_back': False}
     )
-    cost = models.IntegerField(null=True, blank=True)
-    new_balance = models.IntegerField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
+    month = models.ForeignKey(Month, on_delete=models.CASCADE)
+    paid_date = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-            verbose_name = 'بروزرسانی موجودی حساب'
-            verbose_name_plural = 'بروزرسانی موجودی حساب'
-
-    def get_jalali_created_at(self):
-        if not self.created_at:
-            return "-"
-
-        jalali_date = jdatetime.datetime.fromgregorian(datetime=self.created_at)
-        return jalali_date.strftime("%Y/%m/%d - %H:%M")
-
-    def save(self, *args, **kwargs):
-        # 1. پیدا کردن آبجکت قبلی (بر اساس تاریخ ثبت که مرتب شده باشد)
-        previous_update = CartUpdate.objects.exclude(pk=self.pk).order_by('-created_at').first()
-
-        # اگر آبجکت قبلی وجود دارد، از new_balance آن استفاده کن، وگرنه از 0 یا مقدار پیش‌فرض شروع کن
-        base_balance = previous_update.new_balance if previous_update else 0
-
-        # اگر new_balance دستی وارد نشده (یا خالی است)، آن را محاسبه کن
-        # شرط 'if not self.new_balance' باعث می‌شود اگر کاربر دستی وارد کرد، تغییر نکند
-        if self.cost is not None:
-            # فرمول: موجودی قبلی + (قیمت کل سفارش - هزینه)
-            # توجه: total_price باید در مدل Order موجود باشد
-            self.new_balance = base_balance + (self.order.total_price - self.cost)
-        
-        super().save(*args, **kwargs)
+    def get_total_amount(self):
+        total = sum(payment.amount for payment in self.payments.all())
+        return total
 
     def __str__(self):
-        return f"Order: {self.order.id} - Balance: {self.new_balance}"
+        return f"تصفیه حساب {self.owner} - {self.month}"
+
+    class Meta:
+            verbose_name = 'برداشت‌ها'
+            verbose_name_plural = 'برداشت‌ها'

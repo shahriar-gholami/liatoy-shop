@@ -2250,3 +2250,11 @@ class VideosView(View):
         except EmptyPage:
             videos = paginator.page(paginator.num_pages)
         return render(request, self.template_name, {'videos':videos})
+
+class FactorView(View):
+
+    template_name = 'shop/factor.html'
+
+    def get(self, request, order_id):
+        order = Order.objects.get(id=order_id)
+        return render(request, self.template_name, {"order":order})

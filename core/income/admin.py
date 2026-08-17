@@ -1,195 +1,133 @@
 from django.contrib import admin
-from .models import Month
-from django.utils.html import format_html # Import this for HTML formatting
-
-from django.contrib import admin
-from .models import *
 from django.utils.html import format_html
-from django.urls import reverse, NoReverseMatch
+from django.urls import reverse
+from django.db.models import Sum
+
+from .models import Owner, Payment, Month, Withdraw
 
 
-class MonthAdmin(admin.ModelAdmin):
-    list_display = ('name', 'month_num', 'year_num', 'get_profit_display')
-    fields = ('name', 'month_num', 'year_num', 'financial_summary', 'orders_display', 'payments_display')
-    readonly_fields = ('financial_summary', 'orders_display', 'payments_display')
-
-    def financial_summary(self, obj):
-        earnings = obj.get_total_earnings()
-        expenses = obj.get_total_payments()
-        profit = obj.get_net_profit()
-        
-        # تعیین رنگ برای سود یا ضرر
-        profit_color = "#28a745" if profit >= 0 else "#dc3545"
-        profit_text = "سود نهایی" if profit >= 0 else "ضرر نهایی"
-
-        html = f"""
-        <div style="display: flex; gap: 20px; background: #fdfdfd; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
-            <div style="flex: 1; text-align: center;">
-                <div style="color: #666; font-size: 0.9em;">جمع فروش (درآمد)</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #212529;">{earnings:,} <small>تومان</small></div>
-            </div>
-            <div style="flex: 1; text-align: center; border-right: 1px solid #eee; border-left: 1px solid #eee;">
-                <div style="color: #666; font-size: 0.9em;">جمع هزینه‌ها</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #dc3545;">{expenses:,} <small>تومان</small></div>
-            </div>
-            <div style="flex: 1; text-align: center;">
-                <div style="color: #666; font-size: 0.9em;">{profit_text}</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: {profit_color};">{abs(profit):,} <small>تومان</small></div>
-            </div>
-        </div>
-        """
-        return format_html(html)
-
-    financial_summary.short_description = 'خلاصه وضعیت مالی ماه'
-
-    # نمایش سود در لیست اصلی ادمین
-    def get_profit_display(self, obj):
-        profit = obj.get_net_profit()
-        color = "green" if profit >= 0 else "red"
-        label = "سود" if profit >= 0 else "ضرر"
-
-        return format_html(
-            '<span style="color: {}; font-weight: bold;">{}: {} تومان</span>',
-            color,
-            label,
-            f'{abs(profit):,}'
-        )
-
-    get_profit_display.short_description = 'سود/ضرر ماه'
-
-
-    # ... متد orders_display قبلی شما ...
-    def orders_display(self, obj):
-        orders = obj.get_orders()
-        if orders.exists():
-            order_links = []
-            total_orders = 0
-            for order in orders:
-                try:
-                    # استخراج مبلغ عددی برای محاسبه جمع کل (اگر در متد get_final_payment موجود باشد)
-                    # total_orders += order.get_final_payment()['amount'] 
-                    order_url = reverse('admin:%s_%s_change' % (order._meta.app_label, order._meta.model_name), args=[order.pk])
-                    order_links.append(f'<a href="{order_url}">{order.customer.full_name} - {order.get_final_payment()["formated"]} تومان - {order.shamsi_created_date}</a>')
-                except NoReverseMatch:
-                    order_links.append(str(order))
-            return format_html('<br>'.join(order_links))
-        return "سفارشی ثبت نشده"
-
-    def payments_display(self, obj):
-        # دریافت هزینه‌ها با بهینه‌سازی دیتابیس (select_related)
-        payments = obj.get_payments().select_related('paid_by')
-        
-        if not payments.exists():
-            return "هزینه‌ای یافت نشد"
-
-        # دسته‌بندی هزینه‌ها بر اساس شخص
-        owner_groups = {}
-        for p in payments:
-            owner_name = p.paid_by.name
-            if owner_name not in owner_groups:
-                owner_groups[owner_name] = {'list': [], 'total': 0}
-            owner_groups[owner_name]['list'].append(p)
-            owner_groups[owner_name]['total'] += p.amount
-
-        # ساخت خروجی HTML
-        html_output = []
-        grand_total = 0 # جمع کل هزینه‌های ماه
-
-        for owner_name, data in owner_groups.items():
-            # تیتر برای هر شخص
-            html_output.append(f'<div style="background: #f8f8f8; padding: 5px; margin-top: 10px; border-right: 5px solid #79aec8;"><b>مدیر: {owner_name}</b></div>')
-            
-            # لیست هزینه‌های آن شخص
-            for p in data['list']:
-                try:
-                    p_url = reverse('admin:%s_%s_change' % (p._meta.app_label, p._meta.model_name), args=[p.pk])
-                    html_output.append(
-                        f' - <a href="{p_url}">{p.title}: {p.amount:,} تومان</a> <span style="color: #999; font-size: 0.8em;">({p.shamsi_payment_date})</span>'
-                    )
-                except NoReverseMatch:
-                    html_output.append(f' - {p.title}: {p.amount:,} تومان')
-
-            # جمع کل برای این شخص
-            html_output.append(f'<div style="color: #264b5d; font-weight: bold; margin-bottom: 5px;">جمع هزینه‌های {owner_name}: {data["total"]:,} تومان</div>')
-            grand_total += data['total']
-
-
-        return format_html('<br>'.join(html_output))
-
-    payments_display.short_description = 'هزینه‌ها به تفکیک شخص'
-
-admin.site.register(Month, MonthAdmin)
-
-
-# ثبت مدل Owner
 @admin.register(Owner)
 class OwnerAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',) # اضافه کردن قابلیت جستجو بر اساس نام مدیر
+    list_display = ("name", "phone_number")
 
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'paid_by', 'amount')
-    list_filter = ('paid_by', 'pay_date') # اضافه کردن فیلتر بر اساس مدیر و تاریخ
-    search_fields = ('title', 'paid_by__name') # جستجو بر اساس عنوان هزینه و نام مدیر
+    list_display = ("title", "paid_by", "amount", "pay_date", "paid_back")
+    list_filter = ("paid_back", "paid_by")
 
 
+@admin.register(Withdraw)
+class WithdrawAdmin(admin.ModelAdmin):
+    list_display = ("owner", "month", "get_total_amount", "paid_date")
+    filter_horizontal = ("payments",)
 
-@admin.register(CartUpdate)
-class CartUpdateAdmin(admin.ModelAdmin):
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.payments.update(paid_back=True)
+
+
+@admin.register(Month)
+class MonthAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
-        "order",
-        "order_total_price",
-        "cost",
-        "profit",
-        "new_balance",
-        "get_jalali_created_at",
+        "name",
+        "month_orders_count",
+        "month_orders_amount",
+        "month_items_cost",
+        "month_gross_profit",
+        "month_gross_profit_percentage",
+        "month_side_costs",
+        "month_net_profit",
     )
-
-    list_editable = (
-        "cost",
-    )
-
     readonly_fields = (
-        "order_total_price",
-        "profit",
-        "created_at",
+        "month_orders_count",
+        "month_orders_amount",
+        "month_items_cost",
+        "month_gross_profit",
+        "month_gross_profit_percentage",
+        "month_side_costs",
+        "month_net_profit",
+        "monthly_payments_report",
+        "monthly_withdraw_report",
     )
 
-    fields = (
-        "order",
-        "order_total_price",
-        "cost",
-        "profit",
-        "new_balance",
-        "created_at",
-    )
+    def month_orders_count(self, obj):
+        return obj.get_orders().count()
+    month_orders_count.short_description = "تعداد سفارشات ماه"
 
-    search_fields = (
-        "id",
-        "order__id",
-    )
+    def month_orders_amount(self, obj):
+        return f"{obj.get_total_earnings():,d} تومان"
+    month_orders_amount.short_description = "مبلغ سفارشات ماه"
 
+    def month_items_cost(self, obj):
+        return f"{obj.get_total_items_cost():,d} تومان"
+    month_items_cost.short_description = "مبلغ تامین کالاها"
 
-    ordering = (
-        "-created_at",
-    )
+    def month_side_costs(self, obj):
+            return f"{obj.get_total_other_payments():,d} تومان"
+    month_side_costs.short_description = "هزینه‌های جانبی ماه"
 
-    @admin.display(description="Order total price")
-    def order_total_price(self, obj):
-        if obj.order_id:
-            return obj.order.total_price
-        return "-"
+    def month_gross_profit(self, obj):
+        return f"{obj.get_gross_profit():,d} تومان"
+    month_gross_profit.short_description = "سود/زیان ناخالص"
 
-    @admin.display(description="Profit")
-    def profit(self, obj):
-        if obj.cost is None or not obj.order_id:
-            return "-"
-        return obj.order.total_price - obj.cost
+    def month_gross_profit_percentage(self, obj):
+        return f"{obj.get_monthly_profit_percentage():.2f}%"
+    month_gross_profit_percentage.short_description = "درصد سود روی کالا"
 
-    class Media:
-            css = {
-                "all": ("admin/css/cart_update_admin.css",)
-            }
+    def month_net_profit(self, obj):
+        return f"{obj.get_net_profit():,d} تومان"
+    month_net_profit.short_description = "سود/زیان خالص"
+
+    def monthly_payments_report(self, obj):
+        payments = obj.get_payments()
+        if not payments.exists():
+            return "هزینه‌ای ثبت نشده است."
+
+        summary = payments.values("paid_by__name", "paid_by__id").annotate(total=Sum("amount"))
+
+        html = '<table style="width:100%; border-collapse:collapse;">'
+        html += '<tr><th>مدیر</th><th>مبلغ</th><th>لینک</th></tr>'
+
+        for item in summary:
+            url = reverse(
+                f'admin:{Payment._meta.app_label}_{Payment._meta.model_name}_changelist'
+            ) + f"?paid_by__id__exact={item['paid_by__id']}"
+
+            html += (
+                f"<tr>"
+                f"<td>{item['paid_by__name']}</td>"
+                f"<td>{item['total']:,d} تومان</td>"
+                f'<td><a href="{url}">مشاهده</a></td>'
+                f"</tr>"
+            )
+
+        html += "</table>"
+        return format_html(html)
+    monthly_payments_report.short_description = "لیست هزینه‌ها به تفکیک فرد"
+
+    def monthly_withdraw_report(self, obj):
+        withdraws = obj.get_withdraw_list()
+        if not withdraws.exists():
+            return "تصفیه‌ای ثبت نشده است."
+
+        html = '<table style="width:100%; border-collapse:collapse;">'
+        html += '<tr><th>مدیر</th><th>مبلغ</th><th>لینک</th></tr>'
+
+        for w in withdraws:
+            url = reverse(
+                f'admin:{Withdraw._meta.app_label}_{Withdraw._meta.model_name}_change',
+                args=[w.id]
+            )
+            html += (
+                f"<tr>"
+                f"<td>{w.owner.name}</td>"
+                f"<td>{w.get_total_amount():,d} تومان</td>"
+                f'<td><a href="{url}">مشاهده</a></td>'
+                f"</tr>"
+            )
+
+        html += "</table>"
+        return format_html(html)
+    monthly_withdraw_report.short_description = "لیست تصفیه‌حساب‌ها به تفکیک فرد"
+

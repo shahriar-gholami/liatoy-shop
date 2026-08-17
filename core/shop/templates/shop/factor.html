@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+<html dir="rtl" lang="">
+<head>
+    <title>فاکتور فروش | فروشگاه اسباب بازی لیاتوی</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'assets4/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets4/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets4/css/responsive.css' %}">
+</head>
+<body class="bg-white">
+
+<div class="container-xl" style="margin-top: 100px;">
+    <div class="row">
+        <div class="col-3 text-start">
+            <img
+            src="{{store.get_logo_image}}"
+            alt=""
+            class="img-fluid menu-responsive-logo"
+            style="width: 150px"
+            />
+        </div>
+        <div class="col-6 text-center"><h3 class="font-weight-bold">صورتحساب فروش کالا</h3></div>
+        <div class="col-3 text-right">
+            <p class="text-end">شماره سفارش: {{ order.id }}</p>
+            <p class="text-end">تاریخ سفارش: {{ order.shamsi_created_date }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="text-center" colspan="11">مشخصات فروشنده</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td colspan="11" class="text-right">
+                    <div class="row">
+                        <div class="col-4">
+                            <p>نام شخص حقیق / حقوقی: فروشگاه اسباب بازی لیاتوی</p>
+                            
+                        </div>
+                        <div class="col-4">
+                            <p>آدرس کامل: {{ store.address }}</p>
+                        </div>
+                        <div class="col-4">
+                            <p>شماره تماس: {{ store.phone_number }}</p>
+                            
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+            <thead>
+            <tr>
+                <th class="text-center" colspan="11">مشخصات خریدار</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td colspan="11" class="text-right">
+                    <div class="row">
+                        <div class="col-4">
+                            <p>نام شخص حقیق / حقوقی:{{ order.reciever_name }} {{order.reciever_familly_name}}</p>
+                            <p>آدرس کامل: {{ order.reciever_address|safe }}</p>
+                        </div>
+                        <div class="col-4">
+                            <p>کد پستی: {{ order.reciever_zip_code }}</p>
+                        </div>
+                        <div class="col-4">
+                            <p>تلفن: {{ order.reciever_phone_number }}</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+            <thead>
+            <tr>
+                <th class="text-center" colspan="11">مشخصات کالاها</th>
+            </tr>
+            </thead>
+            <thead>
+            <tr class="text-center">
+                <th>کد کالا</th>
+                <th>شرح کالا یا خدمات</th>
+                <th>تعداد / مقدار</th>
+                <th>مبلغ واحد (ریال)</th>
+                <th>مبلغ کل (ریال)</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in order.items.all %}
+            <tr class="text-center">
+                <td>{{ item.id }}</td>
+                <td>{{ item.variety.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.variety.product.get_active_price|intcomma }} تومان</td>
+                <td>{{ item.get_item_price }} تومان</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th class="text-right">جمع کل</th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center">{{ order.get_total_price|intcomma }} تومان</th>
+                
+            </tr>
+            <!-- <tr>
+                <th colspan="5" class="text-right">شرایط و نحوه فروش: &nbsp&nbsp&nbsp&nbsp نقدی &nbsp&nbsp&nbsp&nbsp
+                    غیرنقدی
+                </th>
+                <th colspan="6" class="text-right">توضیحات:</th>
+            </tr> -->
+            <!-- <tr style="padding: 60px 0;">
+                <td colspan="5" class="text-right">مهر و امضا فروشنده</td>
+                <td colspan="6" class="text-right">مهر و امضا خریدار</td>
+            </tr> -->
+            </tbody>
+        </table>
+    </div>
+
+    <a href="" class="btn btn-dark" id="printPageButton" onclick="printInvoice()">پرینت</a>
+
+</div>
+
+
+<script src="assets/js/jquery-3.7.1.min.js"></script>
+<script src="assets/js/bootstrap.bundle-5.3.2.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/modernizr-3.11.2.min.js"></script>
+
+<script>
+    function printInvoice() {
+        window.print();
+    }
+</script>
+
+</body>
+</html>

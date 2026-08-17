@@ -20,6 +20,9 @@ from django.templatetags.static import static
 from PIL import Image
 from django.utils.text import slugify
 
+import os
+import uuid
+
 
 def date2jalali(g_date):
     return jdatetime.date.fromgregorian(date=g_date) if g_date else None
@@ -735,6 +738,8 @@ class Order(models.Model):
     delivery_description = models.TextField(null=True, blank=True, verbose_name='توضیحات سفارش و ارسال')
     delivery_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
     delivery_off = models.BooleanField(default=False, verbose_name='ارسال رایگان')
+    items_cost = models.IntegerField(default=0, verbose_name='هزینه تامین اقلام')
+    delivery_code = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f'{self.reciever_name} {self.reciever_familly_name} - {self.total_price} - {self.reciever_city} - {self.status}'
@@ -960,10 +965,6 @@ class BlogCategory(models.Model):
 
     def __str__(self):
         return self.name
-
-import os
-import uuid
-
 
 def thumbnail_upload_path(instance, filename):
     base_name, ext = os.path.splitext(filename)

@@ -13,6 +13,8 @@ from django.urls import path
 from . import views
 from django.contrib.auth.models import User, Group
 from django.contrib import admin
+import json
+import requests
 from django.db.models import Count, Q, Max, Sum
 from django.utils import timezone
 from datetime import timedelta
@@ -241,6 +243,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "customer",
         "total_price",
+        "items_cost",
         "colored_status",
         "shamsi_created_date",
         "shamsi_updated_date",
@@ -252,6 +255,8 @@ class OrderAdmin(admin.ModelAdmin):
         "customer__full_name",
         "status__latest_status",
     ]
+
+    list_editable = ('items_cost',)
 
     readonly_fields = [
         "items",
@@ -265,6 +270,11 @@ class OrderAdmin(admin.ModelAdmin):
         send_delivery_inform_sms,
         send_order_verification_sms,
     ]
+
+    class Media:
+        css = {
+            "all": ("admin/css/cart_update_admin.css",)
+        }
 
     @admin.display(description="وضعیت", ordering="status__latest_status")
     def colored_status(self, obj):
@@ -602,11 +612,66 @@ class CustomerClubAdmin(admin.ModelAdmin):
 
     actions = ['send_promo_sms', 'charge_wallet_gift']
 
+    
+
+
+    
     def send_promo_sms(self, request, queryset):
-        # منطق اتصال به وب‌سرویس پیامک شما
-        count = queryset.count()
-        self.message_user(request, f"درخواست ارسال پیامک برای {count} مشتری به صف ارسال افزوده شد.")
+        
+        # دریافت اطلاعات از دیتابیس
+        user_data = queryset.values_list('phone_number', 'full_name')
+        
+        params_list = []
+        
+        # ساخت لیست پیام‌ها
+        for phone, name in user_data:
+            # مدیریت نام در صورتی که خالی باشد
+            display_name = name if name else "کاربر گرامی"
+            
+            message_text = (
+                f"{display_name} عزیز سلام.\n"
+                f"مدتی هست که در لیاتوی عضو هستید ولی هیچ سفارشی نداشتید. "
+                f"برای خرید بهترین اسباب‌بازی‌های خاص از لیاتوی بازدید کنید.\n"
+                f"فروشگاه اسباب بازی لیاتوی"
+                f"https://liatoy.com"
+            )
+            
+            params_list.append({
+                "recipients": [phone],
+                "message": message_text
+            })
+        
+        # ساخت payload نهایی
+        payload = {
+            "sending_type": "peer_to_peer",
+            "from_number": "+983000505",
+            "params": params_list
+        }
+        
+        # تنظیمات درخواست
+        url = "https://edge.ippanel.com/v1/api/send"
+        headers = {
+            'Authorization': 'YTI4NjUyNDAtNDkwNS00M2QyLWJlNjMtYWU2NzI1ZmJlODg0YmI2YWFkNmQzZTI0OTExYTY5ZTkzZjUyNzgzOTAzOTE=',
+            'Content-Type': 'application/json'
+        }
+        
+        # ارسال درخواست
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            
+            # لاگ گرفتن برای بررسی در کنسول
+            print(f"Status Code: {response.status_code}")
+            print(f"Response: {response.text}")
+            
+            if response.status_code == 201 or response.status_code == 200:
+                self.message_user(request, f"ارسال پیامک برای {len(user_data)} نفر با موفقیت ثبت شد.")
+            else:
+                self.message_user(request, f"خطا در ارسال پیامک. کد خطا: {response.status_code}", level='error')
+                
+        except Exception as e:
+            self.message_user(request, f"خطای ارتباطی: {str(e)}", level='error')
     send_promo_sms.short_description = "ارسال کد تخفیف به انتخاب شده‌ها"
+
 
     def charge_wallet_gift(self, request, queryset):
         # هدیه ۵۰ هزار تومانی به کیف پول برای بازگشت مشتری
