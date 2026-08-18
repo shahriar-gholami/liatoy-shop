@@ -740,6 +740,11 @@ class Order(models.Model):
     delivery_off = models.BooleanField(default=False, verbose_name='ارسال رایگان')
     items_cost = models.IntegerField(default=0, verbose_name='هزینه تامین اقلام')
     delivery_code = models.CharField(max_length=255, null=True, blank=True)
+    manual_items_description = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="آیتم‌های دستی"
+    )
 
     def __str__(self):
         return f'{self.reciever_name} {self.reciever_familly_name} - {self.total_price} - {self.reciever_city} - {self.status}'

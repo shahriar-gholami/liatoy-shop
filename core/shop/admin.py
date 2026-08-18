@@ -200,6 +200,7 @@ from .models import OrderStatus
 @admin.register(OrderStatus)
 class OrderStatusAdmin(admin.ModelAdmin):
     list_display = ("colored_latest_status",)
+    
 
     @admin.display(description="آخرین وضعیت")
     def colored_latest_status(self, obj):
@@ -258,10 +259,6 @@ class OrderAdmin(admin.ModelAdmin):
 
     list_editable = ('items_cost',)
 
-    readonly_fields = [
-        "items",
-    ]
-
     exclude = (
         "delivery_description",
     )
@@ -275,6 +272,15 @@ class OrderAdmin(admin.ModelAdmin):
         css = {
             "all": ("admin/css/cart_update_admin.css",)
         }
+
+    def get_exclude(self, request, obj=None):
+        exclude = list(super().get_exclude(request, obj) or [])
+
+        # اگر سفارش دارای آیتم باشد، فیلد آیتم‌های دستی نمایش داده نشود
+        if obj is not None and obj.items.exists():
+            exclude.append("manual_items")
+
+        return exclude
 
     @admin.display(description="وضعیت", ordering="status__latest_status")
     def colored_status(self, obj):
@@ -303,9 +309,6 @@ class OrderAdmin(admin.ModelAdmin):
     exclude = ('delivery_description',)
     actions = [send_delivery_inform_sms, send_order_verification_sms]
 
-# @admin.register(Size)
-# class SizeAdmin(admin.ModelAdmin):
-# 	list_display = ['name']
 
 @admin.register(CashBack)
 class CashBackAdmin(admin.ModelAdmin):
