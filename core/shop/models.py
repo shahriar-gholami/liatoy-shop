@@ -745,6 +745,7 @@ class Order(models.Model):
         null=True, 
         verbose_name="آیتم‌های دستی"
     )
+    gateway_fee = models.IntegerField(default=0, verbose_name='کارمزد درگاه') 
 
     def __str__(self):
         return f'{self.reciever_name} {self.reciever_familly_name} - {self.total_price} - {self.reciever_city} - {self.status}'

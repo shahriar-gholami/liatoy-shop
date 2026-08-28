@@ -73,6 +73,14 @@ class Month(models.Model):
         total = sum(order.items_cost for order in orders)
         return total
 
+    def get_total_gateway_fee(self):
+            """جمع کل هزینه کارمزدهای درگاه پرداخت"""
+            orders = self.get_orders()
+            # فرض بر این است که متد get_final_payment یک دیکشنری برمی‌گرداند که کلید raw یا مبلغ عددی دارد
+            # اگر ندارد، باید بر اساس فیلد قیمت در مدل Order جمع بزنید
+            total = sum(order.gateway_fee for order in orders)
+            return total
+
     def get_monthly_profit_percentage(self):
         """
         درصد سود ماهانه نسبت به هزینه تامین:
@@ -150,7 +158,7 @@ class Month(models.Model):
     
     def get_gross_profit(self):
         """سود ناخالص: فروش منهای هزینه تامین کالا"""
-        return self.get_total_earnings() - self.get_total_items_cost()
+        return self.get_total_earnings() - self.get_total_items_cost() - self.get_total_gateway_fee()
 
     def get_total_other_payments(self):
         """جمع کل هزینه‌های جانبی ماه (بدون هزینه تامین کالا)"""

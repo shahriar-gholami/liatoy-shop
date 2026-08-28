@@ -259,9 +259,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     list_editable = ('items_cost',)
 
-    exclude = (
-        "delivery_description",
-    )
+    
 
     actions = [
         send_delivery_inform_sms,
@@ -306,7 +304,6 @@ class OrderAdmin(admin.ModelAdmin):
 
     search_fields = ['customer__full_name', 'status__latest_status']
     readonly_fields = ['items',]
-    exclude = ('delivery_description',)
     actions = [send_delivery_inform_sms, send_order_verification_sms]
 
 
