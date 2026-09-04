@@ -385,6 +385,7 @@ class Product(models.Model):
     views = models.IntegerField(default=0, verbose_name = 'بازدیدها')
     stock_alarm_volume = models.IntegerField(default=0, null=True, blank=True, verbose_name = 'هشدار اتمام موجودی')
     video_code = models.TextField(null=True, blank=True)
+    is_special = models.BooleanField(default=False, verbose_name = 'محصول ویژه')
 
     def is_available(self):
         return Variety.objects.filter(product=self, stock__gt=0).exists()

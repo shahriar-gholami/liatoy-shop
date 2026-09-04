@@ -108,7 +108,7 @@ class IndexView(View):
         to_products = f'{current_app_name}:product_detail'
         featured_categories = FeaturedCategories.objects.all().first()
         most_viewed_products = Product.objects.order_by('-views')[:8]
-        special_products = list(store.get_special_tags_products())[:8]
+        special_products = Product.objects.filter(is_special = True)
         tomorrow = timezone.now().date() + timedelta(days=1)
         favorite_products = []
         if request.user.is_authenticated:

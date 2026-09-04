@@ -146,8 +146,8 @@ class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
     change_list_template = 'shop/change_list.html'
 
-    list_display = ('name', 'id', 'cost', 'price', 'sales_price', 'off_active', 'active_price', 'brand', 'stock_alarm', 'has_video')
-    list_editable = ('cost', 'price', 'off_active', 'sales_price')
+    list_display = ('name', 'id', 'cost', 'price', 'sales_price', 'off_active', 'active_price', 'brand', 'stock_alarm', 'is_special','has_video')
+    list_editable = ('cost', 'price', 'off_active', 'sales_price','is_special')
     search_fields = ['name', 'slug']
     autocomplete_fields = ['category', 'tags']
     prepopulated_fields = {'slug': ('name',)}
