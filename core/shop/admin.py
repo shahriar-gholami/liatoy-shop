@@ -238,6 +238,11 @@ from django.utils.html import format_html
 
 from .models import Order
 
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from .models import Order
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -257,9 +262,14 @@ class OrderAdmin(admin.ModelAdmin):
         "status__latest_status",
     ]
 
-    list_editable = ('items_cost',)
+    list_editable = ("items_cost",)
 
-    
+    # دکمه فاکتور و فیلدهای فقط خواندنی
+    readonly_fields = [
+        "factor_button",
+        "shipping_label_button",
+        "items",
+    ]
 
     actions = [
         send_delivery_inform_sms,
@@ -267,9 +277,7 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     class Media:
-        css = {
-            "all": ("admin/css/cart_update_admin.css",)
-        }
+        css = {"all": ("admin/css/cart_update_admin.css",)}
 
     def get_exclude(self, request, obj=None):
         exclude = list(super().get_exclude(request, obj) or [])
@@ -302,10 +310,34 @@ class OrderAdmin(admin.ModelAdmin):
             latest_status,
         )
 
-    search_fields = ['customer__full_name', 'status__latest_status']
-    readonly_fields = ['items',]
-    actions = [send_delivery_inform_sms, send_order_verification_sms]
+    # متد ساخت دکمه مشاهده فاکتور
+    @admin.display(description="فاکتور سفارش")
+    def factor_button(self, obj):
+        if obj and obj.pk:
+            url = reverse("shop:factor", args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" target="_blank" '
+                'style="background-color: #28a745; color: white; padding: 7px 14px; '
+                'border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block;">'
+                '📄 مشاهده / چاپ فاکتور'
+                "</a>",
+                url,
+            )
+        return "ابتدا سفارش را ذخیره کنید."
 
+    @admin.display(description="برچسب آدرس پستی")
+    def shipping_label_button(self, obj):
+        if obj and obj.pk:
+            url = reverse("shop:shipping_label", args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" target="_blank" '
+                'style="background-color: #17a2b8; color: white; padding: 7px 14px; '
+                'border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block;">'
+                "📦 چاپ برچسب مرسوله"
+                "</a>",
+                url,
+            )
+        return "ابتدا سفارش را ذخیره کنید."
 
 @admin.register(CashBack)
 class CashBackAdmin(admin.ModelAdmin):

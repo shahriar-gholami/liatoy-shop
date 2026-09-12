@@ -54,6 +54,7 @@ urlpatterns = [
     path('contact/', views.ContactUsPageView.as_view(), name='contact'),
     path('faq/', views.FaqView.as_view(), name='faq_list'),
     path('factor/<int:order_id>/', views.FactorView.as_view(), name='factor'),
+    path("order/<int:order_id>/shipping-label/", views.shipping_label_view, name="shipping_label"),
     path('policies/', views.PoliciesView.as_view(), name='policies'),
     path('videos/', views.VideosView.as_view(), name='videos'),
     path('blog/', views.BlogView.as_view(), name='post_list'),

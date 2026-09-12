@@ -46,6 +46,7 @@ class Store(models.Model):
     name = models.CharField(max_length=250, unique=True, verbose_name='عنوان')
     is_active = models.BooleanField(default = False, verbose_name='فعال')
     address = models.CharField(max_length = 500, null=True, blank=True, verbose_name='آدرس')
+    zipcode = models.CharField(max_length=10, default='1234567890')
     country = models.CharField(max_length = 250, default = 'iran', verbose_name='کشور')
     city = models.CharField(max_length = 250, default='tehran', verbose_name='شهر')
     about_description = models.TextField(default = "درباره فروشگاه، خدمات و سوابق آن", verbose_name='توضیحات')

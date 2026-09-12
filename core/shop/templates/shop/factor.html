@@ -102,10 +102,16 @@
             </tr>
             {% endfor %}
             <tr>
-                <th class="text-right">جمع کل</th>
+                <th class="text-right">وضعیت پرداخت</th>
+                <th class="text-center">
+                    {% if order.status.latest_status == "ارسال شده" or order.status.latest_status == "پرداخت شده" %}
+                        پرداخت شده
+                    {% else %}
+                        در انتظار پرداخت
+                    {% endif %}
+                </th>
                 <th class="text-center"></th>
-                <th class="text-center"></th>
-                <th class="text-center"></th>
+                <th class="text-center">جمع کل</th>
                 <th class="text-center">{{ order.get_total_price|intcomma }} تومان</th>
                 
             </tr>

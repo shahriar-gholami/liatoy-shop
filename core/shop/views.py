@@ -2258,3 +2258,18 @@ class FactorView(View):
     def get(self, request, order_id):
         order = Order.objects.get(id=order_id)
         return render(request, self.template_name, {"order":order})
+
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def shipping_label_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    # اطلاعات فروشگاه (می‌تواند از مدل تنظیمات یا Settings خوانده شود)
+    store = Store.objects.first()
+
+    context = {
+        "order": order,
+        "store": store,
+    }
+    return render(request, "shop/shipping_label.html", context)

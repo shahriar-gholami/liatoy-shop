@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برچسب پستی سفارش #{{ order.id }}</title>
+    <style>
+        /* تنظیمات صفحه برای چاپ عمودی (Portrait) */
+        @page {
+            size: A6 portrait; /* اندازه استاندارد لیبل پستی: ۱۰×۱۵ سانتی‌متر یا A6 */
+            margin: 6mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            font-family: 'Vazirmatn', Tahoma, 'B Yekan', sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f5f7;
+            color: #222;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* دکمه پرینت در صفحه (در چاپ محو می‌شود) */
+        .no-print {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .print-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .print-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* ظرف اصلی لیبل پستی عمودی */
+        .shipping-label {
+            width: 100%;
+            max-width: 100mm; /* عرض مناسب چاپ عمودی */
+            min-height: 145mm;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #111;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* سربرگ لیبل */
+        .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .label-title {
+            font-size: 15px;
+            font-weight: 800;
+        }
+        .order-badge {
+            font-size: 13px;
+            font-weight: bold;
+            background: #eee;
+            border: 1px solid #999;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* بخش‌های فرستنده و گیرنده */
+        .card-box {
+            border: 1.5px solid #444;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+        .sender-box {
+            background-color: #fafafa;
+        }
+        .receiver-box {
+            border-width: 2.5px;
+            border-color: #000;
+            background-color: #fdfdfd;
+            flex-grow: 1; /* گیرنده فضای اصلی را می‌گیرد */
+        }
+
+        .box-title {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: inline-block;
+            padding-bottom: 2px;
+            border-bottom: 2px solid #222;
+        }
+
+        .row-item {
+            margin-bottom: 5px;
+        }
+        .label-text {
+            font-weight: 700;
+            color: #333;
+        }
+        .value-text {
+            font-weight: 500;
+            color: #000;
+        }
+        .address-text {
+            text-align: justify;
+            display: block;
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+        .zipcode-highlight {
+            font-family: monospace, Tahoma;
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            direction: ltr;
+            display: inline-block;
+        }
+
+        /* فوتر و بارکد پایین بسته */
+        .label-footer {
+            border-top: 1.5px dashed #666;
+            padding-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #555;
+        }
+
+        /* استایل مخصوص زمان پرینت گرفتن */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+            .shipping-label {
+                max-width: 100%;
+                border: 2px solid #000;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- دکمه چاپ در مرورگر -->
+    <div class="no-print">
+        <button class="print-btn" onclick="window.print()">🖨️ چاپ برچسب آدرس</button>
+    </div>
+
+    <!-- بدنه برچسب عمودی -->
+    <div class="shipping-label">
+        <div>
+            <!-- سربرگ -->
+            <div class="label-header">
+                <span class="label-title">برچسب مرسوله پستی</span>
+                <span class="order-badge">شماره سفارش: {{ order.id }}</span>
+            </div>
+
+            <!-- بخش فرستنده -->
+            <div class="card-box sender-box">
+                <div class="box-title">فرستنده:</div>
+                <div class="row-item">
+                    <span class="label-text">نام فروشگاه/فرستنده:</span>
+                    <span class="value-text">{{ store.name }}</span>
+                </div>
+                <div class="row-item">
+                    <span class="label-text">شماره تماس:</span>
+                    <span class="value-text" dir="ltr">{{ store.phone_number }}</span>
+                </div>
+                <div class="row-item">
+                    <span class="label-text">آدرس:</span>
+                    <span class="value-text address-text">{{ store.address }}</span>
+                </div>
+                <div class="row-item">
+                    <span class="label-text">کد پستی:</span>
+                    <span class="value-text zipcode-highlight">{{ store.zipcode }}</span>
+                </div>
+            </div>
+
+            <!-- بخش گیرنده -->
+            <div class="card-box receiver-box">
+                <div class="box-title" style="font-size: 14px;">گیرنده:</div>
+                <div class="row-item" style="font-size: 14px; margin-bottom: 8px;">
+                    <span class="label-text">نام و نام خانوادگی:</span>
+                    <strong class="value-text">{{ order.reciever_name }} {{ order.reciever_familly_name }}</strong>
+                </div>
+                <div class="row-item">
+                    <span class="label-text">شماره تماس:</span>
+                    <strong class="value-text" dir="ltr" style="font-size: 14px;">{{ order.reciever_phone_number }}</strong>
+                </div>
+                <div class="row-item">
+                    <span class="label-text">آدرس کامل:</span>
+                    <span class="value-text address-text" style="font-size: 13.5px;">
+                        {{ order.reciever_address }}
+                    </span>
+                </div>
+                <div class="row-item" style="margin-top: 8px;">
+                    <span class="label-text">کد پستی ۱۰ رقمی:</span>
+                    <span class="value-text zipcode-highlight" style="font-size: 16px; background: #eee; padding: 2px 6px; border-radius: 4px;">
+                        {{ order.reciever_zip_code }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- پایین لیبل -->
+        <div class="label-footer">
+            <span>تاریخ چاپ: {% now "Y/m/d" %}</span>
+            <span>سامانه لجستیک و ارسال</span>
+        </div>
+    </div>
+
+</body>
+</html>
