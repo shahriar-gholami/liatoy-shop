@@ -714,5 +714,61 @@ class CustomerClubAdmin(admin.ModelAdmin):
     charge_wallet_gift.short_description = "شارژ هدیه (۵۰،۰۰۰ تومان) جهت ترغیب"
 
 
+@admin.register(ProductRequest)
+class ProductRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "phone",
+        "is_answered",
+        "shamsi_created_date",
+    )
+
+    list_filter = (
+        "is_answered",
+        "created_date",
+    )
+
+    search_fields = (
+        "phone",
+        "product__name",
+    )
+
+    list_editable = (
+        "is_answered",
+    )
+
+    readonly_fields = (
+        "created_date",
+        "shamsi_created_date",
+    )
+
+    ordering = (
+        "is_answered",
+        "-created_date",
+    )
+
+    list_per_page = 30
+
+    fieldsets = (
+        (
+            "اطلاعات درخواست",
+            {
+                "fields": (
+                    "product",
+                    "phone",
+                    "is_answered",
+                )
+            },
+        ),
+        (
+            "زمان ثبت",
+            {
+                "fields": (
+                    "created_date",
+                    "shamsi_created_date",
+                )
+            },
+        ),
+    )
 
 

@@ -6,6 +6,8 @@ from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.db.models import F
 from django.utils import timezone
+from django.db.models import Case, When, Value, IntegerField
+
 from ckeditor.fields import RichTextField
 from khayyam import JalaliDatetime
 from random import randint
@@ -19,7 +21,6 @@ from datetime import date
 from django.templatetags.static import static
 from PIL import Image
 from django.utils.text import slugify
-
 import os
 import uuid
 
@@ -501,7 +502,14 @@ class Product(models.Model):
         return feature_table		
 
     class Meta:
-        ordering = ('-created',)
+        ordering = [
+            Case(
+                When(price=0, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            ),
+            '-id',
+        ]
         verbose_name = 'محصولات'
         verbose_name_plural = 'محصولات'
 
@@ -582,6 +590,41 @@ def logo_upload_path(instance, filename):
     timestamp = timezone.now().strftime("%Y%m%d")
     filename = f"{logo_name}_{filename}"
     return f"{filename}"
+
+class ProductRequest(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name="محصول",
+    )
+    phone = models.CharField(
+        max_length=255,
+        verbose_name="شماره تلفن",
+    )
+    is_answered = models.BooleanField(
+        default=False,
+        verbose_name="پاسخ داده شده",
+    )
+    created_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ایجاد",
+    )
+
+    def __str__(self):
+        return f"{self.product} - {self.phone}"
+
+    @property
+    def shamsi_created_date(self):
+        return JalaliDatetime(self.created_date).strftime("%Y/%m/%d")
+
+    shamsi_created_date.fget.short_description = "تاریخ ایجاد شمسی"
+
+    class Meta:
+        verbose_name = "درخواست موجودی محصول"
+        verbose_name_plural = "درخواست‌های موجودی محصولات"
+        ordering = ("is_answered", "-created_date")
+
+
 
 class ProductImage(models.Model):
     alt_name = models.CharField(max_length=2000, null=True, blank=True, verbose_name = 'نام جایگزین')

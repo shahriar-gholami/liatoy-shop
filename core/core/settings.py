@@ -25,7 +25,7 @@ DEBUG = config("DEBUG", cast=bool, default=True)
 SHOW_DEBUGGER_TOOLBAR = config("SHOW_DEBUGGER_TOOLBAR", cast=bool, default=False)
 
 
-ALLOWED_HOSTS =  ['127.0.0.1', '195.146.32.236']
+ALLOWED_HOSTS =  ['127.0.0.1', '195.146.32.236', '188.121.119.29/32', '195.201.30.135/32']
 
 
 

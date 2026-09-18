@@ -96,7 +96,7 @@
             background-color: #fafafa;
         }
         .receiver-box {
-            border-width: 2.5px;
+            border-width: 1px;
             border-color: #000;
             background-color: #fdfdfd;
             flex-grow: 1; /* گیرنده فضای اصلی را می‌گیرد */
@@ -194,6 +194,10 @@
                     <span class="value-text" dir="ltr">{{ store.phone_number }}</span>
                 </div>
                 <div class="row-item">
+                    <span class="label-text">استان: <span class="value-text" dir="ltr">تهران</span></span>
+                    <span class="label-text">شهر: <span class="value-text" dir="ltr">{{ store.city }}</span></span>
+                </div>
+                <div class="row-item">
                     <span class="label-text">آدرس:</span>
                     <span class="value-text address-text">{{ store.address }}</span>
                 </div>
@@ -208,22 +212,26 @@
                 <div class="box-title" style="font-size: 14px;">گیرنده:</div>
                 <div class="row-item" style="font-size: 14px; margin-bottom: 8px;">
                     <span class="label-text">نام و نام خانوادگی:</span>
-                    <strong class="value-text">{{ order.reciever_name }} {{ order.reciever_familly_name }}</strong>
+                    <strong class="value-text">{% if order.reciever_name != None %}{{ order.reciever_name }} {{ order.reciever_familly_name }}{% endif %}</strong>
                 </div>
                 <div class="row-item">
                     <span class="label-text">شماره تماس:</span>
-                    <strong class="value-text" dir="ltr" style="font-size: 14px;">{{ order.reciever_phone_number }}</strong>
+                    <strong class="value-text" dir="ltr" style="font-size: 14px;">{% if order.reciever_phone_number != None %}{{ order.reciever_phone_number }}{% endif %}</strong>
+                </div>
+                <div class="row-item">
+                    <span class="label-text">استان: <span class="value-text" dir="ltr">{% if order.reciever_state != None %}{{ order.reciever_state }}{% endif %}</span></span>
+                    <span class="label-text">شهر: <span class="value-text" dir="ltr">{% if order.reciever_city != None %}{{ order.reciever_city }}{% endif %}</span></span>
                 </div>
                 <div class="row-item">
                     <span class="label-text">آدرس کامل:</span>
                     <span class="value-text address-text" style="font-size: 13.5px;">
-                        {{ order.reciever_address }}
+                        {% if order.reciever_address != None %}{{ order.reciever_address }}{% endif %}
                     </span>
                 </div>
                 <div class="row-item" style="margin-top: 8px;">
                     <span class="label-text">کد پستی ۱۰ رقمی:</span>
                     <span class="value-text zipcode-highlight" style="font-size: 16px; background: #eee; padding: 2px 6px; border-radius: 4px;">
-                        {{ order.reciever_zip_code }}
+                        {% if order.reciever_zip_code != None %}{{ order.reciever_zip_code }}{% endif %}
                     </span>
                 </div>
             </div>

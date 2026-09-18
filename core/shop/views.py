@@ -2273,3 +2273,41 @@ def shipping_label_view(request, order_id):
         "store": store,
     }
     return render(request, "shop/shipping_label.html", context)
+
+
+
+
+
+class ProductRequestCreateView(View):
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+
+        phone = request.POST.get("phone", "").strip()
+
+        if not phone:
+            messages.error(request, "لطفا شماره تلفن را وارد کنید.")
+            return redirect(request.META.get("HTTP_REFERER", "/"))
+
+        exists = ProductRequest.objects.filter(
+            product=product,
+            phone=phone,
+            is_answered=False
+        ).exists()
+
+        if exists:
+            messages.warning(
+                request,
+                "درخواست شما قبلا برای این محصول ثبت شده است."
+            )
+        else:
+            ProductRequest.objects.create(
+                product=product,
+                phone=phone
+            )
+
+            messages.success(
+                request,
+                "درخواست شما ثبت شد. در صورت موجود شدن محصول به شما اطلاع می‌دهیم."
+            )
+
+        return redirect(request.META.get("HTTP_REFERER", "/"))
