@@ -1,0 +1,41 @@
+<!-- <html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>در حال انتقال به درگاه پرداخت...</title>
+</head>
+<body>
+
+<p>در حال انتقال به درگاه پرداخت...</p>
+
+<script>
+    window.location.href = "{{ url }}";
+</script>
+
+<noscript>
+    <meta http-equiv="refresh" content="0;url={{ url }}">
+</noscript>
+
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>در حال انتقال…</title>
+<script>
+// Redirect after page fully loads
+window.onload = function () {
+window.location.href = "{{ url }}";
+};
+</script>
+</head>
+<body>
+<p>در حال انتقال به درگاه پرداخت…</p>
+<p>اگر به صورت خودکار منتقل نشدید
+<a href="{{ url }}">اینجا کلیک کنید</a>.
+</p>
+</body>
+</html>

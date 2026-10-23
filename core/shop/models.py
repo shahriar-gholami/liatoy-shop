@@ -580,10 +580,8 @@ class Product(models.Model):
         return f'{self.name} - id: {self.id}'
     
 def image_upload_path(instance, filename):
-    product_name = instance.product.name.replace(" ", "_")
-    timestamp = timezone.now().strftime("%Y%m%d")
-    filename = f"{timestamp}_{filename}"
-    return f"{product_name}/{filename}"
+    filename = f"{filename}"
+    return f"{filename}"
 
 def logo_upload_path(instance, filename):
     logo_name = instance.alt_name.replace(" ", "_")
@@ -895,7 +893,7 @@ class Order(models.Model):
 
     @property
     def shamsi_updated_date(self):
-        return JalaliDatetime(self.status_updated_date).strftime('%Y/%m/%d')
+        return JalaliDatetime(self.status_updated_date).strftime('%Y/%m/%d - %H:%M')
     shamsi_updated_date.fget.short_description = "آخرین بروزرسانی"
 
 class CashBack(models.Model):

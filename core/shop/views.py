@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from random import randint
 from django.core.files.base import ContentFile
 from django.utils.safestring import mark_safe
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.models import AnonymousUser
@@ -24,65 +26,85 @@ from django.apps import apps
 from datetime import datetime
 from django.db.models import Q
 from datetime import timedelta
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+
 
 def send_otp_code(phone_number, code):
-    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
-    payload = json.dumps({
-    "code": "2frcg7j9tgi8mdb",
-    "sender": "+983000505",
-    "recipient": phone_number,
-    "variable": {
-        "verification-code": code,
-    }
-    })
-    headers = {
-    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
-    'Content-Type': 'application/json'
-    }
+	payload = json.dumps({
+	"code": "2frcg7j9tgi8mdb",
+	"sender": "+983000505",
+	"recipient": phone_number,
+	"variable": {
+		"verification-code": code,
+	}
+	})
+	headers = {
+	'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+	'Content-Type': 'application/json'
+	}
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+	response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(response.text)
+	print(response.text)
 
 def order_verification(phone_number, order_id):
-    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
-    payload = json.dumps({
-    "code": "ehuynsayt2ku2mh",
-    "sender": "+983000505",
-    "recipient": phone_number,
-    "variable": {
-        "order-id": order_id
-    }
-    })
-    headers = {
-    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
-    'Content-Type': 'application/json'
-    }
+	payload = json.dumps({
+	"code": "ehuynsayt2ku2mh",
+	"sender": "+983000505",
+	"recipient": phone_number,
+	"variable": {
+		"order-id": order_id
+	}
+	})
+	headers = {
+	'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+	'Content-Type': 'application/json'
+	}
 
-    response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text)
+	response = requests.request("POST", url, headers=headers, data=payload)
+	print(response.text)
 
 def admin_order_verification(phone_number, order_id):
-    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
-    payload = json.dumps({
-    "code": "gbx4gn6lfdydkco",
-    "sender": "+983000505",
-    "recipient": phone_number,
-    "variable": {
-        "order-id": order_id
-    }
-    })
-    headers = {
-    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
-    'Content-Type': 'application/json'
-    }
+	payload = json.dumps({
+	"code": "gbx4gn6lfdydkco",
+	"sender": "+983000505",
+	"recipient": phone_number,
+	"variable": {
+		"order-id": order_id
+	}
+	})
+	headers = {
+	'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+	'Content-Type': 'application/json'
+	}
 
-    response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text)
+	response = requests.request("POST", url, headers=headers, data=payload)
+	print(response.text)
 
+def admin_order_fail_verification(phone_number, order_id):
+	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
+	payload = json.dumps({
+	"code": "gwnyrifq1f8dvky",
+	"sender": "+983000505",
+	"recipient": phone_number,
+	"variable": {
+		"order-id": order_id
+	}
+	})
+	headers = {
+	'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+	'Content-Type': 'application/json'
+	}
+
+	response = requests.request("POST", url, headers=headers, data=payload)
+	print(response.text)
 
 
 ZP_API_REQUEST = "https://api.zarinpal.com/pg/v4/payment/request.json"
@@ -97,2217 +119,2411 @@ current_app_name = apps.get_containing_app_config(__name__).name
 
 class IndexView(View):
 
-    def get(self, request):
-        store_name = Store.objects.all().first().name
-        store = Store.objects.all().first()
-        slides = Slide.objects.all()
-        small_banners = Banner.objects.all()
-        posts = BlogPost.objects.all()
-        sales_products = Product.objects.filter(off_active=True)[:6]
-        products = Product.objects.all()[:7]
-        to_products = f'{current_app_name}:product_detail'
-        featured_categories = FeaturedCategories.objects.all().first()
-        most_viewed_products = Product.objects.order_by('-views')[:8]
-        special_products = Product.objects.filter(is_special = True)
-        tomorrow = timezone.now().date() + timedelta(days=1)
-        favorite_products = []
-        if request.user.is_authenticated:
-            try:
-                customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-                favorite_products = customer.favorites.values_list('id', flat=True)
-            except Customer.DoesNotExist:
-                pass
-        return render(request, f'{current_app_name}/index_{store.template_index}.html', {
-                                                                                   'store':store,
-                                                                                   'sales_products':sales_products,
-                                                                                   'special_products':special_products,
-                                                                                   'posts':posts,
-                                                                                   'featured_categories':featured_categories,
-                                                                                   'to_products':to_products ,
-                                                                                   'products':products ,
-                                                                                   'store_name':store_name, 
-                                                                                   'slides':slides, 
-                                                                                   'favorite_products':favorite_products,
-                                                                                   'triple_banners':small_banners,
-                                                                                   'tomorrow':str(tomorrow),
-                                                                                   'most_viewed_products':most_viewed_products})
-    
+	def get(self, request):
+		store_name = Store.objects.all().first().name
+		store = Store.objects.all().first()
+		slides = Slide.objects.all()
+		small_banners = Banner.objects.all()
+		posts = BlogPost.objects.all()
+		sales_products = Product.objects.filter(off_active=True)[:6]
+		products = Product.objects.all()[:7]
+		to_products = f'{current_app_name}:product_detail'
+		featured_categories = FeaturedCategories.objects.all().first()
+		most_viewed_products = Product.objects.order_by('-views')[:8]
+		special_products = Product.objects.filter(is_special = True)
+		tomorrow = timezone.now().date() + timedelta(days=1)
+		favorite_products = []
+		if request.user.is_authenticated:
+			try:
+				customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+				favorite_products = customer.favorites.values_list('id', flat=True)
+			except Customer.DoesNotExist:
+				pass
+		return render(request, f'{current_app_name}/index_{store.template_index}.html', {
+																				   'store':store,
+																				   'sales_products':sales_products,
+																				   'special_products':special_products,
+																				   'posts':posts,
+																				   'featured_categories':featured_categories,
+																				   'to_products':to_products ,
+																				   'products':products ,
+																				   'store_name':store_name, 
+																				   'slides':slides, 
+																				   'favorite_products':favorite_products,
+																				   'triple_banners':small_banners,
+																				   'tomorrow':str(tomorrow),
+																				   'most_viewed_products':most_viewed_products})
+	
 class CustomerDashboardView(View):
 
-    def get(self, request, *args, **kwargs):
-        store_name = Store.objects.all().first().name
-        store = Store.objects.all().first()
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        customer = Customer.objects.filter(user = request.user).first()
-        orders = Order.objects.filter(customer=customer)
-        num_of_orders = orders.count()
-        paid_status = OrderStatus.objects.get(id=1)
-        total = 0
-        for order in orders:
-            if order.status == paid_status:
-                total = total + order.total_price
-        favorites = customer.favorites.all()
-        number_of_favs = favorites.count()
-        return render(request, f'{current_app_name}/customer-dashboard_{store.template_index}.html', {
-            'customer':customer,
-            'orders':orders,
-            'num_of_orders':num_of_orders,
-            'total':total,
-            'store_name':store_name,
-            'store':store,
-            'number_of_favs':number_of_favs,
-        })
+	def get(self, request, *args, **kwargs):
+		store_name = Store.objects.all().first().name
+		store = Store.objects.all().first()
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		customer = Customer.objects.filter(user = request.user).first()
+		orders = Order.objects.filter(customer=customer)
+		num_of_orders = orders.count()
+		paid_status = OrderStatus.objects.get(id=1)
+		total = 0
+		for order in orders:
+			if order.status == paid_status:
+				total = total + order.total_price
+		favorites = customer.favorites.all()
+		number_of_favs = favorites.count()
+		return render(request, f'{current_app_name}/customer-dashboard_{store.template_index}.html', {
+			'customer':customer,
+			'orders':orders,
+			'num_of_orders':num_of_orders,
+			'total':total,
+			'store_name':store_name,
+			'store':store,
+			'number_of_favs':number_of_favs,
+		})
 
 class CustomerDashboardOrdersView(View):
 
-    def get(self, request):
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        store_name = Store.objects.all().first().name
-        store = Store.objects.all().first()
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()		
-        paid_status = OrderStatus.objects.get(id=1)
-        paid_orders = Order.objects.filter(customer=customer, status=paid_status)
-        number_paid_orders = paid_orders.count()
-        orders = Order.objects.filter(customer = customer)
+	def get(self, request):
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		store_name = Store.objects.all().first().name
+		store = Store.objects.all().first()
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()		
+		paid_status = OrderStatus.objects.get(id=1)
+		paid_orders = Order.objects.filter(customer=customer, status=paid_status)
+		number_paid_orders = paid_orders.count()
+		orders = Order.objects.filter(customer = customer)
 
-        return render(request, f'{current_app_name}/customer-dashboard-orders_{store.template_index}.html', 
-                {'store_name':store_name,
-                'number_of_paid_orders':number_paid_orders,
-                'paid_orders':paid_orders,
-                'customer':customer,
-                'orders':orders})
+		return render(request, f'{current_app_name}/customer-dashboard-orders_{store.template_index}.html', 
+				{'store_name':store_name,
+				'number_of_paid_orders':number_paid_orders,
+				'paid_orders':paid_orders,
+				'customer':customer,
+				'orders':orders})
 
 class CustomerDashboardOrderDatailView(View):
-    
-    def get(self, request, order_id):
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        store = Store.objects.all().first()
-        order = get_object_or_404(Order, id=order_id)
-        return render(request, f'{current_app_name}/order-detail-customer_{store.template_index}.html',
-                 {'order':order, 'store_name':store.name})
+	
+	def get(self, request, order_id):
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		store = Store.objects.all().first()
+		order = get_object_or_404(Order, id=order_id)
+		return render(request, f'{current_app_name}/order-detail-customer_{store.template_index}.html',
+				 {'order':order, 'store_name':store.name})
 
 class CustomerDashboardFavoritesView(View):
 
-    def get(self, request):
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        store = Store.objects.all().first()
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        products = customer.favorites.all()
-        to_products = f'{current_app_name}:product_detail'
-    
+	def get(self, request):
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		store = Store.objects.all().first()
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		products = customer.favorites.all()
+		to_products = f'{current_app_name}:product_detail'
+	
 
-        return render(request, f'{current_app_name}/customer-dashboard-favorites_{store.template_index}.html',
-                 {'store_name':store.name,
-                'products':products,
-                'to_products':to_products,
-                'customer':customer,
-                })
+		return render(request, f'{current_app_name}/customer-dashboard-favorites_{store.template_index}.html',
+				 {'store_name':store.name,
+				'products':products,
+				'to_products':to_products,
+				'customer':customer,
+				})
 
 class CustomerDashboardInfoView(View):
 
-    form_class = CustomerForm
+	form_class = CustomerForm
 
-    def get(self, request):
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        store = Store.objects.all().first()
-        store_name = store.name
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        form = CustomerForm
-        return render(request, f'{current_app_name}/customer-dashboard-info_{store.template_index}.html', 
-                {'form': form, 'customer':customer})
+	def get(self, request):
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		store = Store.objects.all().first()
+		store_name = store.name
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		form = CustomerForm
+		return render(request, f'{current_app_name}/customer-dashboard-info_{store.template_index}.html', 
+				{'form': form, 'customer':customer})
 
-    def post(self, request):
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            customer.full_name = form.cleaned_data['full_name']
-            customer.email = form.cleaned_data['email']
-            customer.city = form.cleaned_data['city']
-            customer.zip_code = form.cleaned_data['zip_code']
-            customer.address = form.cleaned_data['address']
-            customer.save()
-            return redirect(f'{current_app_name}:customer_dashboard_info')
+	def post(self, request):
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		form = self.form_class(request.POST)
+		if form.is_valid():
+			customer.full_name = form.cleaned_data['full_name']
+			customer.email = form.cleaned_data['email']
+			customer.city = form.cleaned_data['city']
+			customer.zip_code = form.cleaned_data['zip_code']
+			customer.address = form.cleaned_data['address']
+			customer.save()
+			return redirect(f'{current_app_name}:customer_dashboard_info')
 
 class CustomerDashboardCommentsView(View):
 
-    def get(self, request):
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        store = Store.objects.all().first()
-        store_name = store.name
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        comments = Comment.objects.filter(sender=customer)
-        return render(request, f'{current_app_name}/customer-dashboard-comments_{store.template_index}.html',
-                 {'comments': comments, 'customer':customer})
+	def get(self, request):
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		store = Store.objects.all().first()
+		store_name = store.name
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		comments = Comment.objects.filter(sender=customer)
+		return render(request, f'{current_app_name}/customer-dashboard-comments_{store.template_index}.html',
+				 {'comments': comments, 'customer':customer})
 
 class ProductListView(View):
 
-    def get(self, request):
-        store = Store.objects.all().first()
-        store_name = store.name
-        items_per_page = 12
-        categories = Category.objects.all()
-        products = Product.objects.all()
-        paginator = Paginator(products, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        brands = Brand.objects.all()
-        ages = AgeCategory.objects.all()
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        canonical = 'shop'
-        favorite_products = []
-        if request.user.is_authenticated:
-            try:
-                customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-                favorite_products = customer.favorites.values_list('id', flat=True)
-            except Customer.DoesNotExist:
-                pass
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                'to_products':products_urls, 
-                'ages':ages,
-                'store':store,
-                'canonical':canonical,
-                'store_name':store_name, 
-                'categories':categories,
-                'brands':brands,
-                'favorite_products':favorite_products,
-                'price_ranges':price_ranges,
-                'category_slug':'all', 
-                'brand_slug':'all',
-                'age_slug':'all', 
-                'price_slug':'all',})
-    
-    def post(self, request, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        main_filters = {}
-        main_filters['category'] = []
-        main_filters['brand'] = []
-        main_filters['age'] = []
-        main_filters['price_range'] = []
-        filters = []
-        selected_category = 'all'
-        selected_price_range = 'all'
-        selected_brand = 'all'
-        selected_age = 'all'
-        form = FilterProductsForm(request.POST)
-        if form.is_valid():
-            category = form.cleaned_data['category']
-            brand = form.cleaned_data['brand']
-            age = form.cleaned_data['age']
-            price_range = form.cleaned_data['price_range']
-            if category != '0':
-                selected_category = Category.objects.get(id = int(category)).slug
-            if brand and brand != '0':
-                selected_brand = Brand.objects.get(id = int(brand)).slug
-            if age != '0':
-                selected_age = AgeCategory.objects.get(id = int(age)).slug
-            if price_range != '0':
-                selected_price_range = PriceRange.objects.get(id = int(price_range)).slug
-            return redirect('shop:filter_product_list', selected_category, selected_brand, selected_age, selected_price_range)
+	def get(self, request):
+		store = Store.objects.all().first()
+		store_name = store.name
+		items_per_page = 12
+		categories = Category.objects.all()
+		products = Product.objects.all()
+		paginator = Paginator(products, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		brands = Brand.objects.all()
+		ages = AgeCategory.objects.all()
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		canonical = 'shop'
+		favorite_products = []
+		if request.user.is_authenticated:
+			try:
+				customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+				favorite_products = customer.favorites.values_list('id', flat=True)
+			except Customer.DoesNotExist:
+				pass
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				'to_products':products_urls, 
+				'ages':ages,
+				'store':store,
+				'canonical':canonical,
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'favorite_products':favorite_products,
+				'price_ranges':price_ranges,
+				'category_slug':'all', 
+				'brand_slug':'all',
+				'age_slug':'all', 
+				'price_slug':'all',})
+	
+	def post(self, request, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		main_filters = {}
+		main_filters['category'] = []
+		main_filters['brand'] = []
+		main_filters['age'] = []
+		main_filters['price_range'] = []
+		filters = []
+		selected_category = 'all'
+		selected_price_range = 'all'
+		selected_brand = 'all'
+		selected_age = 'all'
+		form = FilterProductsForm(request.POST)
+		if form.is_valid():
+			category = form.cleaned_data['category']
+			brand = form.cleaned_data['brand']
+			age = form.cleaned_data['age']
+			price_range = form.cleaned_data['price_range']
+			if category != '0':
+				selected_category = Category.objects.get(id = int(category)).slug
+			if brand and brand != '0':
+				selected_brand = Brand.objects.get(id = int(brand)).slug
+			if age != '0':
+				selected_age = AgeCategory.objects.get(id = int(age)).slug
+			if price_range != '0':
+				selected_price_range = PriceRange.objects.get(id = int(price_range)).slug
+			return redirect('shop:filter_product_list', selected_category, selected_brand, selected_age, selected_price_range)
 
 class FilterProductsView(View):
 
-    template_name = 'product_list.html'
+	template_name = 'product_list.html'
 
-    def get(self, request, category_slug, brand_slug, age_slug, price_slug):
-        store = Store.objects.all().first()
-        selected_category = None
-        selected_brand = None
-        selected_age= None
-        selected_price= None
-        store = Store.objects.all().first()
-        store_name = store.name
-        items_per_page = 12
-        products = Product.objects.all()
-        filters = []
+	def get(self, request, category_slug, brand_slug, age_slug, price_slug):
+		store = Store.objects.all().first()
+		selected_category = None
+		selected_brand = None
+		selected_age= None
+		selected_price= None
+		store = Store.objects.all().first()
+		store_name = store.name
+		items_per_page = 12
+		products = Product.objects.all()
+		filters = []
 
-        main_filters = {}
-        main_filters['category'] = []
-        main_filters['brand'] = []
-        main_filters['age'] = []
-        main_filters['price_range'] = []
+		main_filters = {}
+		main_filters['category'] = []
+		main_filters['brand'] = []
+		main_filters['age'] = []
+		main_filters['price_range'] = []
 
-        feature_filters = {}
-        
-        if category_slug != 'all':
-            selected_category = Category.objects.get(slug=category_slug)
-            products = Product.objects.filter(category=selected_category)
-            main_filters['category'].append(selected_category)
-            filters = Filter.objects.filter(category=selected_category)
-
-
-        if brand_slug != 'all':
-            selected_brand = Brand.objects.get(slug = brand_slug)
-            products = products.filter(brand=selected_brand)
-            main_filters['brand'].append(selected_brand)
-
-        if age_slug != 'all':
-            selected_age = AgeCategory.objects.get(slug=age_slug)
-            products = products.filter(age=selected_age)
-            main_filters['age'].append(selected_age)
-
-        if price_slug != 'all':
-            selected_price = PriceRange.objects.get(slug=price_slug)
-            min_price = selected_price.min_value
-            max_price = selected_price.max_value
-            products = [product for product in products if int(product.get_active_price().replace(',','')) <= max_price and int(product.get_active_price().replace(',','')) >= min_price]
-            main_filters['price_range'].append(selected_price)
-
-        categories = set()
-        brands = set()
-        ages = set()
-        price_ranges = set()
-        for product in products:
-            for cat in product.category.all():
-                categories.add(cat)
-            brands.add(product.brand)
-            ages.add(product.age)
-
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        canonical = 'shop'
-
-        for filter in filters:
-            feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
-
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            # اگر شماره صفحه یک عدد نیست
-            products = paginator.page(1)
-        except EmptyPage:
-            # اگر شماره صفحه بیشتر از تعداد کل صفحات است
-            products = paginator.page(paginator.num_pages)
-
-        print(feature_filters)
-        for key in list(feature_filters.keys()):
-            if feature_filters[key] == []:
-                del feature_filters[key]
-            
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                'feature_filters':feature_filters,
-                'to_products':products_urls, 
-                'ages':ages,
-                'canonical':canonical,
-                'store':store,
-                'store_name':store_name, 
-                'categories':categories,
-                'brands':brands,
-                'price_ranges':price_ranges,
-                'selected_category':selected_category,
-                'selected_brand':selected_brand,
-                'selected_age':selected_age,
-                'selected_price_range':selected_price,
-                'category':selected_category,
-                'filters':filters,
-                'category_slug':category_slug, 
-                'brand_slug':brand_slug,
-                'age_slug':age_slug, 
-                'price_slug':price_slug,
-                'main_filters':main_filters,
-                })
-
-    def post(self, request, category_slug, brand_slug, age_slug, price_slug):
-
-        selected_category = None
-        selected_brand = None
-        selected_age= None
-        selected_price= None
-        store = Store.objects.all().first()
-        store_name = store.name
-        items_per_page = 12
-        products = Product.objects.all()
-        filters = []
-
-        main_filters = {}
-        main_filters['category'] = []
-        main_filters['brand'] = []
-        main_filters['age'] = []
-        main_filters['price_range'] = []
-
-        feature_filters = {}
-        
-        if category_slug != 'all':
-            selected_category = Category.objects.get(slug=category_slug)
-            products = Product.objects.filter(category=selected_category)
-            main_filters['category'].append(selected_category)
-            filters = Filter.objects.filter(category=selected_category)
+		feature_filters = {}
+		
+		if category_slug != 'all':
+			selected_category = Category.objects.get(slug=category_slug)
+			products = Product.objects.filter(category=selected_category)
+			main_filters['category'].append(selected_category)
+			filters = Filter.objects.filter(category=selected_category)
 
 
-        if brand_slug != 'all':
-            selected_brand = Brand.objects.get(slug = brand_slug)
-            products = products.filter(brand=selected_brand)
-            main_filters['brand'].append(selected_brand)
+		if brand_slug != 'all':
+			selected_brand = Brand.objects.get(slug = brand_slug)
+			products = products.filter(brand=selected_brand)
+			main_filters['brand'].append(selected_brand)
 
-        if age_slug != 'all':
-            selected_age = AgeCategory.objects.get(slug=age_slug)
-            products = products.filter(age=selected_age)
-            main_filters['age'].append(selected_age)
+		if age_slug != 'all':
+			selected_age = AgeCategory.objects.get(slug=age_slug)
+			products = products.filter(age=selected_age)
+			main_filters['age'].append(selected_age)
 
-        if price_slug != 'all':
-            selected_price = PriceRange.objects.get(slug=price_slug)
-            min_price = selected_price.min_value
-            max_price = selected_price.max_value
-            products = [product for product in products if int(product.get_active_price().replace(',','')) <= max_price and int(product.get_active_price().replace(',','')) >= min_price]
-            main_filters['price_range'].append(selected_price)
+		if price_slug != 'all':
+			selected_price = PriceRange.objects.get(slug=price_slug)
+			min_price = selected_price.min_value
+			max_price = selected_price.max_value
+			products = [product for product in products if int(product.get_active_price().replace(',','')) <= max_price and int(product.get_active_price().replace(',','')) >= min_price]
+			main_filters['price_range'].append(selected_price)
 
-        categories = set()
-        brands = set()
-        ages = set()
-        price_ranges = set()
+		categories = set()
+		brands = set()
+		ages = set()
+		price_ranges = set()
+		for product in products:
+			for cat in product.category.all():
+				categories.add(cat)
+			brands.add(product.brand)
+			ages.add(product.age)
 
-        for product in products:
-            for cat in product.category.all():
-                categories.add(cat)
-            brands.add(product.brand)
-            ages.add(product.age)
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		canonical = 'shop'
 
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        canonical = 'shop'
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
 
-        for filter in filters:
-            feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			# اگر شماره صفحه یک عدد نیست
+			products = paginator.page(1)
+		except EmptyPage:
+			# اگر شماره صفحه بیشتر از تعداد کل صفحات است
+			products = paginator.page(paginator.num_pages)
 
-        form = SelectFeaturesForm(request.POST)
-        selected_filters = request.POST.getlist('filters')
+		print(feature_filters)
+		for key in list(feature_filters.keys()):
+			if feature_filters[key] == []:
+				del feature_filters[key]
+			
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				'feature_filters':feature_filters,
+				'to_products':products_urls, 
+				'ages':ages,
+				'canonical':canonical,
+				'store':store,
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'price_ranges':price_ranges,
+				'selected_category':selected_category,
+				'selected_brand':selected_brand,
+				'selected_age':selected_age,
+				'selected_price_range':selected_price,
+				'category':selected_category,
+				'filters':filters,
+				'category_slug':category_slug, 
+				'brand_slug':brand_slug,
+				'age_slug':age_slug, 
+				'price_slug':price_slug,
+				'main_filters':main_filters,
+				})
 
-        values_list = []
+	def post(self, request, category_slug, brand_slug, age_slug, price_slug):
 
-        filter_products_dict = {}
-        features_dict = {}
-        for item in selected_filters:
-            key, value = item.split(':', 1)
-            if key not in features_dict:
-                features_dict[key] = []
-            features_dict[key].append(value)
+		selected_category = None
+		selected_brand = None
+		selected_age= None
+		selected_price= None
+		store = Store.objects.all().first()
+		store_name = store.name
+		items_per_page = 12
+		products = Product.objects.all()
+		filters = []
 
-        for key, value in features_dict.items():
-            filter_products_dict[key] = set()
-            used_filter = filters.get(id=int(key))
-            for val in value:
-                values_list.append(val)
-                selected_filter_value_group = FilterValue.objects.filter(value=val, filter=used_filter)
-                for selected_filter_value in selected_filter_value_group:
-                    filter_products_dict[key].add(selected_filter_value.product)
-        
-        print(feature_filters)
+		main_filters = {}
+		main_filters['category'] = []
+		main_filters['brand'] = []
+		main_filters['age'] = []
+		main_filters['price_range'] = []
 
-        sets = list(filter_products_dict.values())
-        if sets: 
-            common_items = set.intersection(*sets)
-        else:
-            common_items = set() 
-        
-        print(common_items)
+		feature_filters = {}
+		
+		if category_slug != 'all':
+			selected_category = Category.objects.get(slug=category_slug)
+			products = Product.objects.filter(category=selected_category)
+			main_filters['category'].append(selected_category)
+			filters = Filter.objects.filter(category=selected_category)
 
-        products = products & Product.objects.filter(id__in=[obj.id for obj in common_items])
-            
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            # اگر شماره صفحه یک عدد نیست
-            products = paginator.page(1)
-        except EmptyPage:
-            # اگر شماره صفحه بیشتر از تعداد کل صفحات است
-            products = paginator.page(paginator.num_pages)
 
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                'feature_filters':feature_filters,
-                'values_list':values_list,
-                'to_products':products_urls, 
-                'ages':ages,
-                'canonical':canonical,
-                'store_name':store_name, 
-                'categories':categories,
-                'brands':brands,
-                'price_ranges':price_ranges,
-                'selected_category':selected_category,
-                'selected_brand':selected_brand,
-                'selected_age':selected_age,
-                'selected_price_range':selected_price,
-                'category':selected_category,
-                'filters':filters,
-                'category_slug':category_slug, 
-                'brand_slug':brand_slug,
-                'age_slug':age_slug, 
-                'price_slug':price_slug,
-                'main_filters':main_filters,
-                })
+		if brand_slug != 'all':
+			selected_brand = Brand.objects.get(slug = brand_slug)
+			products = products.filter(brand=selected_brand)
+			main_filters['brand'].append(selected_brand)
+
+		if age_slug != 'all':
+			selected_age = AgeCategory.objects.get(slug=age_slug)
+			products = products.filter(age=selected_age)
+			main_filters['age'].append(selected_age)
+
+		if price_slug != 'all':
+			selected_price = PriceRange.objects.get(slug=price_slug)
+			min_price = selected_price.min_value
+			max_price = selected_price.max_value
+			products = [product for product in products if int(product.get_active_price().replace(',','')) <= max_price and int(product.get_active_price().replace(',','')) >= min_price]
+			main_filters['price_range'].append(selected_price)
+
+		categories = set()
+		brands = set()
+		ages = set()
+		price_ranges = set()
+
+		for product in products:
+			for cat in product.category.all():
+				categories.add(cat)
+			brands.add(product.brand)
+			ages.add(product.age)
+
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		canonical = 'shop'
+
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
+
+		form = SelectFeaturesForm(request.POST)
+		selected_filters = request.POST.getlist('filters')
+
+		values_list = []
+
+		filter_products_dict = {}
+		features_dict = {}
+		for item in selected_filters:
+			key, value = item.split(':', 1)
+			if key not in features_dict:
+				features_dict[key] = []
+			features_dict[key].append(value)
+
+		for key, value in features_dict.items():
+			filter_products_dict[key] = set()
+			used_filter = filters.get(id=int(key))
+			for val in value:
+				values_list.append(val)
+				selected_filter_value_group = FilterValue.objects.filter(value=val, filter=used_filter)
+				for selected_filter_value in selected_filter_value_group:
+					filter_products_dict[key].add(selected_filter_value.product)
+		
+		print(feature_filters)
+
+		sets = list(filter_products_dict.values())
+		if sets: 
+			common_items = set.intersection(*sets)
+		else:
+			common_items = set() 
+		
+		print(common_items)
+
+		products = products & Product.objects.filter(id__in=[obj.id for obj in common_items])
+			
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			# اگر شماره صفحه یک عدد نیست
+			products = paginator.page(1)
+		except EmptyPage:
+			# اگر شماره صفحه بیشتر از تعداد کل صفحات است
+			products = paginator.page(paginator.num_pages)
+
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				'feature_filters':feature_filters,
+				'values_list':values_list,
+				'to_products':products_urls, 
+				'ages':ages,
+				'canonical':canonical,
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'price_ranges':price_ranges,
+				'selected_category':selected_category,
+				'selected_brand':selected_brand,
+				'selected_age':selected_age,
+				'selected_price_range':selected_price,
+				'category':selected_category,
+				'filters':filters,
+				'category_slug':category_slug, 
+				'brand_slug':brand_slug,
+				'age_slug':age_slug, 
+				'price_slug':price_slug,
+				'main_filters':main_filters,
+				})
 
 class FilterTagProducts(View):
 
-    def get(self, request, tag_slug):
-        store = Store.objects.all().first()
-        store_name = store.name
-        items_per_page = 12
-        store = Store.objects.get(name=store_name)
-        categories = Category.objects.all()
-        tag = get_object_or_404(Tag, slug=tag_slug)
-        products = Product.objects.filter( tags=tag)
-        paginator = Paginator(products, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        brands = Brand.objects.all()
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                 'tag':tag,
-                'canonical':'tag',
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'brands':brands,
-                'price_ranges':price_ranges})
+	def get(self, request, tag_slug):
+		store = Store.objects.all().first()
+		store_name = store.name
+		items_per_page = 12
+		store = Store.objects.get(name=store_name)
+		categories = Category.objects.all()
+		tag = get_object_or_404(Tag, slug=tag_slug)
+		products = Product.objects.filter( tags=tag)
+		paginator = Paginator(products, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		brands = Brand.objects.all()
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				 'tag':tag,
+				'canonical':'tag',
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'price_ranges':price_ranges})
 
 class FeaturedProductListView(View):
 
-    def get(self, request, featured_products_id):
-        store = Store.objects.all().first()
-        store_name = store.name
-        products = set()
-        slide = Slide.objects.get(id = featured_products_id)
-        if slide.tag:
-            for tag in slide.tag.all():
-                for product in tag.get_products():  # پیمایش کوئری‌ست
-                    products.add(product)
-        if slide.category:
-            for category in slide.category.all():
-                for product in category.get_products():  # پیمایش کوئری‌ست
-                    products.add(product)
-        products = list(products)
-        categories = Category.objects.all()
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        items_per_page = 12
-        paginator = Paginator(products, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        brands = Brand.objects.all()
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html',
-                {'products': products, 
-                  'brands': brands,
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'price_ranges':price_ranges})
-    
+	def get(self, request, featured_products_id):
+		store = Store.objects.all().first()
+		store_name = store.name
+		products = set()
+		slide = Slide.objects.get(id = featured_products_id)
+		if slide.tag:
+			for tag in slide.tag.all():
+				for product in tag.get_products():  # پیمایش کوئری‌ست
+					products.add(product)
+		if slide.category:
+			for category in slide.category.all():
+				for product in category.get_products():  # پیمایش کوئری‌ست
+					products.add(product)
+		products = list(products)
+		categories = Category.objects.all()
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		items_per_page = 12
+		paginator = Paginator(products, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		brands = Brand.objects.all()
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html',
+				{'products': products, 
+				  'brands': brands,
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'price_ranges':price_ranges})
+	
 class SpecialProductsListView(View):
 
-    def get(self, request, featured_products_id):
-        store = Store.objects.all().first()
-        store_name = store.name
-        products = set()
-        banner = Banner.objects.get(id = featured_products_id)
-        if banner.tag:
-            for tag in banner.tag.all():
-                for product in tag.get_products():  # پیمایش کوئری‌ست
-                    products.add(product)
-        if banner.category:
-            for category in banner.category.all():
-                for product in category.get_products():  # پیمایش کوئری‌ست
-                    products.add(product)
-        products = list(products)
-        categories = Category.objects.all()
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        items_per_page = 12
-        paginator = Paginator(products, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        brands = Brand.objects.all()
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html',
-                 {'products': products, 
-                  'brands': brands,
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'price_ranges':price_ranges})
+	def get(self, request, featured_products_id):
+		store = Store.objects.all().first()
+		store_name = store.name
+		products = set()
+		banner = Banner.objects.get(id = featured_products_id)
+		if banner.tag:
+			for tag in banner.tag.all():
+				for product in tag.get_products():  # پیمایش کوئری‌ست
+					products.add(product)
+		if banner.category:
+			for category in banner.category.all():
+				for product in category.get_products():  # پیمایش کوئری‌ست
+					products.add(product)
+		products = list(products)
+		categories = Category.objects.all()
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		items_per_page = 12
+		paginator = Paginator(products, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		brands = Brand.objects.all()
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html',
+				 {'products': products, 
+				  'brands': brands,
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'price_ranges':price_ranges})
 
 class AddToFavoritesView(View):
 
-    def get(self, request, product_id, ref, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        if isinstance(request.user, AnonymousUser):
-            return redirect(f'{current_app_name}:customer_authentication')
-        store = Store.objects.get(name=store_name)
-        product = Product.objects.get(id=product_id)
-        phone = request.user.phone_number
-        customer = Customer.objects.filter(phone_number=phone).first()
-        if product in customer.favorites.all():
-            customer.favorites.remove(product)
-        else:
-            customer.favorites.add(product)
+	def get(self, request, product_id, ref, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		if isinstance(request.user, AnonymousUser):
+			return redirect(f'{current_app_name}:customer_authentication')
+		store = Store.objects.get(name=store_name)
+		product = Product.objects.get(id=product_id)
+		phone = request.user.phone_number
+		customer = Customer.objects.filter(phone_number=phone).first()
+		if product in customer.favorites.all():
+			customer.favorites.remove(product)
+		else:
+			customer.favorites.add(product)
 
-        if ref == 'index':
-            return redirect(f'{current_app_name}:index')
-        if ref == 'products':
-            return redirect(f'{current_app_name}:product_list')
-        if ref == 'product_detail':
-            return redirect(f'{current_app_name}:product_detail', product.slug)
+		if ref == 'index':
+			return redirect(f'{current_app_name}:index')
+		if ref == 'products':
+			return redirect(f'{current_app_name}:product_list')
+		if ref == 'product_detail':
+			return redirect(f'{current_app_name}:product_detail', product.slug)
 
-        if ref == 'fav_list':
-            return redirect(f'{current_app_name}:customer_dashboard_favorites')			
+		if ref == 'fav_list':
+			return redirect(f'{current_app_name}:customer_dashboard_favorites')			
 
 class CategoryBlogPostList(View):
 
-    def get(self, request, pk, category_slug):
-        store = Store.objects.all().first()
-        store_name = store.name
-        category = BlogCategory.objects.get(id = pk)
-        blog_posts= BlogPost.objects.filter(category=category)
-        recent_posts = BlogPost.objects.all()[:4]
-        categories = BlogCategory.objects.all()
-        return render(request, f'shop/blog_4.html', {'posts':blog_posts, 
-                                                     'recent_posts':recent_posts,
-                                                     'blog_categories':categories})
+	def get(self, request, pk, category_slug):
+		store = Store.objects.all().first()
+		store_name = store.name
+		category = BlogCategory.objects.get(id = pk)
+		blog_posts= BlogPost.objects.filter(category=category)
+		recent_posts = BlogPost.objects.all()[:4]
+		categories = BlogCategory.objects.all()
+		return render(request, f'shop/blog_4.html', {'posts':blog_posts, 
+													 'recent_posts':recent_posts,
+													 'blog_categories':categories})
 
 class CategoryProductsListView(View):
 
-    def get(self, request, category_slug, *args, **kwargs):
-        category_slug = category_slug
-        brand_slug = 'all'
-        age_slug = 'all'
-        price_slug = 'all'
-        store = Store.objects.all().first()
-        store_name = store.name
-        filters = Filter.objects.all()
-        category = get_object_or_404(Category, slug=category_slug)
-        my_forms = []
-        if category != '0':
-            selected_category = category
-            filters = Filter.objects.filter(category=selected_category)
-            for filter in filters:
-                values = filter.get_values()
-                class FeatureFilterForm(forms.Form):
-                    name = filter.name
-                    choices = tuple(set([(value.value, value.value) for value in values]))
-                    فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-                new_form = FeatureFilterForm
-                my_forms.append(new_form)
-            category = Category.objects.get(slug = selected_category.slug)
-            filters = Filter.objects.filter(category=category)
-        categories = []
-        if category.is_sub == True:
-            categories = []
-        else:
-            categories = [cat for cat in Category.objects.all() if cat.parent == category]
-        filters = Filter.objects.filter(category=category)
-        products = set()
-        cat_products = [product for product in Product.objects.filter(category=category)]
-        for product in cat_products:
-            products.add(product)
-        if category.get_sub_categories() != None:
-            sub_categories = category.get_sub_categories()
-            for sub_cat in sub_categories:
-                sub_products = sub_cat.product_set.all()
-                for product in sub_products:
-                    products.add(product)
+	def get(self, request, category_slug, *args, **kwargs):
+		category_slug = category_slug
+		brand_slug = 'all'
+		age_slug = 'all'
+		price_slug = 'all'
+		store = Store.objects.all().first()
+		store_name = store.name
+		filters = Filter.objects.all()
+		category = get_object_or_404(Category, slug=category_slug)
+		my_forms = []
+		if category != '0':
+			selected_category = category
+			filters = Filter.objects.filter(category=selected_category)
+			for filter in filters:
+				values = filter.get_values()
+				class FeatureFilterForm(forms.Form):
+					name = filter.name
+					choices = tuple(set([(value.value, value.value) for value in values]))
+					فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+				new_form = FeatureFilterForm
+				my_forms.append(new_form)
+			category = Category.objects.get(slug = selected_category.slug)
+			filters = Filter.objects.filter(category=category)
+		categories = []
+		if category.is_sub == True:
+			categories = []
+		else:
+			categories = [cat for cat in Category.objects.all() if cat.parent == category]
+		filters = Filter.objects.filter(category=category)
+		products = set()
+		cat_products = [product for product in Product.objects.filter(category=category)]
+		for product in cat_products:
+			products.add(product)
+		if category.get_sub_categories() != None:
+			sub_categories = category.get_sub_categories()
+			for sub_cat in sub_categories:
+				sub_products = sub_cat.product_set.all()
+				for product in sub_products:
+					products.add(product)
 
-        products = list(products)
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        
-        feature_filters = {}
-        
-        for filter in filters:
-            feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
+		products = list(products)
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		
+		feature_filters = {}
+		
+		for filter in filters:
+			feature_filters[filter] = list(set([filter_value.value for filter_value in FilterValue.objects.filter(filter=filter, product__in=products)]))
 
-        brands = category.get_category_brands()
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            # اگر شماره صفحه یک عدد نیست
-            products = paginator.page(1)
-        except EmptyPage:
-            # اگر شماره صفحه بیشتر از تعداد کل صفحات است
-            products = paginator.page(paginator.num_pages)
+		brands = category.get_category_brands()
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			# اگر شماره صفحه یک عدد نیست
+			products = paginator.page(1)
+		except EmptyPage:
+			# اگر شماره صفحه بیشتر از تعداد کل صفحات است
+			products = paginator.page(paginator.num_pages)
 
-        print(feature_filters)
-        for key in list(feature_filters.keys()):
-            if feature_filters[key] == []:
-                del feature_filters[key]
-        canonical = 'category'
-        faqs = CategoryFAQ.objects.filter(category=category)
-        return render(request, f'{current_app_name}/category_product_list_{store.template_index}.html', 
-                {'products': products, 
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'canonical':canonical,
-                'categories':categories,
-                'price_ranges':price_ranges,
-                'selected_category':category,
-                'category':category,
-                'faqs':faqs,
-                'filters':filters,
-                'feature_filters':feature_filters,
-                'brands': brands,
-                'my_forms':my_forms,
-                'main_selected_category': category,
-                'category_slug' : category_slug,
-                'brand_slug' : brand_slug,
-                'age_slug' : age_slug,
-                'price_slug' : price_slug,
-                })
-        
+		print(feature_filters)
+		for key in list(feature_filters.keys()):
+			if feature_filters[key] == []:
+				del feature_filters[key]
+		canonical = 'category'
+		faqs = CategoryFAQ.objects.filter(category=category)
+		return render(request, f'{current_app_name}/category_product_list_{store.template_index}.html', 
+				{'products': products, 
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'canonical':canonical,
+				'categories':categories,
+				'price_ranges':price_ranges,
+				'selected_category':category,
+				'category':category,
+				'faqs':faqs,
+				'filters':filters,
+				'feature_filters':feature_filters,
+				'brands': brands,
+				'my_forms':my_forms,
+				'main_selected_category': category,
+				'category_slug' : category_slug,
+				'brand_slug' : brand_slug,
+				'age_slug' : age_slug,
+				'price_slug' : price_slug,
+				})
+		
 class ProductDetailView(View):
 
-    def get(self, request, product_slug ):
-        store = Store.objects.all().first()
-        store_name = store.name
-        product = get_object_or_404(Product, slug=product_slug)
-        if product.get_varieties().first() == None:
-            new_variety = Variety.objects.create(
-                name = 'default variety',
-                product = product,
-                stock = 1
-            )
-        purchased = 1
-        if product.views:
-            product.views = product.views + 1
-        else:
-            product.views = 1
-        product.save()
-        varieties = Variety.objects.filter(product=product)
-        message = ''
-        form = PurchaseForm()
-        comments = Comment.objects.filter(product=product)
-        if isinstance(request.user, AnonymousUser):
-            for key, value in request.session.items():
-                    if str(product.id)==key:
-                        message = f'شما در حال حاضر {value} عدد از این کالا را در سبد خرید خود دارید.'
-                        purchased = value
-        else:
-            customer = Customer.objects.filter(phone_number = request.user.phone_number).first()
-            cart , create= Cart.objects.get_or_create(customer = customer)
-            cart_item = cart.items.filter(variety__in = varieties).first()
-            if cart_item != None:
-                message = f'شما در حال حاضر {cart_item.quantity} عدد از این کالا را در سبد خرید خود دارید.'
-                purchased = cart_item.quantity
-        
-        add_to_cart_url = f'{current_app_name}:add-to-cart'
-        products = product.get_related_products()
-        brand = product.brand
-        favorite_products = []
-        if request.user.is_authenticated:
-            try:
-                customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-                favorite_products = customer.favorites.values_list('id', flat=True)
-            except Customer.DoesNotExist:
-                pass
-        return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', 
-                {'brand':brand,
-                 'products':products,
-                'product': product,
-                'comments':comments , 
-                'favorite_products':favorite_products ,
-                'varieties':varieties,
-                'form':form, 
-                'purchased':purchased,
-                'message':message, 
-                'add_to_cart':add_to_cart_url, 
-                'store_name':store_name})
+	def get(self, request, product_slug ):
+		store = Store.objects.all().first()
+		store_name = store.name
+		product = get_object_or_404(Product, slug=product_slug)
+		if product.get_varieties().first() == None:
+			new_variety = Variety.objects.create(
+				name = 'default variety',
+				product = product,
+				stock = 1
+			)
+		purchased = 1
+		if product.views:
+			product.views = product.views + 1
+		else:
+			product.views = 1
+		product.save()
+		varieties = Variety.objects.filter(product=product)
+		message = ''
+		form = PurchaseForm()
+		comments = Comment.objects.filter(product=product)
+		if isinstance(request.user, AnonymousUser):
+			for key, value in request.session.items():
+					if str(product.id)==key:
+						message = f'شما در حال حاضر {value} عدد از این کالا را در سبد خرید خود دارید.'
+						purchased = value
+		else:
+			customer = Customer.objects.filter(phone_number = request.user.phone_number).first()
+			cart , create= Cart.objects.get_or_create(customer = customer)
+			cart_item = cart.items.filter(variety__in = varieties).first()
+			if cart_item != None:
+				message = f'شما در حال حاضر {cart_item.quantity} عدد از این کالا را در سبد خرید خود دارید.'
+				purchased = cart_item.quantity
+		
+		add_to_cart_url = f'{current_app_name}:add-to-cart'
+		products = product.get_related_products()
+		brand = product.brand
+		favorite_products = []
+		if request.user.is_authenticated:
+			try:
+				customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+				favorite_products = customer.favorites.values_list('id', flat=True)
+			except Customer.DoesNotExist:
+				pass
+		return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', 
+				{'brand':brand,
+				 'products':products,
+				'product': product,
+				'comments':comments , 
+				'favorite_products':favorite_products ,
+				'varieties':varieties,
+				'form':form, 
+				'purchased':purchased,
+				'message':message, 
+				'add_to_cart':add_to_cart_url, 
+				'store_name':store_name})
 
 class CommentCreateView(IsCustomerUserMixin, View):
 
-    def post(self, request, product_id):
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        product = get_object_or_404(Product, id=product_id)
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            body = form.cleaned_data['body']
-            comment = Comment.objects.create(
-                product=product,
-                sender=customer,
-                email=email,
-                body=body,
-            )
-            comment.save()
-            return redirect('shop:product_detail', product.slug)  # Redirect to the product detail page
-        return redirect('shop:product_detail', product.slug)
-    
+	def post(self, request, product_id):
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		product = get_object_or_404(Product, id=product_id)
+		form = CommentForm(request.POST)
+		if form.is_valid():
+			email = form.cleaned_data['email']
+			body = form.cleaned_data['body']
+			comment = Comment.objects.create(
+				product=product,
+				sender=customer,
+				email=email,
+				body=body,
+			)
+			comment.save()
+			return redirect('shop:product_detail', product.slug)  # Redirect to the product detail page
+		return redirect('shop:product_detail', product.slug)
+	
 
-    def get(self, request, comment_id, status_id, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        comment = Comment.objects.get(id=comment_id)
-        product = comment.product
-        
-        if status_id == 1:
-            comment.approved = True
-            comment.save()
-        else:
-            comment.approved = False
-            comment.save()
-        
-        return redirect(f'{current_app_name}:owner_dashboard_comments')
+	def get(self, request, comment_id, status_id, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		comment = Comment.objects.get(id=comment_id)
+		product = comment.product
+		
+		if status_id == 1:
+			comment.approved = True
+			comment.save()
+		else:
+			comment.approved = False
+			comment.save()
+		
+		return redirect(f'{current_app_name}:owner_dashboard_comments')
 
 class CartView(IsCustomerUserMixin, View):
 
-    def get(self, request, cart_id):
-        store = Store.objects.all().first()
-        store_name = store.name
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        cart = Cart.objects.filter(id=cart_id).first()
-        form = PurchaseForm
-        edit_cart_url = f"{current_app_name}:cart_item_update' cart_id=cart.pk item_id=item.pk "
-        return render(request, f'{current_app_name}/cart_{store.template_index}.html',
-                 {'form': form, 'cart': cart, 'edit_cart':edit_cart_url, 'store_name':store_name})
+	def get(self, request, cart_id):
+		store = Store.objects.all().first()
+		store_name = store.name
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		cart = Cart.objects.filter(id=cart_id).first()
+		form = PurchaseForm
+		edit_cart_url = f"{current_app_name}:cart_item_update' cart_id=cart.pk item_id=item.pk "
+		return render(request, f'{current_app_name}/cart_{store.template_index}.html',
+				 {'form': form, 'cart': cart, 'edit_cart':edit_cart_url, 'store_name':store_name})
 
-    def post(self, request, cart_id, *args, **kwargs):
-        item_id = kwargs['item_id']
-        store = Store.objects.all().first()
-        store_name = store.name
-        form = CartEditForm(request.POST)
-        cart = Cart.objects.filter(id=cart_id).first()
-        cart_item = cart.items.filter(id=item_id).first()
-        if form.is_valid():
-            count = form.cleaned_data['count']
-            if count>cart_item.variety.stock:
-                messages.error(request, f'از این کالا تنها {cart_item.variety.stock} عدد موجود است')
-                return redirect(request.META.get("HTTP_REFERER", "/"))
-            cart_item.quantity = count
-            cart_item.save()
-            cart.save
-            return redirect(f'{current_app_name}:cart_view', cart_id)
-        edit_cart_url = f"{current_app_name}:cart_item_update' cart_id=cart.pk item_id=item.pk "
-        return render(request, f'{current_app_name}/cart_{store.template_index}.html',
-                 {'cart': cart, 'message': 'Something is going wrong', 'edit_cart':edit_cart_url, 'store_name':store_name})
+	def post(self, request, cart_id, *args, **kwargs):
+		item_id = kwargs['item_id']
+		store = Store.objects.all().first()
+		store_name = store.name
+		form = CartEditForm(request.POST)
+		cart = Cart.objects.filter(id=cart_id).first()
+		cart_item = cart.items.filter(id=item_id).first()
+		if form.is_valid():
+			count = form.cleaned_data['count']
+			if count>cart_item.variety.stock:
+				messages.error(request, f'از این کالا تنها {cart_item.variety.stock} عدد موجود است')
+				return redirect(request.META.get("HTTP_REFERER", "/"))
+			cart_item.quantity = count
+			cart_item.save()
+			cart.save
+			return redirect(f'{current_app_name}:cart_view', cart_id)
+		edit_cart_url = f"{current_app_name}:cart_item_update' cart_id=cart.pk item_id=item.pk "
+		return render(request, f'{current_app_name}/cart_{store.template_index}.html',
+				 {'cart': cart, 'message': 'Something is going wrong', 'edit_cart':edit_cart_url, 'store_name':store_name})
 
 class AddToCartView(View):
-    
-    message =''
+	
+	message =''
 
-    def post(self, request, pk, *args, **kwargs):
-        form = PurchaseForm(request.POST)
-        store = Store.objects.all().first()
-        store_name = store.name
-        if form.is_valid():
-            replicate = False
-            product = Product.objects.get(pk = pk)
-            quantity = form.cleaned_data['count']
-            size = form.cleaned_data['size']
-            if size == '':
-                default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety')
-                variety_id = default_variety.id
-                variety = default_variety
-            else:
-                variety_id = int(form.cleaned_data['size'])
-                variety = Variety.objects.get(id = variety_id)
+	def post(self, request, pk, *args, **kwargs):
+		form = PurchaseForm(request.POST)
+		store = Store.objects.all().first()
+		store_name = store.name
+		if form.is_valid():
+			replicate = False
+			product = Product.objects.get(pk = pk)
+			quantity = form.cleaned_data['count']
+			size = form.cleaned_data['size']
+			if size == '':
+				default_variety, create = Variety.objects.get_or_create(product=product, name = 'default variety')
+				variety_id = default_variety.id
+				variety = default_variety
+			else:
+				variety_id = int(form.cleaned_data['size'])
+				variety = Variety.objects.get(id = variety_id)
 
-            if size=='0':
-                varieties = Variety.objects.filter(product=product)
-                add_to_cart_url = f'{current_app_name}:add-to-cart'
-                return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', {'message':'لطفا تنوع مورد نظر خود را انتخاب نمایید.','product': product, 'varieties':varieties,'form':form, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
-            
-            
-            if quantity>variety.stock:
-                varieties = Variety.objects.filter(product=product)
-                add_to_cart_url = f'{current_app_name}:add-to-cart'
-                messages.error(
-                        request,f'از این تنوع تنها {variety.stock} عدد در انبار موجود است.')
-                return redirect(f'{current_app_name}:product_detail' ,product.slug)
-            
-            new_item = {'product': product, 'quantity': quantity}
-            if isinstance(request.user, AnonymousUser):
-        
-                for key, value in request.session.items():
-                    if str(variety.id)==key:
-                        request.session[str(variety.id)] += quantity
-                        replicate = True
-                        break
-                    
-                if replicate == False:
-                    request.session.update({variety.id: quantity})
-            else:
-                customer = Customer.objects.filter(phone_number = request.user.phone_number).first()
-                cart, create = Cart.objects.get_or_create(customer = customer)
-                if cart.items.filter(variety=variety).exists():
-                    cart_item = cart.items.get(variety=variety)
-                    cart_item.quantity = quantity
-                    cart_item.save()
-                    cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
-                    messages.success(
-                        request,
-                        mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
-                    )
-                else:
-                    cart_item = CartItem.objects.create(variety=variety, quantity=quantity)
-                    cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
-                    messages.success(
-                        request,
-                        mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
-                    )
-                cart.items.add(cart_item)
-                
+			if size=='0':
+				varieties = Variety.objects.filter(product=product)
+				add_to_cart_url = f'{current_app_name}:add-to-cart'
+				return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', {'message':'لطفا تنوع مورد نظر خود را انتخاب نمایید.','product': product, 'varieties':varieties,'form':form, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
+			
+			
+			if quantity>variety.stock:
+				varieties = Variety.objects.filter(product=product)
+				add_to_cart_url = f'{current_app_name}:add-to-cart'
+				messages.error(
+						request,f'از این تنوع تنها {variety.stock} عدد در انبار موجود است.')
+				return redirect(f'{current_app_name}:product_detail' ,product.slug)
+			
+			new_item = {'product': product, 'quantity': quantity}
+			if isinstance(request.user, AnonymousUser):
+		
+				for key, value in request.session.items():
+					if str(variety.id)==key:
+						request.session[str(variety.id)] += quantity
+						replicate = True
+						break
+					
+				if replicate == False:
+					request.session.update({variety.id: quantity})
+			else:
+				customer = Customer.objects.filter(phone_number = request.user.phone_number).first()
+				cart, create = Cart.objects.get_or_create(customer = customer)
+				if cart.items.filter(variety=variety).exists():
+					cart_item = cart.items.get(variety=variety)
+					cart_item.quantity = quantity
+					cart_item.save()
+					cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
+					messages.success(
+						request,
+						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
+					)
+				else:
+					cart_item = CartItem.objects.create(variety=variety, quantity=quantity)
+					cart_url = reverse('shop:cart_view', kwargs={'cart_id':cart.id})
+					messages.success(
+						request,
+						mark_safe(f'کالای انتخابی شما به سبد خرید اضافه شد. <a class="btn btn-sm btn-success text-white" href="{cart_url}">مشاهده سبد خرید</a>')
+					)
+				cart.items.add(cart_item)
+				
 
-            return redirect(f'{current_app_name}:product_detail' ,product.slug)
-        return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', {'message':'لطفا تنوع مورد نظر خود را انتخاب نمایید.','product': product, 'varieties':varieties,'form':form, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
+			return redirect(f'{current_app_name}:product_detail' ,product.slug)
+		return render(request, f'{current_app_name}/product_detail_{store.template_index}.html', {'message':'لطفا تنوع مورد نظر خود را انتخاب نمایید.','product': product, 'varieties':varieties,'form':form, 'add_to_cart':add_to_cart_url, 'store_name':store_name})
 
 class CustomerRegisterLoginView(View):
-    
-    template_name = f'{current_app_name}/register-customer.html'
-    message = 'لطفا شماره تماس خود را وارد نمایید'
+	
+	template_name = f'{current_app_name}/register-customer.html'
+	message = 'لطفا شماره تماس خود را وارد نمایید'
 
-    def get(self, request):
-        form = RequestNumberForm()
-        return render(request, self.template_name, {'form': form, 'message':self.message})
+	def get(self, request):
+		form = RequestNumberForm()
+		return render(request, self.template_name, {'form': form, 'message':self.message})
 
-    def post(self, request):
-        form = RequestNumberForm(request.POST)
-        if form.is_valid():
-            phone_number = form.cleaned_data['phone_number']
-            customer = Customer.objects.filter(phone_number=phone_number).first()
-            authen_form = AuthenticationCodeForm()
-            # if customer != None:
-            # 	previous_codes = OtpCode.objects.filter(phone_number = phone_number)
-            # 	previous_codes.delete()
-            # 	random_code = random.randint(100000,999999)
-            # 	send_otp_code(phone_number,random_code)
-            # 	new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
-            # 	return redirect(f'login/{phone_number}')
-            # customer = Customer.objects.create(phone_number = phone_number)
-            # user = User.objects.get_or_create(phone_number = phone_number)
-            # previous_codes = OtpCode.objects.filter(phone_number = phone_number)
-            # previous_codes.delete()
-            random_code = random.randint(100000,999999)
-            send_otp_code(phone_number,random_code)
-            new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
-            return redirect(f'login/{phone_number}')
-        message = 'Invalid Input'
-        return render(request, self.template_name, {'message':message, 'form':form})
+	def post(self, request):
+		form = RequestNumberForm(request.POST)
+		if form.is_valid():
+			phone_number = form.cleaned_data['phone_number']
+			customer = Customer.objects.filter(phone_number=phone_number).first()
+			authen_form = AuthenticationCodeForm()
+			# if customer != None:
+			# 	previous_codes = OtpCode.objects.filter(phone_number = phone_number)
+			# 	previous_codes.delete()
+			# 	random_code = random.randint(100000,999999)
+			# 	send_otp_code(phone_number,random_code)
+			# 	new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
+			# 	return redirect(f'login/{phone_number}')
+			# customer = Customer.objects.create(phone_number = phone_number)
+			# user = User.objects.get_or_create(phone_number = phone_number)
+			# previous_codes = OtpCode.objects.filter(phone_number = phone_number)
+			# previous_codes.delete()
+			random_code = random.randint(100000,999999)
+			send_otp_code(phone_number,random_code)
+			new_otp = OtpCode.objects.create(phone_number = phone_number, code = random_code) 
+			return redirect(f'login/{phone_number}')
+		message = 'Invalid Input'
+		return render(request, self.template_name, {'message':message, 'form':form})
 
 class CustomerloginView(View):
-    template_name = f'{current_app_name}/login.html'
+	template_name = f'{current_app_name}/login.html'
 
-    def get(self, request, phone_number):
-        form = AuthenticationCodeForm()
-        return render(request, self.template_name, {'form':form})
-    
-    def post(self, request, phone_number, *args, **kwargs):
-        form = AuthenticationCodeForm(request.POST)
-        if form.is_valid():
-            recieved_code = form.cleaned_data['code']
-            otp = OtpCode.objects.filter(phone_number=phone_number, code = recieved_code).first()
-            if otp != None:
-                user = User.objects.filter(phone_number = phone_number).first()
-                if user == None:
-                    user = User.objects.create(phone_number=phone_number)
-                else:
-                    customer, create = Customer.objects.get_or_create(user=user, phone_number=phone_number)
-                    login(request, user)
-                    cart, created = Cart.objects.get_or_create(customer = customer)
-                    varieties = Variety.objects.all()
-                    varieties_id_list = []
-                    for variety in varieties:
-                        varieties_id_list.append(str(variety.id))
-                    for key, value in request.session.items():
-                        if key in varieties_id_list:
-                            variety = Variety.objects.filter(id = int(key)).first()
-                            if cart.items.filter(variety=variety).exists():
-                                cart_item = cart.items.get(variety=variety)
-                                cart_item.quantity = value
-                                cart_item.save()
-                            else:
-                                cart_item = CartItem.objects.create(variety=variety, quantity=value)
-                                cart.items.add(cart_item)
-                    for key in list(request.session.keys()):
-                        if key in varieties_id_list:
-                            del request.session[key]
-                    
-                    return redirect(f'{current_app_name}:index')
-                return render(request, self.template_name, {'form':form, 'message':'wrong code'})
-            return render(request, self.template_name, {'form':form, 'message':'Invalid Input'})
-        return render(request, self.template_name, {'form':form, 'message':'کد اعتبار سنجی نامعتبر'})
-            
-                
+	def get(self, request, phone_number):
+		form = AuthenticationCodeForm()
+		return render(request, self.template_name, {'form':form})
+	
+	def post(self, request, phone_number, *args, **kwargs):
+		form = AuthenticationCodeForm(request.POST)
+		if form.is_valid():
+			recieved_code = form.cleaned_data['code']
+			otp = OtpCode.objects.filter(phone_number=phone_number, code = recieved_code).first()
+			if otp != None:
+				user = User.objects.filter(phone_number = phone_number).first()
+				if user == None:
+					user = User.objects.create(phone_number=phone_number)
+				else:
+					customer, create = Customer.objects.get_or_create(user=user, phone_number=phone_number)
+					login(request, user)
+					cart, created = Cart.objects.get_or_create(customer = customer)
+					varieties = Variety.objects.all()
+					varieties_id_list = []
+					for variety in varieties:
+						varieties_id_list.append(str(variety.id))
+					for key, value in request.session.items():
+						if key in varieties_id_list:
+							variety = Variety.objects.filter(id = int(key)).first()
+							if cart.items.filter(variety=variety).exists():
+								cart_item = cart.items.get(variety=variety)
+								cart_item.quantity = value
+								cart_item.save()
+							else:
+								cart_item = CartItem.objects.create(variety=variety, quantity=value)
+								cart.items.add(cart_item)
+					for key in list(request.session.keys()):
+						if key in varieties_id_list:
+							del request.session[key]
+					
+					return redirect(f'{current_app_name}:index')
+				return render(request, self.template_name, {'form':form, 'message':'wrong code'})
+			return render(request, self.template_name, {'form':form, 'message':'Invalid Input'})
+		return render(request, self.template_name, {'form':form, 'message':'کد اعتبار سنجی نامعتبر'})
+			
+				
 
 class CustomerOrdersView(IsCustomerUserMixin, View):
 
-    def get(self, request):
-        store = Store.objects.all().first()
-        store_name = store.name
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        orders = Order.objects.filter(customer=customer)
-        return render(request, f'{current_app_name}/customer-dashboard-orders_{store.template_index}.html', {'orders':orders})
-    
+	def get(self, request):
+		store = Store.objects.all().first()
+		store_name = store.name
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		orders = Order.objects.filter(customer=customer)
+		return render(request, f'{current_app_name}/customer-dashboard-orders_{store.template_index}.html', {'orders':orders})
+	
 class CustomerFavoritesView(IsCustomerUserMixin, View):
 
-    def get(self, request):
-        fav_products = None
-        store = Store.objects.all().first()
-        store_name = store.name
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        if customer != None:
-            fav_products = customer.favorites.all()
-            return render(request, f'{current_app_name}/customer_favorites_{store.template_index}.html', {'fav_products':fav_products, 'message':'Favorite Products'})
-        return render(request, f'{current_app_name}/customer_favorites_{store.template_index}.html', {'fav_products':fav_products, 'message':'You should sign in first'})
+	def get(self, request):
+		fav_products = None
+		store = Store.objects.all().first()
+		store_name = store.name
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		if customer != None:
+			fav_products = customer.favorites.all()
+			return render(request, f'{current_app_name}/customer_favorites_{store.template_index}.html', {'fav_products':fav_products, 'message':'Favorite Products'})
+		return render(request, f'{current_app_name}/customer_favorites_{store.template_index}.html', {'fav_products':fav_products, 'message':'You should sign in first'})
 
 class DeleteCartItemView(View):
 
-    def  get(self, request, cart_id, item_id, *args, **kwargs):
-        cart_item = CartItem.objects.get(id=item_id)
-        cart_item.delete()
-        return redirect(f'{current_app_name}:cart_view', cart_id)
+	def  get(self, request, cart_id, item_id, *args, **kwargs):
+		cart_item = CartItem.objects.get(id=item_id)
+		cart_item.delete()
+		return redirect(f'{current_app_name}:cart_view', cart_id)
 
 class OrderWrongCouponView(IsCustomerUserMixin, View):
 
-    form_class = CouponApplyForm
+	form_class = CouponApplyForm
 
-    def get(self, request, order_id,wrong_code):
-        order = get_object_or_404(Order, id=order_id)
-        store = Store.objects.all().first()
-        store_name = store.name
-        order_detail_url = f"{current_app_name}:apply_coupon"
-        delivery_methods = Delivery.objects.all()
-        form2 = DeliveryApplyForm
-        message = 'کد وارد شده اشتباه و یا منقضی است.'
-        return render(request, f'{current_app_name}/order_detail_{store.template_index}.html', {'form2':form2,'delivery_methods':delivery_methods ,'order':order, 'form':self.form_class, 'order_detail':order_detail_url, 'store_name':store_name,'message':message})
+	def get(self, request, order_id,wrong_code):
+		order = get_object_or_404(Order, id=order_id)
+		store = Store.objects.all().first()
+		store_name = store.name
+		order_detail_url = f"{current_app_name}:apply_coupon"
+		delivery_methods = Delivery.objects.all()
+		form2 = DeliveryApplyForm
+		message = 'کد وارد شده اشتباه و یا منقضی است.'
+		return render(request, f'{current_app_name}/order_detail_{store.template_index}.html', {'form2':form2,'delivery_methods':delivery_methods ,'order':order, 'form':self.form_class, 'order_detail':order_detail_url, 'store_name':store_name,'message':message})
 
 class CouponApplyView(IsCustomerUserMixin, View):
 
-    form_class = CouponApplyForm
-    current_datetime = datetime.now()
-    def post(self, request, order_id, *args, **kwargs):
+	form_class = CouponApplyForm
+	current_datetime = datetime.now()
+	def post(self, request, order_id, *args, **kwargs):
 
-        order = Order.objects.get(id=order_id)
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            code = form.cleaned_data['code']
-            coupon = Coupon.objects.filter(code__exact=code).first()
-            if order.used_coupon == True:
-                order.delivery_description = order.delivery_description + f'<p class="text-danger">برای این سفارش قبلا کد تخفیف وارد شده است</p><br>' 
-                order.save()
-                return redirect(f'{current_app_name}:order_final_check', order_id)
-            if coupon == None:
-                order.delivery_description = order.delivery_description + f'<p class="text-danger">کد تخفیف نامعتبر</p><br>' 
-                order.save()
-                return redirect(f'{current_app_name}:order_final_check', order_id)
-            if coupon.is_valid():
-                order.total_price -= coupon.discount
-                order.used_coupon = True
-                order.delivery_description = order.delivery_description + f'<p class="text-success">مبلغ نهایی پس از اعمال کد تخفیف: {order.total_price+order.delivery_cost:,} تومان</p>' 
-                order.coupon = coupon
-                order.save()
-                return redirect(f'{current_app_name}:order_final_check', order_id)
-        order.delivery_description = order.delivery_description + f'<p class="text-danger">کد وارد شده نامعتبر بوده و یا قبلا وارد شده است</p><br>' 
-        order.save()
-        return redirect(f'{current_app_name}:order_final_check', order_id)
-    
+		order = Order.objects.get(id=order_id)
+		form = self.form_class(request.POST)
+		if form.is_valid():
+			code = form.cleaned_data['code']
+			coupon = Coupon.objects.filter(code__exact=code).first()
+			if order.used_coupon == True:
+				order.delivery_description = order.delivery_description + f'<p class="text-danger">برای این سفارش قبلا کد تخفیف وارد شده است</p><br>' 
+				order.save()
+				return redirect(f'{current_app_name}:order_final_check', order_id)
+			if coupon == None:
+				order.delivery_description = order.delivery_description + f'<p class="text-danger">کد تخفیف نامعتبر</p><br>' 
+				order.save()
+				return redirect(f'{current_app_name}:order_final_check', order_id)
+			if coupon.is_valid():
+				order.total_price -= coupon.discount
+				order.used_coupon = True
+				order.delivery_description = order.delivery_description + f'<p class="text-success">مبلغ نهایی پس از اعمال کد تخفیف: {order.total_price+order.delivery_cost:,} تومان</p>' 
+				order.coupon = coupon
+				order.save()
+				return redirect(f'{current_app_name}:order_final_check', order_id)
+		order.delivery_description = order.delivery_description + f'<p class="text-danger">کد وارد شده نامعتبر بوده و یا قبلا وارد شده است</p><br>' 
+		order.save()
+		return redirect(f'{current_app_name}:order_final_check', order_id)
+	
 class AboutUsPageView(View):
 
-    def get(self, request):
-        store = Store.objects.all().first()
-        store_name = store.name
-        logo = StoreLogoImage.objects.all().first()
-        return render(request, f'{current_app_name}/about_{store.template_index}.html', {'logo':logo,'description':store.about_description})
+	def get(self, request):
+		store = Store.objects.all().first()
+		store_name = store.name
+		logo = StoreLogoImage.objects.all().first()
+		return render(request, f'{current_app_name}/about_{store.template_index}.html', {'logo':logo,'description':store.about_description})
 
 class ContactUsPageView(View):
 
-    def get(self, request):
-        store = Store.objects.all().first()
-        return render(request, f'{current_app_name}/contact_{store.template_index}.html', {'store':store})
+	def get(self, request):
+		store = Store.objects.all().first()
+		return render(request, f'{current_app_name}/contact_{store.template_index}.html', {'store':store})
 
-    def post(self, request, *args, **kwargs):
-        form = ContactUsForm(request.POST)
-        store = Store.objects.all().first()
-        store_name = store.name
-        if form.is_valid():
-            
-            name = form.cleaned_data['name']
-            familly_name = form.cleaned_data['familly_name']
-            email = form.cleaned_data['email']
-            phone = form.cleaned_data['phone']
-            subject = form.cleaned_data['subject']
-            message_text = form.cleaned_data['message_text']
+	def post(self, request, *args, **kwargs):
+		form = ContactUsForm(request.POST)
+		store = Store.objects.all().first()
+		store_name = store.name
+		if form.is_valid():
+			
+			name = form.cleaned_data['name']
+			familly_name = form.cleaned_data['familly_name']
+			email = form.cleaned_data['email']
+			phone = form.cleaned_data['phone']
+			subject = form.cleaned_data['subject']
+			message_text = form.cleaned_data['message_text']
 
-            new_message = ContactMessage.objects.create(
-                name = name,
-                
-                familly_name=familly_name,
-                email=email,
-                phone=phone,
-                subject=subject,
-                message=message_text
-            )
-            return render(request, f'{current_app_name}/contact_{store.template_index}.html', {'message':'پیام شما با موفقیت ارسال گردید.'})
-        return render(request, f'{current_app_name}/contact_{store.template_index}.html', {'message':'مقادیر به درستی وارد نشده‌اند.'})
+			new_message = ContactMessage.objects.create(
+				name = name,
+				
+				familly_name=familly_name,
+				email=email,
+				phone=phone,
+				subject=subject,
+				message=message_text
+			)
+			return render(request, f'{current_app_name}/contact_{store.template_index}.html', {'message':'پیام شما با موفقیت ارسال گردید.'})
+		return render(request, f'{current_app_name}/contact_{store.template_index}.html', {'message':'مقادیر به درستی وارد نشده‌اند.'})
 
 class SearchResultsView(View):
 
-    def get(self, request, search_item, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        products = Product.objects.filter(name__icontains=search_item)
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        categories = Category.objects.all()
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'products': products, 
-                                                    'to_products':products_urls, 
-                                                    'store_name':store_name, 
-                                                    'categories':categories,
-                                                    'price_ranges':price_ranges})
+	def get(self, request, search_item, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		products = Product.objects.filter(name__icontains=search_item)
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		categories = Category.objects.all()
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'products': products, 
+													'to_products':products_urls, 
+													'store_name':store_name, 
+													'categories':categories,
+													'price_ranges':price_ranges})
 
 class SearchView(View):
 
-    def post(self, request, *args, **kwargs):
-        form = SearchForm(request.POST)
-        if form.is_valid():
-            search_item = form.cleaned_data['search']
-            return redirect('shop:search_results', search_item)
-        
-        messages.error(request, "لطفاً یک عبارت جستجو وارد کنید.")
-        return redirect(request.META.get('HTTP_REFERER', '/'))
+	def post(self, request, *args, **kwargs):
+		form = SearchForm(request.POST)
+		if form.is_valid():
+			search_item = form.cleaned_data['search']
+			return redirect('shop:search_results', search_item)
+		
+		messages.error(request, "لطفاً یک عبارت جستجو وارد کنید.")
+		return redirect(request.META.get('HTTP_REFERER', '/'))
 
 class FaqView(View):
 
-    def get(self, request, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        faqs = Faq.objects.all()
-        return render(request, f'{current_app_name}/faq_{store.template_index}.html', {'store_name':store_name, 'faqs':faqs})
-    
+	def get(self, request, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		faqs = Faq.objects.all()
+		return render(request, f'{current_app_name}/faq_{store.template_index}.html', {'store_name':store_name, 'faqs':faqs})
+	
 class BlogView(View):
 
-    def get(self, request, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        posts = BlogPost.objects.all()
-        products = Product.objects.all()
-        blog_categories = BlogCategory.objects.all()
-        recent_posts = BlogPost.objects.all()[:4]
-        return render(request, f'{current_app_name}/blog_{store.template_index}.html', {'store_name':store_name,
-                                              'store':store,
-                                              'posts':posts,
-                                              'products':products,
-                                              'blog_categories':blog_categories,
-                                              'recent_posts':recent_posts})
-    
+	def get(self, request, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		posts = BlogPost.objects.all()
+		products = Product.objects.all()
+		blog_categories = BlogCategory.objects.all()
+		recent_posts = BlogPost.objects.all()[:4]
+		return render(request, f'{current_app_name}/blog_{store.template_index}.html', {'store_name':store_name,
+											  'store':store,
+											  'posts':posts,
+											  'products':products,
+											  'blog_categories':blog_categories,
+											  'recent_posts':recent_posts})
+	
 class BlogPostDetailView(View):
 
-    def get(self, request, post_slug, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        post = BlogPost.objects.get(slug = post_slug)
-        posts = BlogPost.objects.all()
-        blog_categories = BlogCategory.objects.all()
-        return render(request, f'{current_app_name}/blog-detail_{store.template_index}.html', {'store':store,
-                                              'post':post,
-                                              'posts':posts,
-                                              'blog_categories':blog_categories})
+	def get(self, request, post_slug, *args, **kwargs):
+		store = Store.objects.all().first()
+		store_name = store.name
+		post = BlogPost.objects.get(slug = post_slug)
+		posts = BlogPost.objects.all()
+		blog_categories = BlogCategory.objects.all()
+		return render(request, f'{current_app_name}/blog-detail_{store.template_index}.html', {'store':store,
+											  'post':post,
+											  'posts':posts,
+											  'blog_categories':blog_categories})
 
 class SubscribeView(IsCustomerUserMixin, View):
 
-    def post(self, request, *args, **kwargs):
-        form = SubscriptionForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            store = Store.objects.all().first()
-            new_subscriber, create = Subscription.objects.get_or_create( email=email)
-            return redirect(f'{current_app_name}:index')
+	def post(self, request, *args, **kwargs):
+		form = SubscriptionForm(request.POST)
+		if form.is_valid():
+			email = form.cleaned_data['email']
+			store = Store.objects.all().first()
+			new_subscriber, create = Subscription.objects.get_or_create( email=email)
+			return redirect(f'{current_app_name}:index')
 
 class PoliciesView(View):
 
-    def get(self, request):
-        store = Store.objects.all().first()
-        store_name = store.name
-        policy = Policy.objects.all().first()
-        return render(request, f'{current_app_name}/policies_{store.template_index}.html', {'policy':policy,'store':store})		
+	def get(self, request):
+		store = Store.objects.all().first()
+		store_name = store.name
+		policy = Policy.objects.all().first()
+		return render(request, f'{current_app_name}/policies_{store.template_index}.html', {'policy':policy,'store':store})		
 
 class FeatureFilterView(View):
-    def post( self , request, category_slug, form_name):
-        store = Store.objects.all().first()
-        store_name = store.name
-        category = Category.objects.get( slug = category_slug)
-        filter = Filter.objects.filter( name = form_name).first()
-        values = filter.get_values()
-        class FeatureFilterForm(forms.Form):
-            name = filter.name
-            choices = tuple([(value.value, value.value) for value in values])
-            فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-        form = FeatureFilterForm(request.POST)
-        if form.is_valid():
-            products = Product.objects.filter(category=category)
-            categories = Category.objects.all()
-            price_ranges  = PriceRange.objects.all()
-            filters = Filter.objects.all()
-            request.session.modified = True
-            request.session[f'filter-{filter.name}'] = form.cleaned_data['فیلترها']
-            request.session['temp_cat'] = category.name
-            request.session.modified = True
-            my_forms = []
-            if category != '0':
-                selected_category = Category.objects.filter(id = category.id ).first()
-                filters = Filter.objects.filter(category=selected_category)
-                for filter in filters:
-                    values = filter.get_values()
-                    class FeatureFilterForm(forms.Form):
-                        name = filter.name
-                        choices = tuple(set([(value.value, value.value) for value in values]))
-                        فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-                    new_form = FeatureFilterForm
-                    my_forms.append(new_form)
-                category = Category.objects.get(slug = selected_category.slug)
-                filters = Filter.objects.filter(category=category)
-            selected_values = []
-            active_filters = []
-            for key, value in request.session.items():
-                if key.startswith('filter-'):
-                    filter_name = key.replace('filter-', '')
-                    selected_filter = Filter.objects.get( name = filter_name, category=category)
-                    for posi_value in selected_filter.get_values():
-                        if posi_value.value in value:
-                            new_active_filter = {'filter':selected_filter,'value':posi_value}
-                            active_filters.append(new_active_filter)
-                            selected_values.append(posi_value.id)
-            products = [value.product for value in FilterValue.objects.filter(id__in=selected_values)]
-            paginator = Paginator(products, 12)
-            page = request.GET.get('page', 1)
-            try:
-                products = paginator.page(page)
-            except PageNotAnInteger:
-                products = paginator.page(1)
-            except EmptyPage:
-                products = paginator.page(paginator.num_pages)
-            return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                'store_name':store_name, 
-                'categories':categories,
-                'price_ranges':price_ranges,
-                'category':category,
-                'filters':filters,
-                'my_forms':my_forms,
-                'active_filters':active_filters,
-                })
-        
-        categories = Category.objects.all()
-        products = Product.objects.filter(category=category)
-        price_ranges  = PriceRange.objects.all()
-        filters = Filter.objects.all()
-        my_forms = []
-        if category != '0':
-            selected_category = Category.objects.filter(id = int(category.id)).first()
-            filters = Filter.objects.filter(category=selected_category)
-            for filter in filters:
-                values = filter.get_values()
-                class FeatureFilterForm(forms.Form):
-                    name = filter.name
-                    choices = tuple(set([(value.value, value.value) for value in values]))
-                    فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-                new_form = FeatureFilterForm
-                my_forms.append(new_form)
-            category = Category.objects.get(slug = selected_category.slug)
-            filters = Filter.objects.filter(category=category)
-        active_filters = []
-        paginator = Paginator(products, 12)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        canonical = 'category'
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                'store_name':store_name, 
-                'categories':categories,
-                'canonical':canonical,
-                'price_ranges':price_ranges,
-                'category':category,
-                'filters':filters,
-                'my_forms':my_forms,
-                'active_filters':active_filters,
-                })
+	def post( self , request, category_slug, form_name):
+		store = Store.objects.all().first()
+		store_name = store.name
+		category = Category.objects.get( slug = category_slug)
+		filter = Filter.objects.filter( name = form_name).first()
+		values = filter.get_values()
+		class FeatureFilterForm(forms.Form):
+			name = filter.name
+			choices = tuple([(value.value, value.value) for value in values])
+			فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+		form = FeatureFilterForm(request.POST)
+		if form.is_valid():
+			products = Product.objects.filter(category=category)
+			categories = Category.objects.all()
+			price_ranges  = PriceRange.objects.all()
+			filters = Filter.objects.all()
+			request.session.modified = True
+			request.session[f'filter-{filter.name}'] = form.cleaned_data['فیلترها']
+			request.session['temp_cat'] = category.name
+			request.session.modified = True
+			my_forms = []
+			if category != '0':
+				selected_category = Category.objects.filter(id = category.id ).first()
+				filters = Filter.objects.filter(category=selected_category)
+				for filter in filters:
+					values = filter.get_values()
+					class FeatureFilterForm(forms.Form):
+						name = filter.name
+						choices = tuple(set([(value.value, value.value) for value in values]))
+						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+					new_form = FeatureFilterForm
+					my_forms.append(new_form)
+				category = Category.objects.get(slug = selected_category.slug)
+				filters = Filter.objects.filter(category=category)
+			selected_values = []
+			active_filters = []
+			for key, value in request.session.items():
+				if key.startswith('filter-'):
+					filter_name = key.replace('filter-', '')
+					selected_filter = Filter.objects.get( name = filter_name, category=category)
+					for posi_value in selected_filter.get_values():
+						if posi_value.value in value:
+							new_active_filter = {'filter':selected_filter,'value':posi_value}
+							active_filters.append(new_active_filter)
+							selected_values.append(posi_value.id)
+			products = [value.product for value in FilterValue.objects.filter(id__in=selected_values)]
+			paginator = Paginator(products, 12)
+			page = request.GET.get('page', 1)
+			try:
+				products = paginator.page(page)
+			except PageNotAnInteger:
+				products = paginator.page(1)
+			except EmptyPage:
+				products = paginator.page(paginator.num_pages)
+			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				'store_name':store_name, 
+				'categories':categories,
+				'price_ranges':price_ranges,
+				'category':category,
+				'filters':filters,
+				'my_forms':my_forms,
+				'active_filters':active_filters,
+				})
+		
+		categories = Category.objects.all()
+		products = Product.objects.filter(category=category)
+		price_ranges  = PriceRange.objects.all()
+		filters = Filter.objects.all()
+		my_forms = []
+		if category != '0':
+			selected_category = Category.objects.filter(id = int(category.id)).first()
+			filters = Filter.objects.filter(category=selected_category)
+			for filter in filters:
+				values = filter.get_values()
+				class FeatureFilterForm(forms.Form):
+					name = filter.name
+					choices = tuple(set([(value.value, value.value) for value in values]))
+					فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+				new_form = FeatureFilterForm
+				my_forms.append(new_form)
+			category = Category.objects.get(slug = selected_category.slug)
+			filters = Filter.objects.filter(category=category)
+		active_filters = []
+		paginator = Paginator(products, 12)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		canonical = 'category'
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				'store_name':store_name, 
+				'categories':categories,
+				'canonical':canonical,
+				'price_ranges':price_ranges,
+				'category':category,
+				'filters':filters,
+				'my_forms':my_forms,
+				'active_filters':active_filters,
+				})
 
 class ClearActiveFilterValueView(View):
 
-    def get(self, request, filter_id, value_id):
-        store = Store.objects.all().first()
-        store_name = store.name
-        active_filter = Filter.objects.get(id = filter_id)
-        category = active_filter.category
-        active_value = FilterValue.objects.get(id = value_id)
-        for key, value in request.session.items():
-            if active_filter.name in key and active_value.value in value:
-                if len(value) == 1:
-                    del request.session[key]
-                else:
-                    value.remove(active_value.value)
-                request.session.modified = True
+	def get(self, request, filter_id, value_id):
+		store = Store.objects.all().first()
+		store_name = store.name
+		active_filter = Filter.objects.get(id = filter_id)
+		category = active_filter.category
+		active_value = FilterValue.objects.get(id = value_id)
+		for key, value in request.session.items():
+			if active_filter.name in key and active_value.value in value:
+				if len(value) == 1:
+					del request.session[key]
+				else:
+					value.remove(active_value.value)
+				request.session.modified = True
 
-                return redirect(f'{current_app_name}:category_products', category.slug )
+				return redirect(f'{current_app_name}:category_products', category.slug )
 
 def format_features(features_list):
-    output = ""
-    for feature in features_list:
-        title = feature['title']
-        values = feature['values']
-        values_str = ', '.join(values)  
-        output += f"{title}: {values_str}<br>"
-    return output
+	output = ""
+	for feature in features_list:
+		title = feature['title']
+		values = feature['values']
+		values_str = ', '.join(values)  
+		output += f"{title}: {values_str}<br>"
+	return output
 
 def download_and_save_images(image_urls, product_id):
-    product = Product.objects.get(id=product_id)
-    for url in image_urls:
-        response = requests.get(url)
-        if response.status_code == 200:
-            image_name = product.name
-            image_filename = image_name
-            image = ProductImage(
-                product=product,
-            )
-            image.image.save(image_filename, ContentFile(response.content))
-            image.save()
+	product = Product.objects.get(id=product_id)
+	for url in image_urls:
+		response = requests.get(url)
+		if response.status_code == 200:
+			image_name = product.name
+			image_filename = image_name
+			image = ProductImage(
+				product=product,
+			)
+			image.image.save(image_filename, ContentFile(response.content))
+			image.save()
 
 def download_and_save_main_image(image_url, product_id):
-    product = Product.objects.get(id=product_id)
-    url = image_url
-    response = requests.get(url)
-    if response.status_code == 200:
-        image_name = product.name
-        image_filename = image_name
-        image = ProductImage(
-            product=product,
-        )
-        image.image.save(image_filename, ContentFile(response.content))
-        image.save()
+	product = Product.objects.get(id=product_id)
+	url = image_url
+	response = requests.get(url)
+	if response.status_code == 200:
+		image_name = product.name
+		image_filename = image_name
+		image = ProductImage(
+			product=product,
+		)
+		image.image.save(image_filename, ContentFile(response.content))
+		image.save()
 
 class AddProductFromDigikalaView(View):
 
-    def get(self, request):
-        form = AddingProductFromDigiForm
-        store = Store.objects.first()
-        categories = Category.objects.all()
-        return render(request, 'shop/addproduct.html', {'form':form, 'categories':categories, 'store':store})
-    
-    def post(self, request):
+	def get(self, request):
+		form = AddingProductFromDigiForm
+		store = Store.objects.first()
+		categories = Category.objects.all()
+		return render(request, 'shop/addproduct.html', {'form':form, 'categories':categories, 'store':store})
+	
+	def post(self, request):
 
-        form = AddingProductFromDigiForm(request.POST)
-        if form.is_valid():
-            category_list = request.POST.getlist('category')
-            dkp_code = form.cleaned_data['dkp_code']
-            numbers = dkp_code.split("-")
-            numbers = [int(num) for num in numbers]
-            for dkp_code in numbers:
-                url = f'https://api.digikala.com/v2/product/{dkp_code}/'
-                shop_name = f'{Store.objects.all().first().name}'
-                try:
-                    response = requests.get(url)
-                    response.raise_for_status()
-                    item = response.json()['data']['product']
-                    brand = ''
-                    title = ''
-                    features= []
-                    description = ''
-                    price = 0
-                    tags = []
-                    images = []
-                    main_image = ''
-                    print('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS')
+		form = AddingProductFromDigiForm(request.POST)
+		if form.is_valid():
+			category_list = request.POST.getlist('category')
+			dkp_code = form.cleaned_data['dkp_code']
+			numbers = dkp_code.split("-")
+			numbers = [int(num) for num in numbers]
+			for dkp_code in numbers:
+				url = f'https://api.digikala.com/v2/product/{dkp_code}/'
+				shop_name = f'{Store.objects.all().first().name}'
+				try:
+					response = requests.get(url)
+					response.raise_for_status()
+					item = response.json()['data']['product']
+					brand = ''
+					title = ''
+					features= []
+					description = ''
+					price = 0
+					tags = []
+					images = []
+					main_image = ''
+					print('SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS')
 
-                    if item['specifications'][0] == [] or item['specifications'][0] == None:
-                        features = []
-                    else:
-                        features= item['specifications'][0]['attributes']
-                    brand = item['data_layer']['brand']
-                    title = item['title_fa']
-                    title = title.replace("/", "")
-                    words = title.split()
-                    if len(words) > 15:
-                        words = words[:15]
-                    title = " ".join(words)
-                    price = item['default_variant']['price']['selling_price']
-                    tags = [tag['name'] for tag in item['tags']]
-                    images = [image['url'][0].replace('?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90','').replace(' ','') for image in item['images']['list']]
-                    main_image = item['images']['main']['url'][0].replace('?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90',''),
-                    main_image = main_image[0]
-                    description = item['review']['description']
-                except requests.exceptions.HTTPError as err:
-                    print(f'HTTP error occurred: {err}')
-                except Exception as err:
-                    print(f'Other error occurred: {err}')
+					if item['specifications'][0] == [] or item['specifications'][0] == None:
+						features = []
+					else:
+						features= item['specifications'][0]['attributes']
+					brand = item['data_layer']['brand']
+					title = item['title_fa']
+					title = title.replace("/", "")
+					words = title.split()
+					if len(words) > 15:
+						words = words[:15]
+					title = " ".join(words)
+					price = item['default_variant']['price']['selling_price']
+					tags = [tag['name'] for tag in item['tags']]
+					images = [image['url'][0].replace('?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90','').replace(' ','') for image in item['images']['list']]
+					main_image = item['images']['main']['url'][0].replace('?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90',''),
+					main_image = main_image[0]
+					description = item['review']['description']
+				except requests.exceptions.HTTPError as err:
+					print(f'HTTP error occurred: {err}')
+				except Exception as err:
+					print(f'Other error occurred: {err}')
 
-                store = Store.objects.first()
-                if not description:
-                    description = '-'
-                slug = title.replace(' ','-')
-                description = description
-                features = features
-                brand,create = Brand.objects.get_or_create(name=brand) 
-                
-                price = price/10
-                tags = tags
-                new_product = Product.objects.create(
-                    name = title,
-                    description = description,
-                    features = format_features(features),
-                    brand = brand,
-                    price = price,
-                )
-                for category_id in category_list:
-                    if category_id == '0':
-                        category, create = Category.objects.get_or_create(
-                                                                            name = 'دسته‌بندی نشده',
-                                                                            slug = 'ungategorized')
-                    else:
-                        category = Category.objects.get(id = category_id)
-                    new_product.category.add(category)
-                    new_product.save()
-                images = images
-                download_and_save_main_image(main_image, new_product.id)
-                download_and_save_images(images, new_product.id)
-                default_variety = Variety.objects.create(
-                    name = 'default variety',
-                    product = new_product, 
-                    stock = 1000,
-                )
-        return redirect('shop:product_list')				
-                    
+				store = Store.objects.first()
+				if not description:
+					description = '-'
+				slug = title.replace(' ','-')
+				description = description
+				features = features
+				brand,create = Brand.objects.get_or_create(name=brand) 
+				
+				price = price/10
+				tags = tags
+				new_product = Product.objects.create(
+					name = title,
+					description = description,
+					features = format_features(features),
+					brand = brand,
+					price = price,
+				)
+				for category_id in category_list:
+					if category_id == '0':
+						category, create = Category.objects.get_or_create(
+																			name = 'دسته‌بندی نشده',
+																			slug = 'ungategorized')
+					else:
+						category = Category.objects.get(id = category_id)
+					new_product.category.add(category)
+					new_product.save()
+				images = images
+				download_and_save_main_image(main_image, new_product.id)
+				download_and_save_images(images, new_product.id)
+				default_variety = Variety.objects.create(
+					name = 'default variety',
+					product = new_product, 
+					stock = 1000,
+				)
+		return redirect('shop:product_list')				
+					
 class SpecialProductListView(View):
 
-    def get(self, request, tag_slug):
-        tag = get_object_or_404(Tag, slug=tag_slug)
-        products = tag.get_products()
-        items_per_page = 12
-        store = Store.objects.all().first()
-        store_name = store.name
-        categories = Category.objects.all()
-        paginator = Paginator(products, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        brands = Brand.objects.all()
-        ages = AgeCategory.objects.all()
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        canonical = 'tag'
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                {'products': products, 
-                 'tag':tag,
-                 'ages':ages,
-                'canonical':canonical,
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'brands':brands,
-                'price_ranges':price_ranges})
-    
-    def post(self, request, tag_name, *args, **kwargs):
-        main_filters = {}
-        filters = []
-        product_cat = None
-        price_range = None
-        selected_brand = None
-        tag = Tag.objects.filter(name=tag_name).first()
-        products = tag.get_products()
-        form = FilterProductsForm(request.POST)
-        if form.is_valid():
-            store = Store.objects.all().first()
-            store_name = store.name
-            category = form.cleaned_data['category']
-            if category != '':
-                product_cat = Category.objects.filter(id = int(category)).first()
-                if category != '0':
-                    products = products.filter(category = product_cat)
-                else:
-                    products = products.all()
-                
-            brand = form.cleaned_data['brand']
-            if brand != '':
-                selected_brand = Brand.objects.filter(id = brand).first()
-                if brand != '0':
-                    products = products.filter(brand = selected_brand.name)
-                else:
-                    products = products.all()
+	def get(self, request, tag_slug):
+		tag = get_object_or_404(Tag, slug=tag_slug)
+		products = tag.get_products()
+		items_per_page = 12
+		store = Store.objects.all().first()
+		store_name = store.name
+		categories = Category.objects.all()
+		paginator = Paginator(products, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		brands = Brand.objects.all()
+		ages = AgeCategory.objects.all()
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		canonical = 'tag'
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				{'products': products, 
+				 'tag':tag,
+				 'ages':ages,
+				'canonical':canonical,
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'price_ranges':price_ranges})
+	
+	def post(self, request, tag_name, *args, **kwargs):
+		main_filters = {}
+		filters = []
+		product_cat = None
+		price_range = None
+		selected_brand = None
+		tag = Tag.objects.filter(name=tag_name).first()
+		products = tag.get_products()
+		form = FilterProductsForm(request.POST)
+		if form.is_valid():
+			store = Store.objects.all().first()
+			store_name = store.name
+			category = form.cleaned_data['category']
+			if category != '':
+				product_cat = Category.objects.filter(id = int(category)).first()
+				if category != '0':
+					products = products.filter(category = product_cat)
+				else:
+					products = products.all()
+				
+			brand = form.cleaned_data['brand']
+			if brand != '':
+				selected_brand = Brand.objects.filter(id = brand).first()
+				if brand != '0':
+					products = products.filter(brand = selected_brand.name)
+				else:
+					products = products.all()
 
-            age = form.cleaned_data['age']
-            if age != '':
-                selected_age = AgeCategory.objects.filter(id = age).first()
-                if age != '0':
-                    products = products.filter(age = selected_age.name)
-                else:
-                    products = products.all()
-                            
-            filtered_products = []
-            price_ranges = form.cleaned_data['price_range']
-            if price_ranges != '0':
-                for price in price_ranges:
-                    selected_price_range = PriceRange.objects.filter(id = int(form.cleaned_data['price_range'])).first()
-            else:
-                selected_price_range = None
+			age = form.cleaned_data['age']
+			if age != '':
+				selected_age = AgeCategory.objects.filter(id = age).first()
+				if age != '0':
+					products = products.filter(age = selected_age.name)
+				else:
+					products = products.all()
+							
+			filtered_products = []
+			price_ranges = form.cleaned_data['price_range']
+			if price_ranges != '0':
+				for price in price_ranges:
+					selected_price_range = PriceRange.objects.filter(id = int(form.cleaned_data['price_range'])).first()
+			else:
+				selected_price_range = None
 
-            if selected_price_range != None:
-                for product in products:
-                                if product.price<selected_price_range.max_value and product.price>=selected_price_range.min_value:
-                                    filtered_products.append(product.id)
-            
-            if filtered_products != []:
-                products = products.filter(id__in=filtered_products)
+			if selected_price_range != None:
+				for product in products:
+								if product.price<selected_price_range.max_value and product.price>=selected_price_range.min_value:
+									filtered_products.append(product.id)
+			
+			if filtered_products != []:
+				products = products.filter(id__in=filtered_products)
 
-            if selected_price_range != None and filtered_products == []:
-                products = []
-            categories = Category.objects.all()
-            store = Store.objects.get(name=store_name)
-            products_urls = f'{current_app_name}:product_detail'
-            price_ranges = PriceRange.objects.all()
-            brands = Brand.objects.all()
-            ages = AgeCategory.objects.all()
-            if brand != '0':
-                selected_brand = Brand.objects.get(id=brand)
-            else:
-                selected_brand = None
+			if selected_price_range != None and filtered_products == []:
+				products = []
+			categories = Category.objects.all()
+			store = Store.objects.get(name=store_name)
+			products_urls = f'{current_app_name}:product_detail'
+			price_ranges = PriceRange.objects.all()
+			brands = Brand.objects.all()
+			ages = AgeCategory.objects.all()
+			if brand != '0':
+				selected_brand = Brand.objects.get(id=brand)
+			else:
+				selected_brand = None
 
-            my_forms = []
-            if category != '0':
-                selected_category = Category.objects.filter(id = int(category)).first()
-                filters = Filter.objects.filter(category=selected_category)
-                for filter in filters:
-                    values = filter.get_values()
-                    class FeatureFilterForm(forms.Form):
-                        name = filter.name
-                        choices = tuple(set([(value.value, value.value) for value in values]))
-                        فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-                    new_form = FeatureFilterForm
-                    my_forms.append(new_form)
-                category = Category.objects.get(slug = selected_category.slug)
-                filters = Filter.objects.filter(category=category)
-            else:
-                selected_category = None
+			my_forms = []
+			if category != '0':
+				selected_category = Category.objects.filter(id = int(category)).first()
+				filters = Filter.objects.filter(category=selected_category)
+				for filter in filters:
+					values = filter.get_values()
+					class FeatureFilterForm(forms.Form):
+						name = filter.name
+						choices = tuple(set([(value.value, value.value) for value in values]))
+						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+					new_form = FeatureFilterForm
+					my_forms.append(new_form)
+				category = Category.objects.get(slug = selected_category.slug)
+				filters = Filter.objects.filter(category=category)
+			else:
+				selected_category = None
 
-            selected_values = []
-            active_filters = []
-            for key, value in request.session.items():
-                if key.startswith('filter-'):
-                    
-                    filter_name = key.replace('filter-', '')
-                    selected_filter = Filter.objects.get( name = filter_name)
-                    for posi_value in selected_filter.value.all():
-                        if posi_value.value in value:
-                            new_active_filter = {'filter':selected_filter,'value':posi_value}
-                            active_filters.append(new_active_filter)
-                            selected_values.append(posi_value.id)
+			selected_values = []
+			active_filters = []
+			for key, value in request.session.items():
+				if key.startswith('filter-'):
+					
+					filter_name = key.replace('filter-', '')
+					selected_filter = Filter.objects.get( name = filter_name)
+					for posi_value in selected_filter.value.all():
+						if posi_value.value in value:
+							new_active_filter = {'filter':selected_filter,'value':posi_value}
+							active_filters.append(new_active_filter)
+							selected_values.append(posi_value.id)
 
-            paginator = Paginator(products, 12)
-            page = request.GET.get('page', 1)
-            try:
-                products = paginator.page(page)
-            except PageNotAnInteger:
-                # اگر شماره صفحه یک عدد نیست
-                products = paginator.page(1)
-            except EmptyPage:
-                # اگر شماره صفحه بیشتر از تعداد کل صفحات است
-                products = paginator.page(paginator.num_pages)
-            canonical = 'tag'
-            return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                 {'products': products, 
-                'brands':brands,
-                'tag':tag,
-                'canonical':canonical,
-                'ages':ages,
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'price_ranges':price_ranges,
-                'selected_brand':selected_brand,
-                'selected_price_range':selected_price_range,
-                'selected_category':selected_category,
-                'filters':filters,
-                'category':selected_category,
-                'my_forms':my_forms,
-                'active_filters':active_filters,
-                'main_filters': main_filters,
-                'main_selected_category' : product_cat,
-                'main_selected_brand' : selected_brand,
-                'main_selected_price_range' : selected_price_range})
-                    
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'store_name':store_name})
+			paginator = Paginator(products, 12)
+			page = request.GET.get('page', 1)
+			try:
+				products = paginator.page(page)
+			except PageNotAnInteger:
+				# اگر شماره صفحه یک عدد نیست
+				products = paginator.page(1)
+			except EmptyPage:
+				# اگر شماره صفحه بیشتر از تعداد کل صفحات است
+				products = paginator.page(paginator.num_pages)
+			canonical = 'tag'
+			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				 {'products': products, 
+				'brands':brands,
+				'tag':tag,
+				'canonical':canonical,
+				'ages':ages,
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'price_ranges':price_ranges,
+				'selected_brand':selected_brand,
+				'selected_price_range':selected_price_range,
+				'selected_category':selected_category,
+				'filters':filters,
+				'category':selected_category,
+				'my_forms':my_forms,
+				'active_filters':active_filters,
+				'main_filters': main_filters,
+				'main_selected_category' : product_cat,
+				'main_selected_brand' : selected_brand,
+				'main_selected_price_range' : selected_price_range})
+					
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'store_name':store_name})
 
 class BrandProductListView(View):
 
-    def get(self, request, brand_slug):
-        brand = get_object_or_404(Brand, slug=brand_slug)
-        products = Product.objects.filter(brand=brand.id)
-        items_per_page = 12
-        store = Store.objects.all().first()
-        store_name = store.name
-        categories = Category.objects.all()
-        paginator = Paginator(products, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            products = paginator.page(page)
-        except PageNotAnInteger:
-            products = paginator.page(1)
-        except EmptyPage:
-            products = paginator.page(paginator.num_pages)
-        brands = Brand.objects.all()
-        ages = AgeCategory.objects.all()
-        products_urls = f'{current_app_name}:product_detail'
-        price_ranges = PriceRange.objects.all()
-        canonical = 'brand'
-        faqs = BrandFAQ.objects.filter(brand=brand)
-        return render(request, f'{current_app_name}/brand_product_list_{store.template_index}.html', 
-                {'products': products, 
-                 'brand':brand,
-                'faqs':faqs,
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'brands':brands,
-                'price_ranges':price_ranges,
-                'canonical':canonical,
-                'ages':ages})
-    
-    def post(self, request, brand_name, *args, **kwargs):
-        main_filters = {}
-        filters = []
-        product_cat = None
-        price_range = None
-        
-        brand = get_object_or_404(Brand, name=brand_name)
-        products = Product.objects.filter(brand=brand.name)
-        selected_brand = brand
-        form = FilterProductsForm(request.POST)
-        if form.is_valid():
-            store = Store.objects.all().first()
-            store_name = store.name
-            category = form.cleaned_data['category']
-            if category != '':
-                product_cat = Category.objects.filter(id = int(category)).first()
-                if category != '0':
-                    products = products.filter(category = product_cat)
-                else:
-                    products = products.all()
-                
-            brand = form.cleaned_data['brand']
-            if brand != '':
-                selected_brand = Brand.objects.filter(id = brand).first()
-                if brand != '0':
-                    products = products.filter(brand = selected_brand.name)
-                else:
-                    products = products.all()
+	def get(self, request, brand_slug):
+		brand = get_object_or_404(Brand, slug=brand_slug)
+		products = Product.objects.filter(brand=brand.id)
+		items_per_page = 12
+		store = Store.objects.all().first()
+		store_name = store.name
+		categories = Category.objects.all()
+		paginator = Paginator(products, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			products = paginator.page(page)
+		except PageNotAnInteger:
+			products = paginator.page(1)
+		except EmptyPage:
+			products = paginator.page(paginator.num_pages)
+		brands = Brand.objects.all()
+		ages = AgeCategory.objects.all()
+		products_urls = f'{current_app_name}:product_detail'
+		price_ranges = PriceRange.objects.all()
+		canonical = 'brand'
+		faqs = BrandFAQ.objects.filter(brand=brand)
+		return render(request, f'{current_app_name}/brand_product_list_{store.template_index}.html', 
+				{'products': products, 
+				 'brand':brand,
+				'faqs':faqs,
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'brands':brands,
+				'price_ranges':price_ranges,
+				'canonical':canonical,
+				'ages':ages})
+	
+	def post(self, request, brand_name, *args, **kwargs):
+		main_filters = {}
+		filters = []
+		product_cat = None
+		price_range = None
+		
+		brand = get_object_or_404(Brand, name=brand_name)
+		products = Product.objects.filter(brand=brand.name)
+		selected_brand = brand
+		form = FilterProductsForm(request.POST)
+		if form.is_valid():
+			store = Store.objects.all().first()
+			store_name = store.name
+			category = form.cleaned_data['category']
+			if category != '':
+				product_cat = Category.objects.filter(id = int(category)).first()
+				if category != '0':
+					products = products.filter(category = product_cat)
+				else:
+					products = products.all()
+				
+			brand = form.cleaned_data['brand']
+			if brand != '':
+				selected_brand = Brand.objects.filter(id = brand).first()
+				if brand != '0':
+					products = products.filter(brand = selected_brand.name)
+				else:
+					products = products.all()
 
-            age = form.cleaned_data['age']
-            if age != '':
-                selected_age = AgeCategory.objects.filter(id = age).first()
-                if age != '0':
-                    products = products.filter(age = selected_age.name)
-                else:
-                    products = products.all()
-                            
-            filtered_products = []
-            price_ranges = form.cleaned_data['price_range']
-            if price_ranges != '0':
-                for price in price_ranges:
-                    selected_price_range = PriceRange.objects.filter(id = int(form.cleaned_data['price_range'])).first()
-            else:
-                selected_price_range = None
+			age = form.cleaned_data['age']
+			if age != '':
+				selected_age = AgeCategory.objects.filter(id = age).first()
+				if age != '0':
+					products = products.filter(age = selected_age.name)
+				else:
+					products = products.all()
+							
+			filtered_products = []
+			price_ranges = form.cleaned_data['price_range']
+			if price_ranges != '0':
+				for price in price_ranges:
+					selected_price_range = PriceRange.objects.filter(id = int(form.cleaned_data['price_range'])).first()
+			else:
+				selected_price_range = None
 
-            if selected_price_range != None:
-                for product in products:
-                                if product.price<selected_price_range.max_value and product.price>=selected_price_range.min_value:
-                                    filtered_products.append(product.id)
-            
-            if filtered_products != []:
-                products = products.filter(id__in=filtered_products)
+			if selected_price_range != None:
+				for product in products:
+								if product.price<selected_price_range.max_value and product.price>=selected_price_range.min_value:
+									filtered_products.append(product.id)
+			
+			if filtered_products != []:
+				products = products.filter(id__in=filtered_products)
 
-            if selected_price_range != None and filtered_products == []:
-                products = []
-            categories = Category.objects.all()
-            store = Store.objects.get(name=store_name)
-            products_urls = f'{current_app_name}:product_detail'
-            price_ranges = PriceRange.objects.all()
-            brands = Brand.objects.all()
-            ages = AgeCategory.objects.all()
-            if brand != '0':
-                selected_brand = Brand.objects.get(id=brand)
-            else:
-                selected_brand = None
+			if selected_price_range != None and filtered_products == []:
+				products = []
+			categories = Category.objects.all()
+			store = Store.objects.get(name=store_name)
+			products_urls = f'{current_app_name}:product_detail'
+			price_ranges = PriceRange.objects.all()
+			brands = Brand.objects.all()
+			ages = AgeCategory.objects.all()
+			if brand != '0':
+				selected_brand = Brand.objects.get(id=brand)
+			else:
+				selected_brand = None
 
-            my_forms = []
-            if category != '0':
-                selected_category = Category.objects.filter(id = int(category)).first()
-                filters = Filter.objects.filter(category=selected_category)
-                for filter in filters:
-                    values = filter.get_values()
-                    class FeatureFilterForm(forms.Form):
-                        name = filter.name
-                        choices = tuple(set([(value.value, value.value) for value in values]))
-                        فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
-                    new_form = FeatureFilterForm
-                    my_forms.append(new_form)
-                category = Category.objects.get(slug = selected_category.slug)
-                filters = Filter.objects.filter(category=category)
-            else:
-                selected_category = None
+			my_forms = []
+			if category != '0':
+				selected_category = Category.objects.filter(id = int(category)).first()
+				filters = Filter.objects.filter(category=selected_category)
+				for filter in filters:
+					values = filter.get_values()
+					class FeatureFilterForm(forms.Form):
+						name = filter.name
+						choices = tuple(set([(value.value, value.value) for value in values]))
+						فیلترها = forms.MultipleChoiceField(choices=choices, widget=forms.CheckboxSelectMultiple)
+					new_form = FeatureFilterForm
+					my_forms.append(new_form)
+				category = Category.objects.get(slug = selected_category.slug)
+				filters = Filter.objects.filter(category=category)
+			else:
+				selected_category = None
 
-            selected_values = []
-            active_filters = []
-            for key, value in request.session.items():
-                if key.startswith('filter-'):
-                    
-                    filter_name = key.replace('filter-', '')
-                    selected_filter = Filter.objects.get( name = filter_name)
-                    for posi_value in selected_filter.value.all():
-                        if posi_value.value in value:
-                            new_active_filter = {'filter':selected_filter,'value':posi_value}
-                            active_filters.append(new_active_filter)
-                            selected_values.append(posi_value.id)
+			selected_values = []
+			active_filters = []
+			for key, value in request.session.items():
+				if key.startswith('filter-'):
+					
+					filter_name = key.replace('filter-', '')
+					selected_filter = Filter.objects.get( name = filter_name)
+					for posi_value in selected_filter.value.all():
+						if posi_value.value in value:
+							new_active_filter = {'filter':selected_filter,'value':posi_value}
+							active_filters.append(new_active_filter)
+							selected_values.append(posi_value.id)
 
-            paginator = Paginator(products, 12)
-            page = request.GET.get('page', 1)
-            try:
-                products = paginator.page(page)
-            except PageNotAnInteger:
-                # اگر شماره صفحه یک عدد نیست
-                products = paginator.page(1)
-            except EmptyPage:
-                # اگر شماره صفحه بیشتر از تعداد کل صفحات است
-                products = paginator.page(paginator.num_pages)
-            return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
-                 {'products': products, 
-                  'ages':ages,
-                'brands':brands,
-                'to_products':products_urls, 
-                'store_name':store_name, 
-                'categories':categories,
-                'price_ranges':price_ranges,
-                'selected_brand':selected_brand,
-                'selected_price_range':selected_price_range,
-                'selected_category':selected_category,
-                'filters':filters,
-                'category':selected_category,
-                'my_forms':my_forms,
-                'active_filters':active_filters,
-                'main_filters': main_filters,
-                'main_selected_category' : product_cat,
-                'main_selected_brand' : selected_brand,
-                'main_selected_price_range' : selected_price_range})
-                    
-        return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'store_name':store_name})
+			paginator = Paginator(products, 12)
+			page = request.GET.get('page', 1)
+			try:
+				products = paginator.page(page)
+			except PageNotAnInteger:
+				# اگر شماره صفحه یک عدد نیست
+				products = paginator.page(1)
+			except EmptyPage:
+				# اگر شماره صفحه بیشتر از تعداد کل صفحات است
+				products = paginator.page(paginator.num_pages)
+			return render(request, f'{current_app_name}/product_list_{store.template_index}.html', 
+				 {'products': products, 
+				  'ages':ages,
+				'brands':brands,
+				'to_products':products_urls, 
+				'store_name':store_name, 
+				'categories':categories,
+				'price_ranges':price_ranges,
+				'selected_brand':selected_brand,
+				'selected_price_range':selected_price_range,
+				'selected_category':selected_category,
+				'filters':filters,
+				'category':selected_category,
+				'my_forms':my_forms,
+				'active_filters':active_filters,
+				'main_filters': main_filters,
+				'main_selected_category' : product_cat,
+				'main_selected_brand' : selected_brand,
+				'main_selected_price_range' : selected_price_range})
+					
+		return render(request, f'{current_app_name}/product_list_{store.template_index}.html', {'store_name':store_name})
 
 class CreateOrderView(IsCustomerUserMixin, View):
 
-    def get(self, request):
-        message = ''
-        store = Store.objects.all().first()
-        store_name = store.name
-        customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
-        cart = Cart.objects.filter(customer=customer).first()
-        if cart.items.all().first() != None:
-            items = cart.items.all()
-            total_price = 0
-            order_status = OrderStatus.objects.get(pk=2)
-            for item in items:
-                price = int(item.variety.product.get_active_price().replace(',',''))*item.quantity
-                total_price += price
-            order = Order.objects.create(customer=customer, total_price=total_price, status = order_status)
-            order.items.set(items)
-            cart.items.clear()
-            return redirect(f'{current_app_name}:order_detail' , order.id)
-        return render(request, f'{current_app_name}/empty-cart_{store.template_index}.html', {'store_name':store_name})
+	def get(self, request):
+		message = ''
+		store = Store.objects.all().first()
+		store_name = store.name
+		customer = Customer.objects.filter(phone_number=request.user.phone_number).first()
+		cart = Cart.objects.filter(customer=customer).first()
+		if cart.items.all().first() != None:
+			items = cart.items.all()
+			total_price = 0
+			order_status = OrderStatus.objects.get(pk=2)
+			for item in items:
+				price = int(item.variety.product.get_active_price().replace(',',''))*item.quantity
+				total_price += price
+			order = Order.objects.create(customer=customer, total_price=total_price, status = order_status)
+			order.items.set(items)
+			cart.items.clear()
+			return redirect(f'{current_app_name}:order_detail' , order.id)
+		return render(request, f'{current_app_name}/empty-cart_{store.template_index}.html', {'store_name':store_name})
 
 class OrderDetailView(IsCustomerUserMixin ,View):
 
-    def get(self, request, order_id):
-        store = Store.objects.all().first()
-        store_name = store.name
-        form = OrderDeliveryOptionsForm
-        order = Order.objects.get(id=order_id)
-        order_detail_url = f"{current_app_name}:apply_coupon"
-        delivery_mthods = []
-        for delivery in Delivery.objects.all():
-            if order.total_price <= delivery.min_cart_free:
-                price = f'{delivery.price:,} تومان'
-            else:
-                price = 'رایگان'
-            new_del = {
-                'id': delivery.id,
-                'name': delivery.name,
-                'price': price,
-            }
-            delivery_mthods.append(new_del)
-        
-        return render(request, f'{current_app_name}/order_detail_{store.template_index}.html', {'form':form,
-                                                                                                'order':order, 
-                                                                                                'order_detail':order_detail_url, 
-                                                                                                'store_name':store_name,
-                                                                                                'delivery_mthods':delivery_mthods})
-    def post(self, request, order_id):
-        store = Store.objects.all().first()
-        form = OrderDeliveryOptionsForm(request.POST)
-        order = Order.objects.get(id = order_id)
-        if form.is_valid():
-            delivery_method = Delivery.objects.get(id = int(form.cleaned_data['delivery_method']))
-            order.delivery_method = delivery_method
-            delivery_description = ''
-            delivery_description = delivery_description+'اقلام سفارش: <br>'
-            for item in order.items.all():
-                delivery_description = delivery_description+f"{item.variety.product.name} - تنوع: {item.variety.name.replace('default variety','ندارد')} - قیمت: {item.get_single_item_price()} تومان - تعداد: {item.quantity} عدد - مجموع هزینه: {int(item.get_single_item_price().replace(',',''))*item.quantity:,} تومان<br>"
-            delivery_description = delivery_description+'شیوه ارسال: <br>'
-            if order.total_price <= delivery_method.min_cart_free:
-                # delivery_description = delivery_description+f'{delivery_method.name} + {delivery_method.price:,} تومان  <br>'
-                delivery_description = delivery_description + f'{delivery_method.name} <br>'
-                order.delivery_cost = delivery_method.price
-                delivery_cost = delivery_method.price
-            else:
-                # delivery_description = delivery_description+f'{delivery_method.name}، هزینه رایگان <br>'
-                delivery_description = delivery_description+f'{delivery_method.name} <br>'
-                order.delivery_cost = 0
-                delivery_cost = 0
-            delivery_description = delivery_description + f'هزینه کالاهای سفارش: {order.total_price:,} تومان<br>'
-            if order.total_price <= delivery_method.min_cart_free:
-                # delivery_description = delivery_description+f'هزینه ارسال: {delivery_method.price:,} تومان  <br>'
-                delivery_description = delivery_description
-            else:
-                delivery_description = delivery_description+f'هزینه ارسال: رایگان <br>'
-            delivery_description = delivery_description + f'مجموع هزینه: {order.total_price+delivery_cost:,} تومان<br>'
-            order.delivery_description = delivery_description
-            order.save()
-            return redirect('shop:order_reciever_detail', order.id)
+	def get(self, request, order_id):
+		store = Store.objects.all().first()
+		store_name = store.name
+		form = OrderDeliveryOptionsForm
+		order = Order.objects.get(id=order_id)
+		order_detail_url = f"{current_app_name}:apply_coupon"
+		delivery_mthods = []
+		for delivery in Delivery.objects.all():
+			if order.total_price <= delivery.min_cart_free:
+				price = f'{delivery.price:,} تومان'
+			else:
+				price = 'رایگان'
+			new_del = {
+				'id': delivery.id,
+				'name': delivery.name,
+				'price': price,
+			}
+			delivery_mthods.append(new_del)
+		
+		return render(request, f'{current_app_name}/order_detail_{store.template_index}.html', {'form':form,
+																								'order':order, 
+																								'order_detail':order_detail_url, 
+																								'store_name':store_name,
+																								'delivery_mthods':delivery_mthods})
+	def post(self, request, order_id):
+		store = Store.objects.all().first()
+		form = OrderDeliveryOptionsForm(request.POST)
+		order = Order.objects.get(id = order_id)
+		if form.is_valid():
+			delivery_method = Delivery.objects.get(id = int(form.cleaned_data['delivery_method']))
+			order.delivery_method = delivery_method
+			delivery_description = ''
+			delivery_description = delivery_description+'اقلام سفارش: <br>'
+			for item in order.items.all():
+				delivery_description = delivery_description+f"{item.variety.product.name} - تنوع: {item.variety.name.replace('default variety','ندارد')} - قیمت: {item.get_single_item_price()} تومان - تعداد: {item.quantity} عدد - مجموع هزینه: {int(item.get_single_item_price().replace(',',''))*item.quantity:,} تومان<br>"
+			delivery_description = delivery_description+'شیوه ارسال: <br>'
+			if order.total_price <= delivery_method.min_cart_free:
+				# delivery_description = delivery_description+f'{delivery_method.name} + {delivery_method.price:,} تومان  <br>'
+				delivery_description = delivery_description + f'{delivery_method.name} <br>'
+				order.delivery_cost = delivery_method.price
+				delivery_cost = delivery_method.price
+			else:
+				# delivery_description = delivery_description+f'{delivery_method.name}، هزینه رایگان <br>'
+				delivery_description = delivery_description+f'{delivery_method.name} <br>'
+				order.delivery_cost = 0
+				delivery_cost = 0
+			delivery_description = delivery_description + f'هزینه کالاهای سفارش: {order.total_price:,} تومان<br>'
+			if order.total_price <= delivery_method.min_cart_free:
+				# delivery_description = delivery_description+f'هزینه ارسال: {delivery_method.price:,} تومان  <br>'
+				delivery_description = delivery_description
+			else:
+				delivery_description = delivery_description+f'هزینه ارسال: رایگان <br>'
+			delivery_description = delivery_description + f'مجموع هزینه: {order.total_price+delivery_cost:,} تومان<br>'
+			order.delivery_description = delivery_description
+			order.save()
+			return redirect('shop:order_reciever_detail', order.id)
 
 class RecieverDetailsView(View):
 
-    template_name = f'{current_app_name}/reciever_details.html'
+	template_name = f'{current_app_name}/reciever_details.html'
 
-    def get(self, request, order_id):
-        form = RecieverDetailsForm
-        store = Store.objects.all().first()
-        store_name = store.name
-        order = Order.objects.get(id = order_id)
-        return render(request, f'{current_app_name}/reciever_details_{store.template_index}.html', {'order':order, 'store':store, 'form':form})
+	def get(self, request, order_id):
+		form = RecieverDetailsForm
+		store = Store.objects.all().first()
+		store_name = store.name
+		order = Order.objects.get(id = order_id)
+		return render(request, f'{current_app_name}/reciever_details_{store.template_index}.html', {'order':order, 'store':store, 'form':form})
 
-    def post(self, request, order_id):
+	def post(self, request, order_id):
 
-        form = RecieverDetailsForm(request.POST)
-        order = Order.objects.get(id = order_id)
-        if form.is_valid():
-            order.reciever_name = form.cleaned_data['name']
-            order.reciever_familly_name =form.cleaned_data['familly_name']
-            order.reciever_phone_number = form.cleaned_data['phone_number']
-            order.reciever_email = form.cleaned_data['email']
-            order.reciever_state = form.cleaned_data['state']
-            order.reciever_city = form.cleaned_data['city']
-            order.reciever_zip_code = form.cleaned_data['zip_code']
-            order.reciever_address = form.cleaned_data['address']
-            order.save()
-            return redirect('shop:order_final_check', order.id)
+		form = RecieverDetailsForm(request.POST)
+		order = Order.objects.get(id = order_id)
+		if form.is_valid():
+			order.reciever_name = form.cleaned_data['name']
+			order.reciever_familly_name =form.cleaned_data['familly_name']
+			order.reciever_phone_number = form.cleaned_data['phone_number']
+			order.reciever_email = form.cleaned_data['email']
+			order.reciever_state = form.cleaned_data['state']
+			order.reciever_city = form.cleaned_data['city']
+			order.reciever_zip_code = form.cleaned_data['zip_code']
+			order.reciever_address = form.cleaned_data['address']
+			order.save()
+			return redirect('shop:order_final_check', order.id)
+
+import requests
+from django.db import transaction
+from django.db.models import F
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.contrib import messages
+from django.http import HttpResponseBadRequest
+
+# فرض بر این است که این مدل‌ها را در فایل ایمپورت کرده‌اید
+# from .models import Order, Store, Variety, OrderStatus, Owner
+# from .utils import order_verification, admin_order_verification
+
+# بهتر است پین کد درگاه را به جای تکرار، یکبار اینجا یا در settings.py تعریف کنید
+AQAYE_PARDAKHT_PIN = "D23AB5E933E7BA773313"
+
 
 class OrderFinalCheckView(View):
+    def get(self, request, order_id):
+        store = Store.objects.first()
+        order = get_object_or_404(Order, id=order_id)
+        
+        des = order.delivery_description
+        if des and 'text-success' in des:
+            # استفاده از List Comprehension برای کد تمیزتر و سریع‌تر
+            valid_lines = [
+                line for line in des.split('<br>') 
+                if 'text-danger' not in line or 'مبلغ نهایی' in line
+            ]
+            order.delivery_description = '<br> '.join(valid_lines) + '<br> '
+            order.save(update_fields=['delivery_description'])
+
+        # current_app_name را براساس ساختار خودتان تنظیم کنید
+        return render(request, f'shop/order_final_check_{store.template_index}.html', {
+            'store': store, 
+            'order': order
+        })
+
+
+class OrderPayView(View):
+    def get(self, request, order_id, *args, **kwargs):
+        order = get_object_or_404(Order, id=order_id)
+
+        data = {
+            "pin": AQAYE_PARDAKHT_PIN,
+            "amount": order.total_price,
+            "callback": "https://liatoy.com/orders/verify/", 
+            "mobile": str(order.customer.phone_number) if order.customer.phone_number else "",
+            "email": request.user.email if request.user.is_authenticated else "",
+            "invoice_id": str(order.id),
+            "description": f"پرداخت سفارش شماره {order.id}",
+        }
+
+        try:
+            response = requests.post(
+                "https://panel.aqayepardakht.ir/api/v2/create",
+                data=data,
+                headers={"Referer": "https://liatoy.com/"},
+                timeout=10
+            )
+            response.raise_for_status()
+            json_data = response.json()
+
+            if json_data.get("status") == "success":
+                # ذخیره لینک برای ریدایرکت
+                request.session["startpay_url"] = f"https://panel.aqayepardakht.ir/startpay/{json_data.get('transid')}"
+                return redirect("shop:startpay_redirect_page")
+            
+            messages.error(request, f"خطای درگاه: {json_data.get('errorMessage', 'نامشخص')}")
+
+        except requests.RequestException:
+            messages.error(request, "خطا در برقراری ارتباط با درگاه پرداخت. لطفاً دوباره تلاش کنید.")
+
+        return redirect("shop:payment_result", order_id=order.id)
+
+
+class StartPayRedirectView(View):
+    def get(self, request, *args, **kwargs):
+        # استفاده از pop باعث می‌شود آدرس بعد از خوانده شدن از سشن پاک شود
+        url = request.session.pop("startpay_url", None)
+        if not url:
+            return HttpResponseBadRequest("آدرس پرداخت یافت نشد یا منقضی شده است.")
+
+        return render(request, "shop/startpay_redirect.html", {"url": url})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class OrderVerifyView(View):
+    def post(self, request, *args, **kwargs):
+        transid = request.POST.get("transid")
+        status = request.POST.get("status")
+        order_id = request.POST.get("invoice_id")
+
+        if not transid or not order_id:
+            return HttpResponseBadRequest("اطلاعات ناقص از سمت درگاه پرداخت.")
+
+        order = get_object_or_404(Order, id=order_id)
+
+        # اگر پرداخت ناموفق بوده
+        if status != "1":
+            messages.error(request, "پرداخت ناموفق بود یا توسط شما لغو شد.")
+            return redirect("shop:payment_result", order_id=order.id)
+    
+        try:
+            # مرحله verify
+            response = requests.post(
+                "https://panel.aqayepardakht.ir/api/v2/verify",
+                data={"pin": AQAYE_PARDAKHT_PIN, "amount": order.total_price, "transid": transid},
+                timeout=10
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            if result.get("status") == "success":
+                # پردازش یکپارچه و اتمیک سفارش موفق
+                try:
+                    with transaction.atomic():
+                        locked_order = Order.objects.select_for_update().select_related(
+                            'customer', 'coupon', 'status'
+                        ).get(id=order.id)
+                        
+                        paid_status_id = 1  # فرض بر این است که ID وضعیت پرداخت شده 1 است
+
+                        # جلوگیری از کسر دوباره در صورت رفرش صفحه یا کال‌بک تکراری
+                        if locked_order.status_id != paid_status_id:
+                            
+                            # 1. کسر موجودی انبار
+                            for item in locked_order.items.select_related('variety').all():
+                                if item.variety_id:
+                                    variety = Variety.objects.select_for_update().get(id=item.variety_id)
+                                    if variety.stock < item.quantity:
+                                        raise ValueError(f'موجودی محصول "{variety.name}" کافی نیست.')
+                                    
+                                    variety.stock = F('stock') - item.quantity
+                                    variety.save(update_fields=['stock'])
+
+                            # 2. آپدیت کیف پول و نام مشتری
+                            customer = locked_order.customer
+                            if customer.full_name == 'کاربر میهمان':
+                                customer.full_name = f'{locked_order.reciever_name or ""} {locked_order.reciever_familly_name or ""}'.strip()
+
+                            final_payment = locked_order.get_final_payment()['unformated']
+                            
+                            if final_payment >= customer.wallet_balance:
+                                locked_order.paid_by_wallet = customer.wallet_balance
+                                customer.wallet_balance = 0
+                            else:
+                                customer.wallet_balance -= final_payment
+                                locked_order.paid_by_wallet = final_payment
+
+                            customer.save(update_fields=['full_name', 'wallet_balance'])
+
+                            # 3. بررسی کوپن کش‌بک
+                            if locked_order.coupon and locked_order.coupon.is_cashback:
+                                locked_order.coupon.delete()
+
+                            # 4. تغییر وضعیت نهایی سفارش
+                            locked_order.status_id = paid_status_id
+                            locked_order.save(update_fields=['status_id', 'paid_by_wallet', 'status_updated_date'])
+
+                    # نکته بسیار مهم: ارسال پیامک باید بیرون از transaction.atomic باشد
+                    order_verification(locked_order.customer.phone_number, locked_order.id)
+                    for owner in Owner.objects.filter(phone_number__isnull=False):
+                        admin_order_verification(owner.phone_number, locked_order.id)
+
+                    messages.success(request, "پرداخت با موفقیت انجام شد و سفارش شما ثبت گردید.")
+
+                except ValueError as e:
+                    # ارورهای مربوط به کمبود موجودی
+                    messages.error(request, str(e))
+            else:
+                messages.error(request, f"تایید پرداخت با خطا مواجه شد: {result.get('errorMessage', 'خطای نامشخص')}")
+
+        except requests.RequestException:
+            messages.error(request, "خطا در ارتباط با سرور درگاه جهت تایید نهایی پرداخت.")
+
+        return redirect("shop:payment_result", order_id=order.id)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PaymentResultView(View):
+    template_name = 'shop/payment_result.html'
 
     def get(self, request, order_id):
-        result = ''
-        store = Store.objects.all().first()
-        order = Order.objects.get(id = order_id)
-        delivery_des = order.delivery_description
-        if 'text-success' in delivery_des:
-            lines = delivery_des.split('<br>')
-            for line in lines:
-                print(line)
-                if 'text-danger' not in line or 'مبلغ نهایی' in line:
-                    result = result + f'{line}<br> '
-            order.delivery_description = result
-            order.save()
-        return render(request, f'{current_app_name}/order_final_check_{store.template_index}.html', {'store':store, 'order':order})
-    
-class OrderPayView(IsCustomerUserMixin, View):
-    
-    def get(self, request, order_id, *args, **kwargs):
-        store = Store.objects.all().first()
-        store_name = store.name
-        order = Order.objects.get(id=order_id)
-        request.session['order_pay'] = {
-            'order_id': order.id,
-        }
+        order = get_object_or_404(Order, id=order_id)
+        return render(request, self.template_name, {'order': order})
 
-        if order.get_final_payment()['unformated'] == 0:
-            order.status = OrderStatus.objects.get(id=1)
-            customer = order.customer
-            customer.wallet_balance -= order.get_without_cashback_cost()
-            customer.save()
-            order.paid_by_wallet = order.get_without_cashback_cost()
-            order.save()
-            return redirect(f'{current_app_name}:customer_dashboard_order_detail', order.id)
-        MERCHANT = store.merchant
-        data = {
-            "merchant_id": MERCHANT,
-            "amount": order.get_final_payment()['unformated']*10,
-            "callback_url": f'https://liatoy.com/orders/verify/',
-            "description": description,
-            "metadata": {"mobile": request.user.phone_number, "email": request.user.email}
-        }
-
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-        }
-
-        response = requests.post(
-            "https://api.zarinpal.com/pg/v4/payment/request.json",
-            json=data,
-            headers=headers
-        ).json()
-
-        if response["data"]["code"] == 100:
-            authority = response["data"]["authority"]
-            url = f"https://www.zarinpal.com/pg/StartPay/{authority}"
-            return redirect(url)
-        else:
-            return HttpResponse(f"Error {response['data']['code']}")
+    def post(self, request, order_id):
+        # در صورت ورود با متد POST، همان صفحه GET رندر شود
+        return self.get(request, order_id)
 
 
-from income.models import Owner
 
-class OrderVerifyView(LoginRequiredMixin, View):
-    template_name = f'{current_app_name}/customer-payment-result.html'
+	
+# class OrderPayView(IsCustomerUserMixin, View):
+	
+# 	def get(self, request, order_id, *args, **kwargs):
+# 		store = Store.objects.all().first()
+# 		store_name = store.name
+# 		order = Order.objects.get(id=order_id)
+# 		request.session['order_pay'] = {
+# 			'order_id': order.id,
+# 		}
 
-    def get(self, request):
-        store = Store.objects.first()
-        store_name = store.name if store else ''
+# 		if order.get_final_payment()['unformated'] == 0:
+# 			order.status = OrderStatus.objects.get(id=1)
+# 			customer = order.customer
+# 			customer.wallet_balance -= order.get_without_cashback_cost()
+# 			customer.save()
+# 			order.paid_by_wallet = order.get_without_cashback_cost()
+# 			order.save()
+# 			return redirect(f'{current_app_name}:customer_dashboard_order_detail', order.id)
+# 		MERCHANT = store.merchant
+# 		data = {
+# 			"merchant_id": MERCHANT,
+# 			"amount": order.get_final_payment()['unformated']*10,
+# 			"callback_url": f'https://liatoy.com/orders/verify/',
+# 			"description": description,
+# 			"metadata": {"mobile": request.user.phone_number, "email": request.user.email}
+# 		}
 
-        order = self._get_order_from_session(request)
-        if not order:
-            return render(request, self.template_name, {
-                'message': 'سفارش معتبر یافت نشد.',
-                'store_name': store_name,
-            })
 
-        if request.GET.get('Status') != 'OK':
-            return render(request, self.template_name, {
-                'message': 'پرداخت ناموفق',
-                'store_name': store_name,
-            })
+# 		headers = {
+# 			"Referrer": "https://liatoy.com/",
+# 			"accept": "application/json",
+# 			"content-type": "application/json",
+# 		}
 
-        authority = request.GET.get('Authority')
-        if not authority:
-            return render(request, self.template_name, {
-                'message': 'اطلاعات پرداخت ناقص است.',
-                'store_name': store_name,
-            })
+# 		response = requests.post(
+# 			"https://api.zarinpal.com/pg/v4/payment/request.json",
+# 			json=data,
+# 			headers=headers
+# 		).json()
 
-        if not store or not store.merchant:
-            return render(request, self.template_name, {
-                'message': 'اطلاعات درگاه پرداخت تنظیم نشده است.',
-                'store_name': store_name,
-            })
+# 		if response["data"]["code"] == 100:
+# 			authority = response["data"]["authority"]
+# 			request.session["startpay_url"] = f"https://www.zarinpal.com/pg/StartPay/{authority}"
+# 			return redirect("shop:startpay_redirect_page")
+# 			# url = f"https://www.zarinpal.com/pg/StartPay/{authority}"
+# 			# return redirect(url)
+# 		else:
+# 			return HttpResponse(f"Error {response['data']['code']}")
 
-        gateway_result = self._verify_payment_with_gateway(
-            merchant=store.merchant,
-            order=order,
-            authority=authority,
-        )
 
-        if gateway_result['has_error']:
-            return HttpResponse(
-                f"Error code: {gateway_result['error_code']}, "
-                f"Error Message: {gateway_result['error_message']}"
-            )
 
-        gateway_status = gateway_result['status_code']
+# class StartPayRedirectView(View):
+# 	def get(self, request, *args, **kwargs):
+# 		url = request.session.get("startpay_url")
+# 		if not url:
+# 			return HttpResponseBadRequest("آدرس پرداخت یافت نشد")
 
-        if gateway_status == 100:
-            return self._handle_successful_payment(
-                request=request,
-                order=order,
-                store_name=store_name,
-                ref_id=gateway_result['ref_id'],
-            )
+# 		response = render(request, "shop/startpay_redirect.html", {"url": url})
+# 		response["Referrer-Policy"] = "strict-origin-when-cross-origin"
+# 		return response
 
-        if gateway_status == 101:
-            return render(request, self.template_name, {
-                'message': str(gateway_result['message']),
-                'store_name': store_name,
-            })
 
-        return render(request, self.template_name, {
-            'message': 'پرداخت ناموفق',
-            'store_name': store_name,
-        })
+# from income.models import Owner
 
-    def _get_order_from_session(self, request):
-        order_pay = request.session.get('order_pay')
-        if not order_pay:
-            return None
+# class OrderVerifyView(LoginRequiredMixin, View):
+# 	template_name = f'{current_app_name}/customer-payment-result.html'
 
-        order_id = order_pay.get('order_id')
-        if not order_id:
-            return None
+# 	def get(self, request):
+# 		store = Store.objects.first()
+# 		store_name = store.name if store else ''
 
-        try:
-            return Order.objects.select_related('customer', 'coupon', 'status').get(id=int(order_id))
-        except Order.DoesNotExist:
-            return None
+# 		order = self._get_order_from_session(request)
+# 		if not order:
+# 			return render(request, self.template_name, {
+# 				'message': 'سفارش معتبر یافت نشد.',
+# 				'store_name': store_name,
+# 			})
 
-    def _verify_payment_with_gateway(self, merchant, order, authority):
-        headers = {
-            'accept': 'application/json',
-            'content-type': 'application/json',
-        }
+# 		if request.GET.get('Status') != 'OK':
+# 			return render(request, self.template_name, {
+# 				'message': 'پرداخت ناموفق',
+# 				'store_name': store_name,
+# 			})
 
-        data = {
-            'merchant_id': merchant,
-            'amount': order.get_final_payment()['unformated'] * 10,
-            'authority': authority,
-        }
+# 		authority = request.GET.get('Authority')
+# 		if not authority:
+# 			return render(request, self.template_name, {
+# 				'message': 'اطلاعات پرداخت ناقص است.',
+# 				'store_name': store_name,
+# 			})
 
-        response = requests.post(
-            url=ZP_API_VERIFY,
-            data=json.dumps(data),
-            headers=headers,
-            timeout=20,
-        )
+# 		if not store or not store.merchant:
+# 			return render(request, self.template_name, {
+# 				'message': 'اطلاعات درگاه پرداخت تنظیم نشده است.',
+# 				'store_name': store_name,
+# 			})
 
-        response_data = response.json()
-        errors = response_data.get('errors') or {}
+# 		gateway_result = self._verify_payment_with_gateway(
+# 			merchant=store.merchant,
+# 			order=order,
+# 			authority=authority,
+# 		)
 
-        if errors:
-            return {
-                'has_error': True,
-                'error_code': errors.get('code'),
-                'error_message': errors.get('message'),
-            }
+# 		if gateway_result['has_error']:
+# 			return HttpResponse(
+# 				f"Error code: {gateway_result['error_code']}, "
+# 				f"Error Message: {gateway_result['error_message']}"
+# 			)
 
-        data = response_data.get('data') or {}
+# 		gateway_status = gateway_result['status_code']
 
-        return {
-            'has_error': False,
-            'status_code': data.get('code'),
-            'message': data.get('message'),
-            'ref_id': data.get('ref_id'),
-        }
+# 		if gateway_status == 100:
+# 			return self._handle_successful_payment(
+# 				request=request,
+# 				order=order,
+# 				store_name=store_name,
+# 				ref_id=gateway_result['ref_id'],
+# 			)
 
-    def _handle_successful_payment(self, request, order, store_name, ref_id):
-        paid_status = OrderStatus.objects.get(id=1)
+# 		if gateway_status == 101:
+# 			return render(request, self.template_name, {
+# 				'message': str(gateway_result['message']),
+# 				'store_name': store_name,
+# 			})
 
-        try:
-            with transaction.atomic():
-                order = Order.objects.select_for_update().select_related(
-                    'customer',
-                    'coupon',
-                    'status',
-                ).get(id=order.id)
+# 		return render(request, self.template_name, {
+# 			'message': 'پرداخت ناموفق',
+# 			'store_name': store_name,
+# 		})
 
-                # جلوگیری از کسر دوباره موجودی در صورت callback تکراری درگاه
-                if order.status_id != paid_status.id:
-                    self._reduce_order_stock(order)
-                    self._update_customer_wallet(order)
-                    self._handle_coupon_after_payment(order)
+# 	def _get_order_from_session(self, request):
+# 		order_pay = request.session.get('order_pay')
+# 		if not order_pay:
+# 			return None
 
-                    order.status = paid_status
-                    order.save(update_fields=[
-                        'status',
-                        'paid_by_wallet',
-                        'status_updated_date',
-                    ])
+# 		order_id = order_pay.get('order_id')
+# 		if not order_id:
+# 			return None
 
-        except ValidationError as error:
-            return render(request, self.template_name, {
-                'message': str(error),
-                'store_name': store_name,
-            })
+# 		try:
+# 			return Order.objects.select_related('customer', 'coupon', 'status').get(id=int(order_id))
+# 		except Order.DoesNotExist:
+# 			return None
 
-        order_verification(order.customer.phone_number, order.id)
-        for owner in Owner.objects.all():
-            if owner.phone_number:
-                admin_order_verification(owner.phone_number, order.id)
+# 	def _verify_payment_with_gateway(self, merchant, order, authority):
+# 		headers = {
+# 			'accept': 'application/json',
+# 			'content-type': 'application/json',
+# 		}
 
-        return render(request, self.template_name, {
-            'message': 'پرداخت شما موفقیت آمیز بود. سفارش شما ثبت گردید و در حال پردازش است',
-            'ref_id': ref_id,
-            'store_name': store_name,
-        })
+# 		data = {
+# 			'merchant_id': merchant,
+# 			'amount': order.get_final_payment()['unformated'] * 10,
+# 			'authority': authority,
+# 		}
 
-    def _reduce_order_stock(self, order):
-        items = order.items.select_related('variety').all()
+# 		response = requests.post(
+# 			url=ZP_API_VERIFY,
+# 			data=json.dumps(data),
+# 			headers=headers,
+# 			timeout=20,
+# 		)
 
-        for item in items:
-            if not item.variety_id:
-                continue
+# 		response_data = response.json()
+# 		errors = response_data.get('errors') or {}
 
-            variety = Variety.objects.select_for_update().get(id=item.variety_id)
+# 		if errors:
+# 			return {
+# 				'has_error': True,
+# 				'error_code': errors.get('code'),
+# 				'error_message': errors.get('message'),
+# 			}
 
-            if variety.stock < item.quantity:
-                raise ValidationError(
-                    f'موجودی "{variety.name}" کافی نیست.'
-                )
+# 		data = response_data.get('data') or {}
 
-            Variety.objects.filter(id=variety.id).update(
-                stock=F('stock') - item.quantity
-            )
+# 		return {
+# 			'has_error': False,
+# 			'status_code': data.get('code'),
+# 			'message': data.get('message'),
+# 			'ref_id': data.get('ref_id'),
+# 		}
 
-    def _update_customer_wallet(self, order):
-        customer = order.customer
+# 	def _handle_successful_payment(self, request, order, store_name, ref_id):
+# 		paid_status = OrderStatus.objects.get(id=1)
 
-        if customer.full_name == 'کاربر میهمان':
-            customer.full_name = f'{order.reciever_name or ""} {order.reciever_familly_name or ""}'.strip()
+# 		try:
+# 			with transaction.atomic():
+# 				order = Order.objects.select_for_update().select_related(
+# 					'customer',
+# 					'coupon',
+# 					'status',
+# 				).get(id=order.id)
 
-        final_payment = order.get_final_payment()['unformated']
+# 				# جلوگیری از کسر دوباره موجودی در صورت callback تکراری درگاه
+# 				if order.status_id != paid_status.id:
+# 					self._reduce_order_stock(order)
+# 					self._update_customer_wallet(order)
+# 					self._handle_coupon_after_payment(order)
 
-        if final_payment >= customer.wallet_balance:
-            order.paid_by_wallet = customer.wallet_balance
-            customer.wallet_balance = 0
-        else:
-            customer.wallet_balance -= final_payment
-            order.paid_by_wallet = final_payment
+# 					order.status = paid_status
+# 					order.save(update_fields=[
+# 						'status',
+# 						'paid_by_wallet',
+# 						'status_updated_date',
+# 					])
 
-        customer.save(update_fields=[
-            'full_name',
-            'wallet_balance',
-        ])
+# 		except ValidationError as error:
+# 			return render(request, self.template_name, {
+# 				'message': str(error),
+# 				'store_name': store_name,
+# 			})
 
-    def _handle_coupon_after_payment(self, order):
-        coupon = order.coupon
+# 		order_verification(order.customer.phone_number, order.id)
+# 		for owner in Owner.objects.all():
+# 			if owner.phone_number:
+# 				admin_order_verification(owner.phone_number, order.id)
 
-        if coupon and coupon.is_cashback:
-            coupon.delete()
+# 		return render(request, self.template_name, {
+# 			'message': 'پرداخت شما موفقیت آمیز بود. سفارش شما ثبت گردید و در حال پردازش است',
+# 			'ref_id': ref_id,
+# 			'store_name': store_name,
+# 		})
+
+# 	def _reduce_order_stock(self, order):
+# 		items = order.items.select_related('variety').all()
+
+# 		for item in items:
+# 			if not item.variety_id:
+# 				continue
+
+# 			variety = Variety.objects.select_for_update().get(id=item.variety_id)
+
+# 			if variety.stock < item.quantity:
+# 				raise ValidationError(
+# 					f'موجودی "{variety.name}" کافی نیست.'
+# 				)
+
+# 			Variety.objects.filter(id=variety.id).update(
+# 				stock=F('stock') - item.quantity
+# 			)
+
+# 	def _update_customer_wallet(self, order):
+# 		customer = order.customer
+
+# 		if customer.full_name == 'کاربر میهمان':
+# 			customer.full_name = f'{order.reciever_name or ""} {order.reciever_familly_name or ""}'.strip()
+
+# 		final_payment = order.get_final_payment()['unformated']
+
+# 		if final_payment >= customer.wallet_balance:
+# 			order.paid_by_wallet = customer.wallet_balance
+# 			customer.wallet_balance = 0
+# 		else:
+# 			customer.wallet_balance -= final_payment
+# 			order.paid_by_wallet = final_payment
+
+# 		customer.save(update_fields=[
+# 			'full_name',
+# 			'wallet_balance',
+# 		])
+
+# 	def _handle_coupon_after_payment(self, order):
+# 		coupon = order.coupon
+
+# 		if coupon and coupon.is_cashback:
+# 			coupon.delete()
 
 class UserLogoutView(View):
 
-    def get(self, request):
-        logout(request)
-        return redirect('shop:index')
+	def get(self, request):
+		logout(request)
+		return redirect('shop:index')
 
 class VideosView(View):
 
-    template_name = 'shop/videos.html'
+	template_name = 'shop/videos.html'
 
-    def get(self, request):
-        videos = [{'video':product.video_code, 'product':product} for product in Product.objects.all() if product.video_code]
-        items_per_page = 12
-        paginator = Paginator(videos, items_per_page)
-        page = request.GET.get('page', 1)
-        try:
-            videos = paginator.page(page)
-        except PageNotAnInteger:
-            videos = paginator.page(1)
-        except EmptyPage:
-            videos = paginator.page(paginator.num_pages)
-        return render(request, self.template_name, {'videos':videos})
+	def get(self, request):
+		videos = [{'video':product.video_code, 'product':product} for product in Product.objects.all() if product.video_code]
+		items_per_page = 12
+		paginator = Paginator(videos, items_per_page)
+		page = request.GET.get('page', 1)
+		try:
+			videos = paginator.page(page)
+		except PageNotAnInteger:
+			videos = paginator.page(1)
+		except EmptyPage:
+			videos = paginator.page(paginator.num_pages)
+		return render(request, self.template_name, {'videos':videos})
 
 class FactorView(View):
 
-    template_name = 'shop/factor.html'
+	template_name = 'shop/factor.html'
 
-    def get(self, request, order_id):
-        order = Order.objects.get(id=order_id)
-        return render(request, self.template_name, {"order":order})
+	def get(self, request, order_id):
+		order = Order.objects.get(id=order_id)
+		return render(request, self.template_name, {"order":order})
 
 from django.contrib.admin.views.decorators import staff_member_required
 
 @staff_member_required
 def shipping_label_view(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
+	order = get_object_or_404(Order, id=order_id)
 
-    # اطلاعات فروشگاه (می‌تواند از مدل تنظیمات یا Settings خوانده شود)
-    store = Store.objects.first()
+	# اطلاعات فروشگاه (می‌تواند از مدل تنظیمات یا Settings خوانده شود)
+	store = Store.objects.first()
 
-    context = {
-        "order": order,
-        "store": store,
-    }
-    return render(request, "shop/shipping_label.html", context)
+	context = {
+		"order": order,
+		"store": store,
+	}
+	return render(request, "shop/shipping_label.html", context)
 
 
 
 
 
 class ProductRequestCreateView(View):
-    def post(self, request, product_id):
-        product = get_object_or_404(Product, id=product_id)
+	def post(self, request, product_id):
+		product = get_object_or_404(Product, id=product_id)
 
-        phone = request.POST.get("phone", "").strip()
+		phone = request.POST.get("phone", "").strip()
 
-        if not phone:
-            messages.error(request, "لطفا شماره تلفن را وارد کنید.")
-            return redirect(request.META.get("HTTP_REFERER", "/"))
+		if not phone:
+			messages.error(request, "لطفا شماره تلفن را وارد کنید.")
+			return redirect(request.META.get("HTTP_REFERER", "/"))
 
-        exists = ProductRequest.objects.filter(
-            product=product,
-            phone=phone,
-            is_answered=False
-        ).exists()
+		exists = ProductRequest.objects.filter(
+			product=product,
+			phone=phone,
+			is_answered=False
+		).exists()
 
-        if exists:
-            messages.warning(
-                request,
-                "درخواست شما قبلا برای این محصول ثبت شده است."
-            )
-        else:
-            ProductRequest.objects.create(
-                product=product,
-                phone=phone
-            )
+		if exists:
+			messages.warning(
+				request,
+				"درخواست شما قبلا برای این محصول ثبت شده است."
+			)
+		else:
+			ProductRequest.objects.create(
+				product=product,
+				phone=phone
+			)
 
-            messages.success(
-                request,
-                "درخواست شما ثبت شد. در صورت موجود شدن محصول به شما اطلاع می‌دهیم."
-            )
+			messages.success(
+				request,
+				"درخواست شما ثبت شد. در صورت موجود شدن محصول به شما اطلاع می‌دهیم."
+			)
 
-        return redirect(request.META.get("HTTP_REFERER", "/"))
+		return redirect(request.META.get("HTTP_REFERER", "/"))

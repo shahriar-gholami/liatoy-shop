@@ -1,0 +1,245 @@
+{% extends "base_4.html" %}
+{% load static humanize %}
+
+{% block meta %}
+<meta charset="UTF-8">
+<meta content='width=device-width, initial-scale=1.0, user-scalable=0' name='viewport'>
+<meta content="IE=edge" http-equiv="X-UA-Compatible">
+<meta name="description" content="{{ store.meta_description }}">
+<meta content="Liatoy" name="author">
+<meta name="keywords" content="{{ store.meta_keywords }}">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="{{ store.default_canonical }}">
+{% endblock %}
+
+{% block title %}نتیجه پرداخت سفارش #{{ order.id }}{% endblock %}
+
+{% block content %}
+<style>
+    .payment-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 15px;
+        background: #f8fafc;
+    }
+    .payment-card {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        max-width: 580px;
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .payment-header {
+        padding: 40px 25px 20px;
+        text-align: center;
+    }
+    .status-badge-icon {
+        width: 86px;
+        height: 86px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    /* استایل موفق */
+    .status-badge-icon.success {
+        background-color: #ecfdf5;
+        color: #10b981;
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.1);
+    }
+    /* استایل ناموفق / در انتظار */
+    .status-badge-icon.danger {
+        background-color: #fef2f2;
+        color: #ef4444;
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.1);
+    }
+    .payment-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .payment-desc {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+    .receipt-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        margin: 25px 30px;
+        padding: 16px 20px;
+        border: 1px dashed #cbd5e1;
+    }
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        font-size: 0.92rem;
+    }
+    .receipt-row:not(:last-child) {
+        border-bottom: 1px solid #edf2f7;
+    }
+    .receipt-row .label {
+        color: #64748b;
+    }
+    .receipt-row .val {
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .total-highlight {
+        font-size: 1.1rem !important;
+        color: #2563eb !important;
+    }
+    .payment-footer {
+        padding: 0 30px 35px;
+        display: flex;
+        gap: 12px;
+    }
+    .btn-main {
+        flex: 1.2;
+        padding: 13px 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        color: #fff !important;
+        background: #2563eb;
+        transition: 0.2s ease;
+    }
+    .btn-main:hover {
+        background: #1d4ed8;
+    }
+    .btn-secondary-link {
+        flex: 1;
+        padding: 13px 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        color: #475569 !important;
+        background: #f1f5f9;
+        transition: 0.2s ease;
+    }
+    .btn-secondary-link:hover {
+        background: #e2e8f0;
+    }
+    @media (max-width: 576px) {
+        .receipt-box {
+            margin: 20px 15px;
+        }
+        .payment-footer {
+            padding: 0 15px 30px;
+            flex-direction: column;
+        }
+    }
+    .btn-retry {
+        background: #f59e0b; /* رنگ نارنجی برای جلب توجه */
+        color: #fff !important;
+    }
+    .btn-retry:hover {
+        background: #d97706;
+    }
+</style>
+
+<div class="payment-wrapper">
+    <div class="payment-card">
+        
+        {# بررسی عنوان وضعیت ثبت‌شده در OrderStatus #}
+        {% if "نشده" in order.status.latest_status or "ناموفق" in order.status.latest_status or "خطا" in order.status.latest_status %}
+            <!-- حالت ناموفق -->
+            <div class="payment-header">
+                <div class="status-badge-icon danger">
+                    <svg width="42" height="42" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h1 class="payment-title text-danger">پرداخت ناموفق بود</h1>
+                <p class="payment-desc">تراکنش انجام نشد. اگر مبلغی کسر شده باشد، تا ۷۲ ساعت آینده بازمی‌گردد.</p>
+            </div>
+        {% else %}
+            <!-- حالت موفق یا سایر وضعیت‌های ثبت سفارش -->
+            <div class="payment-header">
+                <div class="status-badge-icon success">
+                    <svg width="42" height="42" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h1 class="payment-title text-success">پرداخت با موفقیت انجام شد</h1>
+                <p class="payment-desc">سفارش شما با موفقیت ثبت شد و به بخش آماده‌سازی ارسال گردید.</p>
+            </div>
+        {% endif %}
+
+        <!-- خلاصه جزئیات رسید سفارش -->
+        <div class="receipt-box">
+            <div class="receipt-row">
+                <span class="label">شماره سفارش:</span>
+                <span class="val">#{{ order.id }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <span class="label">وضعیت فعلی:</span>
+                <span class="val text-primary">{{ order.status.latest_status|default:"نامشخص" }}</span>
+            </div>
+
+            {% if order.reciever_name or order.reciever_familly_name %}
+            <div class="receipt-row">
+                <span class="label">تحویل‌گیرنده:</span>
+                <span class="val">{{ order.reciever_name|default:'' }} {{ order.reciever_familly_name|default:'' }}</span>
+            </div>
+            {% endif %}
+
+            {% if order.delivery_method %}
+            <div class="receipt-row">
+                <span class="label">روش ارسال:</span>
+                <span class="val">{{ order.delivery_method }}</span>
+            </div>
+            {% endif %}
+
+            {% if order.paid_by_wallet > 0 %}
+            <div class="receipt-row">
+                <span class="label">پرداخت از کیف پول:</span>
+                <span class="val">{{ order.paid_by_wallet|intcomma }} تومان</span>
+            </div>
+            {% endif %}
+
+            <div class="receipt-row">
+                <span class="label">تاریخ ثبت:</span>
+                <span class="val">{{ order.created_date|date:"Y/m/d - H:i" }}</span>
+            </div>
+
+            <div class="receipt-row">
+                <span class="label">مبلغ پرداختی نهایی:</span>
+                <span class="val total-highlight">{{ order.total_price|intcomma }} تومان</span>
+            </div>
+        </div>
+
+        <!-- دکمه‌های اقدام -->
+        <!-- دکمه‌های اقدام -->
+        <div class="payment-footer">
+            {% if "نشده" in order.status.latest_status or "ناموفق" in order.status.latest_status or "خطا" in order.status.latest_status %}
+                <!-- دکمه برای حالت ناموفق -->
+                <a href="{% url 'shop:order_payment' order.id %}" class="btn-main btn-retry">
+                    تلاش مجدد برای پرداخت
+                </a>
+            {% else %}
+                <!-- دکمه برای حالت موفق -->
+                <a href="{% url 'shop:factor' order.id %}" class="btn-main">
+                    مشاهده فاکتور و سفارش
+                </a>
+            {% endif %}
+
+            <a href="/" class="btn-secondary-link">
+                بازگشت به فروشگاه
+            </a>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

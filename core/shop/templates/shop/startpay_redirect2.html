@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>در حال انتقال به درگاه پرداخت...</title>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 100px; font-family: Tahoma, sans-serif;">
+        <p>در حال اتصال امن به درگاه پرداخت، لطفاً شکیبا باشید...</p>
+    </div>
+
+    <form id="redirect-form" method="GET" action="{{ url }}"></form>
+
+    <script>
+        document.getElementById('redirect-form').submit();
+    </script>
+</body>
+</html>

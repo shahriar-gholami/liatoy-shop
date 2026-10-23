@@ -27,6 +27,9 @@ SHOW_DEBUGGER_TOOLBAR = config("SHOW_DEBUGGER_TOOLBAR", cast=bool, default=False
 
 ALLOWED_HOSTS =  ['127.0.0.1', '195.146.32.236', '188.121.119.29/32', '195.201.30.135/32']
 
+# settings.py
+
+SECURE_REFERER_POLICY = 'strict-origin-when-cross-origin'
 
 
 # Application definition
@@ -177,8 +180,9 @@ AUTH_USER_MODEL = "accounts.User"
 
 DEFAULT_FILE_STORAGE = 'shop.storage_backends.LiaraStorage'
 AWS_ACCESS_KEY_ID = 'pg5rqlmr2u8e5uln'
-AWS_SECRET_ACCESS_KEY = '6ea004ea-01ab-45c4-bf03-3c9f70322c18'
+AWS_SECRET_ACCESS_KEY = 'd5bb388b-e0f5-415d-b513-a040ff1f1118'
 AWS_STORAGE_BUCKET_NAME = 'marketplace-bucket'
+
 AWS_S3_ENDPOINT_URL = 'https://storage.iran.liara.site'
 AWS_S3_FILE_OVERWRITE = False
 

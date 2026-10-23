@@ -66,7 +66,10 @@ urlpatterns = [
     path('orders/verify/', views.OrderVerifyView.as_view(), name='order_verify'),
     path('api/v1/', include('shop.api.v1.urls')),
     path('logout/', views.UserLogoutView.as_view(), name='logout'),
-
+    path("startpay-redirect/", views.StartPayRedirectView.as_view(), name="startpay_redirect_page"),
     path("torob_api/v3/products", TorobProductsAPIView.as_view(), name="torob_products_api"),
+    path("payment-result/<int:order_id>/", views.PaymentResultView.as_view(), name="payment_result"),
+    path("startpay-redirect/", views.StartPayRedirectView.as_view(), name="startpay_redirect_page"),
+    path("factor/<int:order_id>/", views.FactorView.as_view(), name="factor"),
     
    ]
