@@ -266,6 +266,7 @@ class TorobProductsAPIView(APIView):
     """
 
     authentication_classes = [TorobJWTAuthentication]
+    # authentication_classes = []
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
@@ -274,45 +275,46 @@ class TorobProductsAPIView(APIView):
         if not isinstance(data, dict) or not data:
             return error_response("request body is empty or invalid")
 
-        keys = set(data.keys())
-
-        allowed_modes = [
-            {"page", "sort"},
-            {"page_urls"},
-            {"page_uniques"},
-        ]
-
-        if keys not in allowed_modes:
-            return error_response(
-                "invalid parameters. request body must contain exactly one of: "
-                "{page, sort}, {page_urls}, {page_uniques}"
-            )
-
-        if "page" in data and "sort" in data:
-            return self.handle_paginated_products(request, data)
-
+        # بررسی دریافت با لینک
         if "page_urls" in data:
             return self.handle_page_urls(request, data)
 
+        # بررسی دریافت با شناسه یکتا
         if "page_uniques" in data:
             return self.handle_page_uniques(request, data)
 
-        return error_response("invalid request")
+        # بررسی حالت صفحه‌بندی یا Cursor
+        if "sort" in data:
+            sort = data.get("sort")
+            
+            # حالت Cursor-based که ترب به تازگی اضافه کرده است
+            if sort == "product_id_desc":
+                return self.handle_cursor_products(request, data)
+                
+            # حالت صفحه‌بندی عادی
+            if "page" in data:
+                return self.handle_paginated_products(request, data)
+            else:
+                return error_response("page parameter is not provided")
+                
+        # اگر فقط page فرستاده شده ولی sort نیست
+        if "page" in data and "sort" not in data:
+            return error_response("sort parameter is not provided")
+
+        return error_response("invalid request parameters")
 
     def handle_paginated_products(self, request, data):
-        page = data.get("page")
-        sort = data.get("sort")
-
-        if not isinstance(page, int):
+        # تبدیل امن page به عدد صحیح (پشتیبانی از اعداد رشته‌ای مثل "1")
+        try:
+            page = int(data.get("page"))
+        except (ValueError, TypeError):
             return error_response("page parameter must be int")
 
         if page < 1:
             return error_response("page parameter must start from 1")
 
-        if not isinstance(sort, str):
-            return error_response("sort parameter must be string")
-
-        if sort not in ["date_added_desc", "date_updated_desc"]:
+        sort = data.get("sort")
+        if not isinstance(sort, str) or sort not in ["date_added_desc", "date_updated_desc"]:
             return error_response("sort parameter is invalid")
 
         qs = base_products_queryset()
@@ -346,6 +348,43 @@ class TorobProductsAPIView(APIView):
             status=200,
             json_dumps_params={"ensure_ascii": False},
         )
+
+    def handle_cursor_products(self, request, data):
+        """
+        پشتیبانی از Cursor-based pagination (اضافه شده در مستندات جدید ترب)
+        """
+        cursor = data.get("cursor")
+        qs = base_products_queryset().order_by("-id")
+        
+        if cursor:
+            try:
+                cursor_id = int(cursor)
+                qs = qs.filter(id__lt=cursor_id)
+            except (ValueError, TypeError):
+                return error_response("invalid cursor")
+
+        products = list(qs[:TOROB_PAGE_SIZE])
+        
+        next_cursor = str(products[-1].id) if len(products) == TOROB_PAGE_SIZE else None
+
+        result = {
+            "api_version": TOROB_API_VERSION,
+            "total": None,
+            "max_pages": None,
+            "next_cursor": next_cursor,
+            "products": [
+                serialize_product(request, product)
+                for product in products
+            ],
+        }
+
+        return JsonResponse(
+            result,
+            status=200,
+            json_dumps_params={"ensure_ascii": False},
+        )
+
+    # متدهای handle_page_urls و handle_page_uniques نیاز به تغییر ندارند
 
     def handle_page_urls(self, request, data):
         page_urls = data.get("page_urls")
