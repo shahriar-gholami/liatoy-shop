@@ -2001,178 +2001,180 @@ AQAYE_PARDAKHT_PIN = "D23AB5E933E7BA773313"
 
 
 class OrderFinalCheckView(View):
-    def get(self, request, order_id):
-        store = Store.objects.first()
-        order = get_object_or_404(Order, id=order_id)
-        
-        des = order.delivery_description
-        if des and 'text-success' in des:
-            # استفاده از List Comprehension برای کد تمیزتر و سریع‌تر
-            valid_lines = [
-                line for line in des.split('<br>') 
-                if 'text-danger' not in line or 'مبلغ نهایی' in line
-            ]
-            order.delivery_description = '<br> '.join(valid_lines) + '<br> '
-            order.save(update_fields=['delivery_description'])
+	def get(self, request, order_id):
+		store = Store.objects.first()
+		order = get_object_or_404(Order, id=order_id)
+		
+		des = order.delivery_description
+		if des and 'text-success' in des:
+			# استفاده از List Comprehension برای کد تمیزتر و سریع‌تر
+			valid_lines = [
+				line for line in des.split('<br>') 
+				if 'text-danger' not in line or 'مبلغ نهایی' in line
+			]
+			order.delivery_description = '<br> '.join(valid_lines) + '<br> '
+			order.save(update_fields=['delivery_description'])
 
-        # current_app_name را براساس ساختار خودتان تنظیم کنید
-        return render(request, f'shop/order_final_check_{store.template_index}.html', {
-            'store': store, 
-            'order': order
-        })
+		# current_app_name را براساس ساختار خودتان تنظیم کنید
+		return render(request, f'shop/order_final_check_{store.template_index}.html', {
+			'store': store, 
+			'order': order
+		})
 
 
 class OrderPayView(View):
-    def get(self, request, order_id, *args, **kwargs):
-        order = get_object_or_404(Order, id=order_id)
+	def get(self, request, order_id, *args, **kwargs):
+		order = get_object_or_404(Order, id=order_id)
 
-        data = {
-            "pin": AQAYE_PARDAKHT_PIN,
-            "amount": order.total_price,
-            "callback": "https://liatoy.com/orders/verify/", 
-            "mobile": str(order.customer.phone_number) if order.customer.phone_number else "",
-            "email": request.user.email if request.user.is_authenticated else "",
-            "invoice_id": str(order.id),
-            "description": f"پرداخت سفارش شماره {order.id}",
-        }
+		data = {
+			"pin": AQAYE_PARDAKHT_PIN,
+			"amount": order.total_price,
+			"callback": "https://liatoy.com/orders/verify/", 
+			"mobile": str(order.customer.phone_number) if order.customer.phone_number else "",
+			"email": request.user.email if request.user.is_authenticated else "",
+			"invoice_id": str(order.id),
+			"description": f"پرداخت سفارش شماره {order.id}",
+		}
 
-        try:
-            response = requests.post(
-                "https://panel.aqayepardakht.ir/api/v2/create",
-                data=data,
-                headers={"Referer": "https://liatoy.com/"},
-                timeout=10
-            )
-            response.raise_for_status()
-            json_data = response.json()
+		try:
+			response = requests.post(
+				"https://panel.aqayepardakht.ir/api/v2/create",
+				data=data,
+				headers={"Referer": "https://liatoy.com/"},
+				timeout=10
+			)
+			response.raise_for_status()
+			json_data = response.json()
 
-            if json_data.get("status") == "success":
-                # ذخیره لینک برای ریدایرکت
-                request.session["startpay_url"] = f"https://panel.aqayepardakht.ir/startpay/{json_data.get('transid')}"
-                return redirect("shop:startpay_redirect_page")
-            
-            messages.error(request, f"خطای درگاه: {json_data.get('errorMessage', 'نامشخص')}")
+			if json_data.get("status") == "success":
+				# ذخیره لینک برای ریدایرکت
+				request.session["startpay_url"] = f"https://panel.aqayepardakht.ir/startpay/{json_data.get('transid')}"
+				return redirect("shop:startpay_redirect_page")
+			
+			messages.error(request, f"خطای درگاه: {json_data.get('errorMessage', 'نامشخص')}")
 
-        except requests.RequestException:
-            messages.error(request, "خطا در برقراری ارتباط با درگاه پرداخت. لطفاً دوباره تلاش کنید.")
+		except requests.RequestException:
+			messages.error(request, "خطا در برقراری ارتباط با درگاه پرداخت. لطفاً دوباره تلاش کنید.")
 
-        return redirect("shop:payment_result", order_id=order.id)
+		return redirect("shop:payment_result", order_id=order.id)
 
 
 class StartPayRedirectView(View):
-    def get(self, request, *args, **kwargs):
-        # استفاده از pop باعث می‌شود آدرس بعد از خوانده شدن از سشن پاک شود
-        url = request.session.pop("startpay_url", None)
-        if not url:
-            return HttpResponseBadRequest("آدرس پرداخت یافت نشد یا منقضی شده است.")
+	def get(self, request, *args, **kwargs):
+		# استفاده از pop باعث می‌شود آدرس بعد از خوانده شدن از سشن پاک شود
+		url = request.session.pop("startpay_url", None)
+		if not url:
+			return HttpResponseBadRequest("آدرس پرداخت یافت نشد یا منقضی شده است.")
 
-        return render(request, "shop/startpay_redirect.html", {"url": url})
+		return render(request, "shop/startpay_redirect.html", {"url": url})
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OrderVerifyView(View):
-    def post(self, request, *args, **kwargs):
-        transid = request.POST.get("transid")
-        status = request.POST.get("status")
-        order_id = request.POST.get("invoice_id")
+	def post(self, request, *args, **kwargs):
+		transid = request.POST.get("transid")
+		status = request.POST.get("status")
+		order_id = request.POST.get("invoice_id")
 
-        if not transid or not order_id:
-            return HttpResponseBadRequest("اطلاعات ناقص از سمت درگاه پرداخت.")
+		if not transid or not order_id:
+			return HttpResponseBadRequest("اطلاعات ناقص از سمت درگاه پرداخت.")
 
-        order = get_object_or_404(Order, id=order_id)
+		order = get_object_or_404(Order, id=order_id)
 
-        # اگر پرداخت ناموفق بوده
-        if status != "1":
-            messages.error(request, "پرداخت ناموفق بود یا توسط شما لغو شد.")
-            return redirect("shop:payment_result", order_id=order.id)
-    
-        try:
-            # مرحله verify
-            response = requests.post(
-                "https://panel.aqayepardakht.ir/api/v2/verify",
-                data={"pin": AQAYE_PARDAKHT_PIN, "amount": order.total_price, "transid": transid},
-                timeout=10
-            )
-            response.raise_for_status()
-            result = response.json()
+		# اگر پرداخت ناموفق بوده
+		if status != "1":
+			messages.error(request, "پرداخت ناموفق بود یا توسط شما لغو شد.")
+			return redirect("shop:payment_result", order_id=order.id)
+	
+		try:
+			# مرحله verify
+			response = requests.post(
+				"https://panel.aqayepardakht.ir/api/v2/verify",
+				data={"pin": AQAYE_PARDAKHT_PIN, "amount": order.total_price, "transid": transid},
+				timeout=10
+			)
+			response.raise_for_status()
+			result = response.json()
 
-            if result.get("status") == "success":
-                # پردازش یکپارچه و اتمیک سفارش موفق
-                try:
-                    with transaction.atomic():
-                        locked_order = Order.objects.select_for_update().select_related(
-                            'customer', 'coupon', 'status'
-                        ).get(id=order.id)
-                        
-                        paid_status_id = 1  # فرض بر این است که ID وضعیت پرداخت شده 1 است
+			if result.get("status") == "success":
+				# پردازش یکپارچه و اتمیک سفارش موفق
+				try:
+					with transaction.atomic():
+						locked_order = Order.objects.select_for_update().select_related(
+							'customer', 'coupon', 'status'
+						).get(id=order.id)
+						
+						paid_status_id = 1  # فرض بر این است که ID وضعیت پرداخت شده 1 است
 
-                        # جلوگیری از کسر دوباره در صورت رفرش صفحه یا کال‌بک تکراری
-                        if locked_order.status_id != paid_status_id:
-                            
-                            # 1. کسر موجودی انبار
-                            for item in locked_order.items.select_related('variety').all():
-                                if item.variety_id:
-                                    variety = Variety.objects.select_for_update().get(id=item.variety_id)
-                                    if variety.stock < item.quantity:
-                                        raise ValueError(f'موجودی محصول "{variety.name}" کافی نیست.')
-                                    
-                                    variety.stock = F('stock') - item.quantity
-                                    variety.save(update_fields=['stock'])
+						# جلوگیری از کسر دوباره در صورت رفرش صفحه یا کال‌بک تکراری
+						if locked_order.status_id != paid_status_id:
+							
+							# 1. کسر موجودی انبار
+							for item in locked_order.items.select_related('variety').all():
+								item.sell_price = item.variety.product.get_active_price()
+								item.save()
+								if item.variety_id:
+									variety = Variety.objects.select_for_update().get(id=item.variety_id)
+									if variety.stock < item.quantity:
+										raise ValueError(f'موجودی محصول "{variety.name}" کافی نیست.')
+									
+									variety.stock = F('stock') - item.quantity
+									variety.save(update_fields=['stock'])
 
-                            # 2. آپدیت کیف پول و نام مشتری
-                            customer = locked_order.customer
-                            if customer.full_name == 'کاربر میهمان':
-                                customer.full_name = f'{locked_order.reciever_name or ""} {locked_order.reciever_familly_name or ""}'.strip()
+							# 2. آپدیت کیف پول و نام مشتری
+							customer = locked_order.customer
+							if customer.full_name == 'کاربر میهمان':
+								customer.full_name = f'{locked_order.reciever_name or ""} {locked_order.reciever_familly_name or ""}'.strip()
 
-                            final_payment = locked_order.get_final_payment()['unformated']
-                            
-                            if final_payment >= customer.wallet_balance:
-                                locked_order.paid_by_wallet = customer.wallet_balance
-                                customer.wallet_balance = 0
-                            else:
-                                customer.wallet_balance -= final_payment
-                                locked_order.paid_by_wallet = final_payment
+							final_payment = locked_order.get_final_payment()['unformated']
+							
+							if final_payment >= customer.wallet_balance:
+								locked_order.paid_by_wallet = customer.wallet_balance
+								customer.wallet_balance = 0
+							else:
+								customer.wallet_balance -= final_payment
+								locked_order.paid_by_wallet = final_payment
 
-                            customer.save(update_fields=['full_name', 'wallet_balance'])
+							customer.save(update_fields=['full_name', 'wallet_balance'])
 
-                            # 3. بررسی کوپن کش‌بک
-                            if locked_order.coupon and locked_order.coupon.is_cashback:
-                                locked_order.coupon.delete()
+							# 3. بررسی کوپن کش‌بک
+							if locked_order.coupon and locked_order.coupon.is_cashback:
+								locked_order.coupon.delete()
 
-                            # 4. تغییر وضعیت نهایی سفارش
-                            locked_order.status_id = paid_status_id
-                            locked_order.save(update_fields=['status_id', 'paid_by_wallet', 'status_updated_date'])
+							# 4. تغییر وضعیت نهایی سفارش
+							locked_order.status_id = paid_status_id
+							locked_order.save(update_fields=['status_id', 'paid_by_wallet', 'status_updated_date'])
 
-                    # نکته بسیار مهم: ارسال پیامک باید بیرون از transaction.atomic باشد
-                    order_verification(locked_order.customer.phone_number, locked_order.id)
-                    for owner in Owner.objects.filter(phone_number__isnull=False):
-                        admin_order_verification(owner.phone_number, locked_order.id)
+					# نکته بسیار مهم: ارسال پیامک باید بیرون از transaction.atomic باشد
+					order_verification(locked_order.customer.phone_number, locked_order.id)
+					for owner in Owner.objects.filter(phone_number__isnull=False):
+						admin_order_verification(owner.phone_number, locked_order.id)
 
-                    messages.success(request, "پرداخت با موفقیت انجام شد و سفارش شما ثبت گردید.")
+					messages.success(request, "پرداخت با موفقیت انجام شد و سفارش شما ثبت گردید.")
 
-                except ValueError as e:
-                    # ارورهای مربوط به کمبود موجودی
-                    messages.error(request, str(e))
-            else:
-                messages.error(request, f"تایید پرداخت با خطا مواجه شد: {result.get('errorMessage', 'خطای نامشخص')}")
+				except ValueError as e:
+					# ارورهای مربوط به کمبود موجودی
+					messages.error(request, str(e))
+			else:
+				messages.error(request, f"تایید پرداخت با خطا مواجه شد: {result.get('errorMessage', 'خطای نامشخص')}")
 
-        except requests.RequestException:
-            messages.error(request, "خطا در ارتباط با سرور درگاه جهت تایید نهایی پرداخت.")
+		except requests.RequestException:
+			messages.error(request, "خطا در ارتباط با سرور درگاه جهت تایید نهایی پرداخت.")
 
-        return redirect("shop:payment_result", order_id=order.id)
+		return redirect("shop:payment_result", order_id=order.id)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class PaymentResultView(View):
-    template_name = 'shop/payment_result.html'
+	template_name = 'shop/payment_result.html'
 
-    def get(self, request, order_id):
-        order = get_object_or_404(Order, id=order_id)
-        return render(request, self.template_name, {'order': order})
+	def get(self, request, order_id):
+		order = get_object_or_404(Order, id=order_id)
+		return render(request, self.template_name, {'order': order})
 
-    def post(self, request, order_id):
-        # در صورت ورود با متد POST، همان صفحه GET رندر شود
-        return self.get(request, order_id)
+	def post(self, request, order_id):
+		# در صورت ورود با متد POST، همان صفحه GET رندر شود
+		return self.get(request, order_id)
 
 
 

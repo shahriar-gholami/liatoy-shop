@@ -104,6 +104,59 @@ class CategoryAdmin(admin.ModelAdmin):
     autocomplete_fields = ['parent',]
     inlines = [CategoryFAQInline]
 
+
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import Variety
+
+
+@admin.register(Variety)
+class VarietyAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "product",
+        "name",
+        "stock",
+        "colored_stock_status",
+    )
+
+    list_editable = ("stock",)
+
+    # ضروری برای کارکرد autocomplete_fields در CartItemAdmin
+    search_fields = (
+        "name",
+        "product__name",
+    )
+
+    list_filter = (
+        "product",
+        ("stock", admin.EmptyFieldListFilter),
+    )
+
+    autocomplete_fields = ("product",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("product")
+
+    @admin.display(description="وضعیت موجودی", ordering="stock")
+    def colored_stock_status(self, obj):
+        if obj.stock == 0:
+            color = "#dc3545"  # قرمز
+            text = "ناموجود"
+        elif obj.stock <= 5:
+            color = "#ffc107"  # زرد/نارنجی
+            text = f"رو به اتمام ({obj.stock})"
+        else:
+            color = "#28a745"  # سبز
+            text = "موجود"
+
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color,
+            text,
+        )
+
+
 class VarietyInline(admin.TabularInline):  # یا admin.StackedInline برای نمایش به صورت بلوکی
     model = Variety
     extra = 0  # تعداد فرم‌های اضافی
@@ -243,6 +296,11 @@ from django.urls import reverse
 from django.utils.html import format_html
 from .models import Order
 
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from .models import Order, CartItem  # مطمئن شوید CartItem ایمپورت شده است
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -264,11 +322,11 @@ class OrderAdmin(admin.ModelAdmin):
 
     list_editable = ("items_cost",)
 
-    # دکمه فاکتور و فیلدهای فقط خواندنی
+    # فیلدهای فقط خواندنی (جدول مدیریت اقلام به اینجا اضافه شد)
     readonly_fields = [
+        "order_items_editor",
         "factor_button",
         "shipping_label_button",
-        "items",
     ]
 
     actions = [
@@ -338,6 +396,151 @@ class OrderAdmin(admin.ModelAdmin):
                 url,
             )
         return "ابتدا سفارش را ذخیره کنید."
+
+    # جدول مدیریت و ویرایش هزینه تامین اقلام سفارش
+    @admin.display(description="اقلام سفارش و مدیریت هزینه تامین")
+    def order_items_editor(self, obj):
+        if not obj or not obj.pk:
+            return "ابتدا سفارش را ذخیره کنید."
+
+        items = obj.items.select_related("variety__product").all()
+        if not items.exists():
+            return "آیتمی برای این سفارش ثبت نشده است."
+
+        rows_html = ""
+        for item in items:
+            product_name = (
+                item.variety.product.name if item.variety and item.variety.product else "نامشخص"
+            )
+            variety_name = item.variety.name if item.variety else "-"
+            unit_cost = f"{item.cost:,} تومان"
+            total_item_cost = f"{item.cost * item.quantity:,} تومان"
+
+            # لینک مستقیم به صفحه ویرایش آیتم سبد خرید در ادمین
+            url = reverse(
+                f"admin:{item._meta.app_label}_{item._meta.model_name}_change",
+                args=[item.id],
+            )
+
+            rows_html += f"""
+            <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 10px;">{product_name} <span style="color:#777; font-size:12px;">({variety_name})</span></td>
+                <td style="padding: 10px; text-align: center;">{item.quantity} عدد</td>
+                <td style="padding: 10px; text-align: center;">{unit_cost}</td>
+                <td style="padding: 10px; text-align: center; font-weight: bold;">{total_item_cost}</td>
+                <td style="padding: 10px; text-align: center;">
+                    <a href="{url}" target="_blank" class="button"
+                       style="background-color: #417690; color: white; padding: 5px 10px; 
+                              border-radius: 4px; text-decoration: none; font-size: 12px; display: inline-block;">
+                       ✏️ ویرایش هزینه
+                    </a>
+                </td>
+            </tr>
+            """
+
+        table_html = f"""
+        <table style="width: 100%; border-collapse: collapse; text-align: right; background: #fff; border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+            <thead>
+                <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd; font-weight: bold;">
+                    <th style="padding: 10px;">محصول و تنوع</th>
+                    <th style="padding: 10px; text-align: center;">تعداد</th>
+                    <th style="padding: 10px; text-align: center;">هزینه واحد</th>
+                    <th style="padding: 10px; text-align: center;">هزینه کل قلم</th>
+                    <th style="padding: 10px; text-align: center;">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows_html}
+            </tbody>
+        </table>
+        """
+        return format_html(table_html)
+
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from .models import CartItem
+
+
+@admin.register(CartItem)
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "get_product_name",
+        "get_variety_name",
+        "quantity",
+        "cost",  # قابل ویرایش سریع در لیست
+        "get_total_cost_display",
+        "get_single_price_display",
+        "get_total_price_display",
+        "get_related_order",
+    )
+
+    # امکان ویرایش هزینه و تعداد مستقیماً از صفحه لیست (بدون نیاز به باز کردن تک‌تک آیتم‌ها)
+    list_editable = ("cost", "quantity")
+
+    search_fields = (
+        "variety__product__name",
+        "variety__name",
+        "order__id",
+        "order__customer__full_name",
+    )
+
+    list_filter = (
+        "variety__product",
+    )
+
+    autocomplete_fields = ("variety",)
+
+    # بهینه‌سازی کوئری‌ها جهت جلوگیری از افت سرعت در پنل ادمین
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("variety__product")
+            .prefetch_related("order_set")
+        )
+
+    @admin.display(description="محصول", ordering="variety__product__name")
+    def get_product_name(self, obj):
+        if obj.variety and obj.variety.product:
+            return obj.variety.product.name
+        return "-"
+
+    @admin.display(description="تنوع کالا", ordering="variety__name")
+    def get_variety_name(self, obj):
+        if obj.variety:
+            return obj.variety.name
+        return "-"
+
+    @admin.display(description="هزینه کل تامین")
+    def get_total_cost_display(self, obj):
+        total = obj.cost * obj.quantity
+        return f"{total:,} تومان"
+
+    @admin.display(description="قیمت واحد فروش")
+    def get_single_price_display(self, obj):
+        try:
+            return f"{obj.get_single_item_price()} تومان"
+        except Exception:
+            return "-"
+
+    @admin.display(description="قیمت کل فروش")
+    def get_total_price_display(self, obj):
+        try:
+            return f"{obj.get_item_price()} تومان"
+        except Exception:
+            return "-"
+
+    @admin.display(description="سفارش مرتبط")
+    def get_related_order(self, obj):
+        order = obj.order_set.first()
+        if order:
+            url = reverse(f"admin:{order._meta.app_label}_{order._meta.model_name}_change", args=[order.id])
+            return format_html('<a href="{}" target="_blank">سفارش #{}: {}</a>', url, order.id, order.reciever_name or order.customer)
+        return "بدون سفارش (سبد رها شده)"
+
+
 
 @admin.register(CashBack)
 class CashBackAdmin(admin.ModelAdmin):

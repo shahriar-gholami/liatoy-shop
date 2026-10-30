@@ -27,6 +27,11 @@ class WithdrawAdmin(admin.ModelAdmin):
         form.instance.payments.update(paid_back=True)
 
 
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from django.db.models import Sum
+
 @admin.register(Month)
 class MonthAdmin(admin.ModelAdmin):
     list_display = (
@@ -47,6 +52,7 @@ class MonthAdmin(admin.ModelAdmin):
         "month_gross_profit_percentage",
         "month_side_costs",
         "month_net_profit",
+        "monthly_products_report", # <--- فیلد جدید اضافه شد
         "monthly_payments_report",
         "monthly_withdraw_report",
     )
@@ -79,15 +85,105 @@ class MonthAdmin(admin.ModelAdmin):
         return f"{obj.get_net_profit():,d} تومان"
     month_net_profit.short_description = "سود/زیان خالص"
 
+    def monthly_products_report(self, obj):
+        orders = obj.get_orders().prefetch_related('items__variety__product')
+        if not orders.exists():
+            return "در این ماه سفارشی ثبت نشده است."
+
+        product_stats = {}
+
+        for order in orders:
+            for item in order.items.all():
+                variety = item.variety
+                if not variety:
+                    continue
+                
+                product = variety.product
+                quantity = item.quantity or 1
+
+                # هزینه تامین ثبت‌شده روی آیتم سفارش
+                unit_cost = item.cost or 0
+                total_cost = unit_cost * quantity
+                
+                # 💡 قیمت فروش ثبت‌شده در زمان تکمیل سفارش (sell_price)
+                if item.sell_price is not None and item.sell_price > 0:
+                    unit_sell_price = item.sell_price
+                else:
+                    # پشتیبانی از سفارش‌های قدیمی که هنوز sell_price نداشتند
+                    try:
+                        price_str = str(item.get_single_item_price()).replace(',', '')
+                        unit_sell_price = int(price_str) if price_str.isdigit() else 0
+                    except Exception:
+                        unit_sell_price = 0
+
+                total_revenue = unit_sell_price * quantity
+
+                if product.id not in product_stats:
+                    product_stats[product.id] = {
+                        'name': product.name,
+                        'quantity': 0,
+                        'total_cost': 0,
+                        'total_revenue': 0,
+                    }
+
+                product_stats[product.id]['quantity'] += quantity
+                product_stats[product.id]['total_cost'] += total_cost
+                product_stats[product.id]['total_revenue'] += total_revenue
+
+        if not product_stats:
+            return "آیتمی در سفارشات یافت نشد."
+
+        html = '<table style="width:100%; border-collapse:collapse; text-align:right;" border="1" cellpadding="8">'
+        html += '<tr style="background-color:#f8f9fa;">'
+        html += '<th>نام محصول</th>'
+        html += '<th>تعداد فروش</th>'
+        html += '<th>هزینه تامین کل</th>'
+        html += '<th>فروش کل محصول</th>'
+        html += '<th>درصد سود (حاشیه سود)</th>'
+        html += '</tr>'
+
+        sorted_stats = sorted(product_stats.values(), key=lambda x: x['quantity'], reverse=True)
+
+        for stats in sorted_stats:
+            cost = stats['total_cost']
+            revenue = stats['total_revenue']
+            profit = revenue - cost
+            
+            if cost > 0:
+                profit_percent = (profit / cost) * 100
+                profit_display = f"{profit_percent:.2f}%"
+                color = "green" if profit_percent > 0 else "red"
+            else:
+                profit_display = "۱۰۰٪ (بدون هزینه)"
+                color = "green"
+
+            html += (
+                f"<tr>"
+                f"<td>{stats['name']}</td>"
+                f"<td>{stats['quantity']} عدد</td>"
+                f"<td>{cost:,d} تومان</td>"
+                f"<td>{revenue:,d} تومان</td>"
+                f"<td dir='ltr' style='text-align:right; color:{color}; font-weight:bold;'>{profit_display}</td>"
+                f"</tr>"
+            )
+
+        html += "</table>"
+        return format_html(html)
+
+    monthly_products_report.short_description = "گزارش تفکیکی فروش کالاها"
+
+
+    
     def monthly_payments_report(self, obj):
+        # ... (کدهای قبلی شما)
         payments = obj.get_payments()
         if not payments.exists():
             return "هزینه‌ای ثبت نشده است."
 
         summary = payments.values("paid_by__name", "paid_by__id").annotate(total=Sum("amount"))
 
-        html = '<table style="width:100%; border-collapse:collapse;">'
-        html += '<tr><th>مدیر</th><th>مبلغ</th><th>لینک</th></tr>'
+        html = '<table style="width:100%; border-collapse:collapse;" border="1" cellpadding="5">'
+        html += '<tr style="background-color:#f8f9fa;"><th>مدیر</th><th>مبلغ</th><th>لینک</th></tr>'
 
         for item in summary:
             url = reverse(
@@ -107,12 +203,13 @@ class MonthAdmin(admin.ModelAdmin):
     monthly_payments_report.short_description = "لیست هزینه‌ها به تفکیک فرد"
 
     def monthly_withdraw_report(self, obj):
+        # ... (کدهای قبلی شما)
         withdraws = obj.get_withdraw_list()
         if not withdraws.exists():
             return "تصفیه‌ای ثبت نشده است."
 
-        html = '<table style="width:100%; border-collapse:collapse;">'
-        html += '<tr><th>مدیر</th><th>مبلغ</th><th>لینک</th></tr>'
+        html = '<table style="width:100%; border-collapse:collapse;" border="1" cellpadding="5">'
+        html += '<tr style="background-color:#f8f9fa;"><th>مدیر</th><th>مبلغ</th><th>لینک</th></tr>'
 
         for w in withdraws:
             url = reverse(
@@ -130,4 +227,3 @@ class MonthAdmin(admin.ModelAdmin):
         html += "</table>"
         return format_html(html)
     monthly_withdraw_report.short_description = "لیست تصفیه‌حساب‌ها به تفکیک فرد"
-

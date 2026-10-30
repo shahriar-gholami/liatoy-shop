@@ -688,6 +688,8 @@ class Comment(models.Model):
 class CartItem(models.Model):
     variety = models.ForeignKey(Variety, on_delete = models.CASCADE, null=True, blank=True, verbose_name='تنوع کالا')
     quantity = models.PositiveIntegerField(default = 1, verbose_name='تعداد')
+    cost = models.IntegerField(default=0)
+    sell_price = models.IntegerField(null=True, blank=True, verbose_name="قیمت فروش در زمان سفارش")
 
     class Meta:
         verbose_name = 'آیتم‌های سبد خرید'
@@ -1275,3 +1277,20 @@ class SocialAccount(models.Model):
 
 
 
+
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models import Sum, F
+
+@receiver(post_save, sender=CartItem)
+def update_order_items_cost(sender, instance, **kwargs):
+    # پیدا کردن سفارش‌هایی که این آیتم در آن‌ها وجود دارد
+    # (چون رابطه ManyToMany است از reverse relation استفاده می‌کنیم)
+    orders = instance.order_set.all()
+    for order in orders:
+        # جمع هزینه‌های تمام آیتم‌های این سفارش (cost * quantity)
+        total_items_cost = sum((i.cost * i.quantity) for i in order.items.all())
+        order.items_cost = total_items_cost
+        order.save(update_fields=['items_cost'])
