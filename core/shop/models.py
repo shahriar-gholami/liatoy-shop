@@ -533,6 +533,13 @@ class Product(models.Model):
             active_price = self.price
         return "{:,}".format(active_price)
 
+    def get_raw_price(self):
+        if self.off_active and self.sales_price:
+            active_price = self.sales_price
+        else:
+            active_price = self.price
+        return active_price
+
     def get_product_varieties(self):
         varieties = Variety.objects.filter(product = self)
         return varieties

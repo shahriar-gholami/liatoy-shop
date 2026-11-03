@@ -68,6 +68,25 @@ def order_verification(phone_number, order_id):
 	response = requests.request("POST", url, headers=headers, data=payload)
 	print(response.text)
 
+def order_fail_verification(phone_number, order_id):
+	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
+	payload = json.dumps({
+	"code": "gwnyrifq1f8dvky",
+	"sender": "+983000505",
+	"recipient": phone_number,
+	"variable": {
+		"order-id": order_id
+	}
+	})
+	headers = {
+	'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+	'Content-Type': 'application/json'
+	}
+
+	response = requests.request("POST", url, headers=headers, data=payload)
+	print(response.text)
+
 def admin_order_verification(phone_number, order_id):
 	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
@@ -2077,16 +2096,21 @@ class OrderVerifyView(View):
 		order_id = request.POST.get("invoice_id")
 
 		if not transid or not order_id:
+			print('1111111111111111111')
 			return HttpResponseBadRequest("اطلاعات ناقص از سمت درگاه پرداخت.")
 
 		order = get_object_or_404(Order, id=order_id)
 
 		# اگر پرداخت ناموفق بوده
 		if status != "1":
+			for owner in Owner.objects.filter(phone_number__isnull=False):
+				order_fail_verification(owner.phone_number, order.id)
+			print('22222222222222222')
 			messages.error(request, "پرداخت ناموفق بود یا توسط شما لغو شد.")
 			return redirect("shop:payment_result", order_id=order.id)
 	
 		try:
+			print('3333333333333333333333')
 			# مرحله verify
 			response = requests.post(
 				"https://panel.aqayepardakht.ir/api/v2/verify",
@@ -2097,9 +2121,11 @@ class OrderVerifyView(View):
 			result = response.json()
 
 			if result.get("status") == "success":
+				print('444444444444444444')
 				# پردازش یکپارچه و اتمیک سفارش موفق
 				try:
 					with transaction.atomic():
+						print('555555555555555555555')
 						locked_order = Order.objects.select_for_update().select_related(
 							'customer', 'coupon', 'status'
 						).get(id=order.id)
@@ -2108,22 +2134,22 @@ class OrderVerifyView(View):
 
 						# جلوگیری از کسر دوباره در صورت رفرش صفحه یا کال‌بک تکراری
 						if locked_order.status_id != paid_status_id:
+							print('666666666666666666666')
 							
 							# 1. کسر موجودی انبار
-							for item in locked_order.items.select_related('variety').all():
-								item.sell_price = item.variety.product.get_active_price()
+							for item in locked_order.items.all():
+								item.sell_price = item.variety.product.get_raw_price()
 								item.save()
-								if item.variety_id:
-									variety = Variety.objects.select_for_update().get(id=item.variety_id)
-									if variety.stock < item.quantity:
-										raise ValueError(f'موجودی محصول "{variety.name}" کافی نیست.')
-									
-									variety.stock = F('stock') - item.quantity
-									variety.save(update_fields=['stock'])
+								if item.variety:
+									print('77777777777777777777')
+									variety = item.variety
+									variety.stock = variety.stock - item.quantity
+									variety.save()
 
 							# 2. آپدیت کیف پول و نام مشتری
 							customer = locked_order.customer
 							if customer.full_name == 'کاربر میهمان':
+								print('88888888888888888888888')
 								customer.full_name = f'{locked_order.reciever_name or ""} {locked_order.reciever_familly_name or ""}'.strip()
 
 							final_payment = locked_order.get_final_payment()['unformated']
@@ -2142,25 +2168,31 @@ class OrderVerifyView(View):
 								locked_order.coupon.delete()
 
 							# 4. تغییر وضعیت نهایی سفارش
-							locked_order.status_id = paid_status_id
+							locked_order.status = OrderStatus.objects.get(id=paid_status_id)
 							locked_order.save(update_fields=['status_id', 'paid_by_wallet', 'status_updated_date'])
 
 					# نکته بسیار مهم: ارسال پیامک باید بیرون از transaction.atomic باشد
 					order_verification(locked_order.customer.phone_number, locked_order.id)
+					print('pppppppppppppppppppppp')
 					for owner in Owner.objects.filter(phone_number__isnull=False):
 						admin_order_verification(owner.phone_number, locked_order.id)
 
 					messages.success(request, "پرداخت با موفقیت انجام شد و سفارش شما ثبت گردید.")
 
 				except ValueError as e:
+					print(str(e))
 					# ارورهای مربوط به کمبود موجودی
 					messages.error(request, str(e))
 			else:
+				
+				print('99999999999999999999')
 				messages.error(request, f"تایید پرداخت با خطا مواجه شد: {result.get('errorMessage', 'خطای نامشخص')}")
 
 		except requests.RequestException:
+			print('000000000000000000000000000')
 			messages.error(request, "خطا در ارتباط با سرور درگاه جهت تایید نهایی پرداخت.")
 
+		print('bbbbbbbbbbbbbbbbbbbbbbbb')
 		return redirect("shop:payment_result", order_id=order.id)
 
 
