@@ -53,11 +53,12 @@ def order_verification(phone_number, order_id):
 	url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
 
 	payload = json.dumps({
-	"code": "ehuynsayt2ku2mh",
+	"code": "tpe3y0sn5amp3nv",
 	"sender": "+983000505",
 	"recipient": phone_number,
 	"variable": {
-		"order-id": order_id
+		"order-id": order_id,
+		'factor-link': f"https://liatoy.com/factor/{order_id}/"
 	}
 	})
 	headers = {
@@ -903,6 +904,25 @@ class ProductDetailView(View):
 				'add_to_cart':add_to_cart_url, 
 				'store_name':store_name})
 
+def comment_reward(phone_number):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+    coupon = Coupon.objects.filter(title='کامنت').first()
+    payload = json.dumps({
+    "code": "fvi8b24x0ojclp4",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "code": coupon.code,
+        "discount": coupon.discount
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text)
+
 class CommentCreateView(IsCustomerUserMixin, View):
 
 	def post(self, request, product_id):
@@ -919,6 +939,7 @@ class CommentCreateView(IsCustomerUserMixin, View):
 				body=body,
 			)
 			comment.save()
+			comment_reward(customer.phone_number)
 			return redirect('shop:product_detail', product.slug)  # Redirect to the product detail page
 		return redirect('shop:product_detail', product.slug)
 	
@@ -2096,7 +2117,6 @@ class OrderVerifyView(View):
 		order_id = request.POST.get("invoice_id")
 
 		if not transid or not order_id:
-			print('1111111111111111111')
 			return HttpResponseBadRequest("اطلاعات ناقص از سمت درگاه پرداخت.")
 
 		order = get_object_or_404(Order, id=order_id)
@@ -2105,12 +2125,10 @@ class OrderVerifyView(View):
 		if status != "1":
 			for owner in Owner.objects.filter(phone_number__isnull=False):
 				order_fail_verification(owner.phone_number, order.id)
-			print('22222222222222222')
 			messages.error(request, "پرداخت ناموفق بود یا توسط شما لغو شد.")
 			return redirect("shop:payment_result", order_id=order.id)
 	
 		try:
-			print('3333333333333333333333')
 			# مرحله verify
 			response = requests.post(
 				"https://panel.aqayepardakht.ir/api/v2/verify",
@@ -2121,11 +2139,9 @@ class OrderVerifyView(View):
 			result = response.json()
 
 			if result.get("status") == "success":
-				print('444444444444444444')
 				# پردازش یکپارچه و اتمیک سفارش موفق
 				try:
 					with transaction.atomic():
-						print('555555555555555555555')
 						locked_order = Order.objects.select_for_update().select_related(
 							'customer', 'coupon', 'status'
 						).get(id=order.id)
@@ -2134,14 +2150,12 @@ class OrderVerifyView(View):
 
 						# جلوگیری از کسر دوباره در صورت رفرش صفحه یا کال‌بک تکراری
 						if locked_order.status_id != paid_status_id:
-							print('666666666666666666666')
 							
 							# 1. کسر موجودی انبار
 							for item in locked_order.items.all():
 								item.sell_price = item.variety.product.get_raw_price()
 								item.save()
 								if item.variety:
-									print('77777777777777777777')
 									variety = item.variety
 									variety.stock = variety.stock - item.quantity
 									variety.save()
@@ -2149,7 +2163,6 @@ class OrderVerifyView(View):
 							# 2. آپدیت کیف پول و نام مشتری
 							customer = locked_order.customer
 							if customer.full_name == 'کاربر میهمان':
-								print('88888888888888888888888')
 								customer.full_name = f'{locked_order.reciever_name or ""} {locked_order.reciever_familly_name or ""}'.strip()
 
 							final_payment = locked_order.get_final_payment()['unformated']
@@ -2173,7 +2186,6 @@ class OrderVerifyView(View):
 
 					# نکته بسیار مهم: ارسال پیامک باید بیرون از transaction.atomic باشد
 					order_verification(locked_order.customer.phone_number, locked_order.id)
-					print('pppppppppppppppppppppp')
 					for owner in Owner.objects.filter(phone_number__isnull=False):
 						admin_order_verification(owner.phone_number, locked_order.id)
 
@@ -2185,14 +2197,11 @@ class OrderVerifyView(View):
 					messages.error(request, str(e))
 			else:
 				
-				print('99999999999999999999')
 				messages.error(request, f"تایید پرداخت با خطا مواجه شد: {result.get('errorMessage', 'خطای نامشخص')}")
 
 		except requests.RequestException:
-			print('000000000000000000000000000')
 			messages.error(request, "خطا در ارتباط با سرور درگاه جهت تایید نهایی پرداخت.")
 
-		print('bbbbbbbbbbbbbbbbbbbbbbbb')
 		return redirect("shop:payment_result", order_id=order.id)
 
 

@@ -769,10 +769,21 @@ class OrderStatus(models.Model):
         return self.latest_status
 
 class Order(models.Model):
+    class PaymentMethod(models.TextChoices):
+        GATEWAY = "gateway", "درگاه"
+        CARD_TO_CARD = "card_to_card", "کارت به کارت"
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.GATEWAY,
+        verbose_name="روش پرداخت",
+    )
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, verbose_name='مشتری')
     items = models.ManyToManyField(CartItem, verbose_name='آیتم‌ها')
     total_price = models.IntegerField(verbose_name='مبلغ کل')
     status = models.ForeignKey(OrderStatus, on_delete = models.SET_NULL, null=True, verbose_name='وضعیت سفارش')
+    comment_request = models.BooleanField(default=False, verbose_name='درخواست نظر')
     created_date = models.DateTimeField(auto_now_add = True, verbose_name='تاریخ ایجاد')
     used_coupon = models.BooleanField(default=False, verbose_name='استفاده از کوپن تخفیف')
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
@@ -792,11 +803,7 @@ class Order(models.Model):
     delivery_off = models.BooleanField(default=False, verbose_name='ارسال رایگان')
     items_cost = models.IntegerField(default=0, verbose_name='هزینه تامین اقلام')
     delivery_code = models.CharField(max_length=255, null=True, blank=True)
-    manual_items_description = models.TextField(
-        blank=True, 
-        null=True, 
-        verbose_name="آیتم‌های دستی"
-    )
+    manual_items_description = models.TextField(blank=True,null=True,verbose_name="آیتم‌های دستی")
     gateway_fee = models.IntegerField(default=0, verbose_name='کارمزد درگاه') 
 
     def __str__(self):

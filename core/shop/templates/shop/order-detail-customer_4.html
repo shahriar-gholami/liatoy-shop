@@ -31,7 +31,7 @@
 
 <div class="bread-crumb py-4">
     <div class="container-fluid">
-        <nav aria-label="breadcrumb" class="my-lg-0 my-2">
+        <nav aria-label="breadcrumb" class="my-lg-0">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="{% url 'shop:index' %}" class="font-14 text-muted-two">فروشگاه</a></li>
                 <li class="breadcrumb-item"><a href="#" class="font-14 text-muted-two">جزئیات سفارش</a></li>
@@ -57,9 +57,38 @@
         <div class="orders-item">
             <div class="ui-boxs">
                 <div class="ui-box">
-                    <div class="ui-box-item slider-parent ui-box-white">
-
-                        <div class="ui-box-item-desc p-0">
+                    <div class="ui-box-item slider-parent ui-box-white"> 
+                        <div class="ui-box-item-desc p-4">
+                            <div class="row">
+                            {% for item in order.items.all %}
+                            <div class="col-md-6 col-sm-12 col-lg-6 mb-2">
+                                <form method="post" action="{% url 'shop:cart_item_update' cart.pk item.pk %}">
+                                {% csrf_token %}
+                                <div class="product-row-item mt-2">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3 col-lg-3 col-sm-12">
+                                        <a href="{% url 'shop:product_detail' item.variety.product.slug %}">
+                                            <img src="{{ item.variety.product.get_main_image }}" alt="{{item.variety.product.name}}"></a>
+                                        </div>
+                                        <div class="col-md-9 col-lg-9 col-sm-12">
+                                            <a href="{% url 'shop:product_detail' item.variety.product.slug %}">
+                                                <h3 class="title-font font-14">{{item.variety.product.name}} {% if item.variety.name != 'default variety' %}- {{ item.variety.name }}{% endif %}</h3>
+                                            </a>
+                                            <div class="cart-canvas-price my-3 d-flex align-items-center">
+                                                <p>قیمت هر عدد: {{item.variety.product.get_active_price|intcomma}} تومان <br>
+                                                    تعداد: {{item.quantity}}<br>
+                                                    مجموع: {{item.get_item_price|intcomma}} تومان</p>
+                                                 
+                                        
+                                            </div>
+                                            <a href="{% url 'shop:product_detail' item.variety.product.slug %}#comments" class="btn main-color-one-bg">ثبت نظر</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </form>
+                            {% endfor %}
+                        </div>
                             <div class="orders">
                                 <div class="order-item p-4">
                                     <div class="order-item-detail">
@@ -71,6 +100,10 @@
                                             <li class="nav-item">
                                                 <span class="text-mute">تاریخ ثبت سفارش</span>
                                                 <strong>{{order.shamsi_created_date}}</strong>
+                                            </li>
+                                            <li class="nav-item">
+                                                <span class="text-mute">وضعیت پرداخت</span>
+                                                <strong>{{order.status}}</strong>
                                             </li>
                                         </ul>
                                     </div>
@@ -92,12 +125,18 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <div class="orders">
-                                        <div class="order-item p-4">
-                                            <p>
-                                                {{order.delivery_description|safe}}
-                                            </p>
-                                        </div>
+                                    <div class="order-item-detail" style="padding-top: 20px;">
+                                        <ul class="nav">
+                                            <li class="nav-item">
+                                                <span class="text-mute">شیوه ارسال</span>
+                                                <strong>{{order.delivery_method}}</strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="order-item-detail" style="padding-top: 20px;">
+                                        {% if order.status.latest_status == 'پرداخت نشده' %}
+                                            <a href="{% url 'shop:order_payment' order.id %}" class="btn product-meta-add-to-cart-btn main-color-one-bg">پرداخت کنید</a> 
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -113,9 +152,6 @@
 
 {% endblock %}
 
-{% block js %}
-
-{% endblock %}
 
 
 

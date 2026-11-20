@@ -97,7 +97,7 @@
                 <td>{{ item.id }}</td>
                 <td>{{ item.variety.product.name }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.variety.product.get_active_price|intcomma }} تومان</td>
+                <td>{{ item.variety.product.get_sales_price }} تومان</td>
                 <td>{{ item.get_item_price }} تومان</td>
             </tr>
             {% endfor %}

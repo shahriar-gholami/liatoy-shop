@@ -2,9 +2,11 @@ from django.contrib import admin
 from.models import *
 from django.utils.html import format_html
 from django import forms
+import random 
+
 from django.contrib import admin
 from .models import Product, Category
-from utils import erase_stock_volume, update_slugs, send_order_verification_sms, send_delivery_inform_sms
+from utils import erase_stock_volume, update_slugs, send_order_verification_sms
 import django_jalali.admin as jadmin
 from django_jalali.admin.filters import JDateFieldListFilter
 from django.utils.text import slugify
@@ -26,6 +28,114 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import Product, ProductImage
+
+
+def comment_request(phone_number, order_id):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+    payload = json.dumps({
+    "code": "0cqo7nk2ksgg5ey",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "comment-link": f"https://liatoy.com/customer/dashboard/orders/{order_id}/"
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text)
+    
+def send_comment_request_sms(modeladmin, request, queryset):
+    for order in queryset:
+        comment_request(order.customer.phone_number, order.id)
+    modeladmin.message_user(request, "پیامک درخواست ثبت نظر برای سفارشات انتخابی ارسال شد.")
+send_comment_request_sms.short_description = "ارسال پیامک درخواست ثبت نظر"
+
+
+
+def delivery_inform(phone_number, order_id, delivery_code):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
+    payload = json.dumps({
+    "code": "lcs5oxf3bj7b28f",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "order-id": order_id,
+        "tipax-code": delivery_code
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+def cashback_inform(phone_number, order_id, delivery_code, discount, code):
+    url = "https://api2.ippanel.com/api/v1/sms/pattern/normal/send"
+
+    payload = json.dumps({
+    "code": "296bmw92irlcjzy",
+    "sender": "+983000505",
+    "recipient": phone_number,
+    "variable": {
+        "order-id": order_id,
+        "discount": discount,
+        "code": code
+    }
+    })
+    headers = {
+    'apikey': 'q41yDW73vhtH5Xr63XYQ39DTo96yavuxGRiA9g4a79A=',
+    'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+def send_delivery_inform_sms(modeladmin, request, queryset):
+    cashbacks = CashBack.objects.filter(is_active=True)
+    print(cashbacks)
+    for order in queryset:
+        cashback = None
+        discount = 0
+        phone_number = order.customer.phone_number
+        order_id = order.id
+        delivery_code = order.delivery_code
+        if cashbacks:
+            cashback = CashBack.objects.filter(order_level=order.customer.orders_num).first()
+            if cashback != None:
+                discount = (int(order.get_total_price().replace(',',''))*cashback.percent)/100
+            elif CashBack.objects.filter(order_level=0).first() != None:
+                cashback = CashBack.objects.filter(order_level=0).first()
+                discount = (int(order.get_total_price().replace(',',''))*cashback.percent)/100
+            if discount != 0:
+                discount = int((discount // 1000) * 1000)
+                start = jdatetime.date.today()
+                end = start.replace(year=start.year + 10)
+                new_coupon = Coupon.objects.create(
+                    title = 'کش‌بک',
+                    code = random.randint(100000,999999),
+                    start_date = start,
+                    end_date = end,
+                    discount = discount,
+                    min_cart_volume = discount,
+                    is_cashback = True
+                ) 
+                code = new_coupon.code
+                print(phone_number, discount, code)
+                cashback_inform(phone_number, order_id, delivery_code, discount, code)
+        else:
+            delivery_inform(phone_number, order_id, delivery_code)
+    modeladmin.message_user(request, "پیامک ارسال سفارش برای سفارشات انتخابی ارسال شد.")
+send_delivery_inform_sms.short_description = "ارسال پیامک اطلاع‌رسانی ارسال"
+
+
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -305,15 +415,19 @@ from .models import Order, CartItem  # مطمئن شوید CartItem ایمپور
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
+        "reciever_name",
+        "reciever_familly_name",
         "customer",
         "total_price",
         "items_cost",
         "colored_status",
+        "payment_method",
+        "comment_request",
         "shamsi_created_date",
         "shamsi_updated_date",
     )
 
-    list_filter = ("status", "used_coupon")
+    # list_filter = ("status", "used_coupon")
 
     search_fields = [
         "customer__full_name",
@@ -332,6 +446,7 @@ class OrderAdmin(admin.ModelAdmin):
     actions = [
         send_delivery_inform_sms,
         send_order_verification_sms,
+        send_comment_request_sms,
     ]
 
     class Media:
@@ -359,6 +474,8 @@ class OrderAdmin(admin.ModelAdmin):
             color = "black"
         elif latest_status == "پرداخت نشده":
             color = "red"
+        elif latest_status == "لغو شده":
+                    color = "orange"
         else:
             color = "inherit"
 
